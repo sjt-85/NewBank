@@ -12,13 +12,24 @@ public class Customer {
   
   public String accountsToString() {
     String s = "";
-    for(Account a : accounts) {
+    String newLine = System.lineSeparator();
+    for (Account a : accounts) {
       s += a.toString();
+      s += newLine;
     }
     return s;
   }
 
   public void addAccount(Account account) {
     accounts.add(account);    
+  }
+  
+  public boolean hasAccountByName(String accountName) {
+    for (Account a : accounts) {
+      if (a.getAccountName().equals(accountName)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
