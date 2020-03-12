@@ -1,6 +1,8 @@
 package newbank.server;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Arrays;
 
 public class NewBank {
   
@@ -39,10 +41,16 @@ public class NewBank {
 
   // commands from the NewBank customer are processed in this method
   public synchronized String processRequest(CustomerID customer, String request) {
-    if(customers.containsKey(customer.getKey())) {
-      switch(request) {
-      case "SHOWMYACCOUNTS" : return showMyAccounts(customer);
-      default : return "FAIL";
+    if (customers.containsKey(customer.getKey())) {
+      
+      List<String> tokens = Arrays.asList(request.split("\\s+"));
+      
+      if (tokens.size() > 0) {       
+        switch (tokens.get(0)) {
+        case "SHOWMYACCOUNTS" : return showMyAccounts(customer);
+        case "NEWACCOUNT" : return addNewAccount(customer, tokens);
+        default : return "FAIL";
+        }
       }
     }
     return "FAIL";
@@ -50,6 +58,19 @@ public class NewBank {
   
   private String showMyAccounts(CustomerID customer) {
     return (customers.get(customer.getKey())).accountsToString();
+  }
+  
+  private String addNewAccount(CustomerID customerID, List<String> request) {
+    String result = "FAIL";
+    Customer customer = customers.get(customerID.getKey());
+    
+    if (   (customer != null) // customer found
+        && (request.size() == 2) // request is correct length
+        && (!customer.hasAccountByName(request.get(1)))) { // no existing account by requested name
+      customer.addAccount(new Account(request.get(1), 0));
+      result = (customer.hasAccountByName(request.get(1))) ? "SUCCESS" : "FAIL";
+    }
+    return result;
   }
 
 }
