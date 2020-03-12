@@ -63,7 +63,7 @@ public class NewBankClientHandler extends Thread {
     }
   }
 
-  public void requestLoginDetails() {
+  private void requestLoginDetails() {
     try {
       // ask for user name
       out.println("Enter Username");
