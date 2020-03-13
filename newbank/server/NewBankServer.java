@@ -45,7 +45,7 @@ public class NewBankServer extends Thread{
 
   private static void runInTestMode() {
     // register test classes here
-    Class[] classes = new Class[]{
+    Class<?>[] classes = new Class<?>[]{
       newbank.test.ServerTestScenarios.class
     };
 
