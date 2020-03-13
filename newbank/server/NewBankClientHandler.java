@@ -8,14 +8,12 @@ import java.net.Socket;
 
 public class NewBankClientHandler extends Thread {
 
-  private NewBank bank;
   private BufferedReader in;
   private PrintWriter out;
   private String userName;
   private String password;
 
   public NewBankClientHandler(Socket s) throws IOException {
-    bank = NewBank.getBank();
     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
     out = new PrintWriter(s.getOutputStream(), true);
   }
@@ -28,12 +26,12 @@ public class NewBankClientHandler extends Thread {
       // record how many login attempts
       int loginAttempts = 1;
       // authenticate user and get customer ID token from bank for use in subsequent requests
-      CustomerID customer = bank.checkLogInDetails(userName, password);
+      CustomerID customer = NewBank.getBank().checkLogInDetails(userName, password);
       // Loop continues until user gets correct password or has 3 login attempts
       while (customer == null && loginAttempts < 3) {
         out.println("Log In Failed");
         requestLoginDetails();
-        customer = bank.checkLogInDetails(userName, password);
+        customer = NewBank.getBank().checkLogInDetails(userName, password);
         loginAttempts++;
       }
       // If max user attempts
@@ -45,7 +43,7 @@ public class NewBankClientHandler extends Thread {
         while (true) {
           String request = in.readLine();
           System.out.println("Request from " + customer.getKey());
-          String responce = bank.processRequest(customer, request);
+          String responce = NewBank.getBank().processRequest(customer, request);
           out.println(responce);
         }
       }
