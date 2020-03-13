@@ -8,12 +8,10 @@ public class NewBank {
 
   private static final NewBank bank = new NewBank();
   private HashMap<String, Customer> customers;
-  private boolean logOutRequested;
 
   private NewBank() {
     customers = new HashMap<>();
     addTestData();
-    logOutRequested = false;
   }
 
   private void addTestData() {
@@ -65,7 +63,7 @@ public class NewBank {
           case "NEWACCOUNT":
             return addNewAccount(customer, tokens);
           case "LOGOUT":
-            logOutRequested = true;
+            customer.logOut();
             return logOut(customer);
           default:
             return "FAIL";
@@ -73,11 +71,6 @@ public class NewBank {
       }
     }
     return "FAIL";
-  }
-
-  // Return whether customer would like to logout. Used by client handler.
-  public boolean logOutStatus() {
-    return logOutRequested;
   }
 
   private String showMyAccounts(CustomerID customer) {

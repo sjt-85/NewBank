@@ -48,7 +48,7 @@ public class NewBankClientHandler extends Thread {
           String responce = bank.processRequest(customer, request);
           out.println(responce);
           // Test whether client would like to logout
-          if (bank.logOutStatus()) break;
+          if (!customer.isLoggedIn()) break;
         }
       }
 
