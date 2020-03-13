@@ -35,7 +35,21 @@ public class NewBankServer extends Thread{
   }
   
   public static void main(String[] args) throws IOException {
+    if(args.length != 0 && args[0].equals("TEST")) {
+      runInTestMode();
+      return;
+    }
     // starts a new NewBankServer thread on a specified port number
     new NewBankServer(14002).start();
   }
+
+  private static void runInTestMode() {
+    // register test classes here
+    Class[] classes = new Class[]{
+      newbank.test.ServerTestScenarios.class
+    };
+
+    newbank.test.NBUnit.runTest(classes);
+  }
+
 }
