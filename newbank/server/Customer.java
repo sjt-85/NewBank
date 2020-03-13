@@ -6,7 +6,6 @@ public class Customer {
 
   private ArrayList<Account> accounts;
   private String password;
-  private boolean logOutRequested;;
 
   public Customer() {
     accounts = new ArrayList<>();
