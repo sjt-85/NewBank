@@ -108,7 +108,7 @@ public class NewBank {
       printCommands += command;
       printCommands += "\n";
     }
-    //		printCommands = printCommands.substring(0, printCommands.length()-1);
+    printCommands = printCommands.substring(0, printCommands.length()-1);
     return printCommands;
 	}
 
