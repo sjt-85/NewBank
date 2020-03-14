@@ -14,20 +14,20 @@ public class NBUnit {
     Arrays.stream(classes).forEach(NBUnit::runTestClass);
   }
 
-  private static List<Method> getPublicMethod(Class<?> aClass) {
+  private static List<Method> getPublicMethods(Class<?> aClass) {
     return Arrays.stream(aClass.getDeclaredMethods())
         .filter(method -> Modifier.isPublic(method.getModifiers()))
         .collect(Collectors.toList());
   }
 
   private static void runTestClass(Class<?> aClass) {
-    System.out.println("testing..." + aClass.getName());
-    getPublicMethod(aClass)
+    System.out.println("running..." + aClass.getName());
+    getPublicMethods(aClass)
         .forEach(
             method -> {
               try {
-                Object testObject = aClass.getDeclaredConstructor().newInstance();
-                method.invoke(testObject);
+                Object testFixture = aClass.getDeclaredConstructor().newInstance();
+                method.invoke(testFixture);
                 System.out.println("pass: " + method.getName());
               } catch (InvocationTargetException e) {
                 System.out.println("fail: " + method.getName());
