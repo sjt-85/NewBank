@@ -8,11 +8,12 @@ public class NewBank {
 
   private static final NewBank bank = new NewBank();
   private HashMap<String, Customer> customers;
-	private ArrayList<String> commands = new ArrayList<String>();
+  private ArrayList<String> commands = new ArrayList<String>();
 
   private NewBank() {
     customers = new HashMap<>();
     addTestData();
+    addCommands;
   }
 
   private void addTestData() {
@@ -74,9 +75,9 @@ public class NewBank {
             customer.logOut();
             return logOut(customer);
           case "COMMANDS" :
-              return listCommands(commands);
+            return listCommands(commands);
           case "HELP" : 
-              return listCommands(commands);
+            return listCommands(commands);
           default:
             return "FAIL";
         }
@@ -108,9 +109,8 @@ public class NewBank {
       printCommands += command;
       printCommands += "\n";
     }
-    printCommands = printCommands.substring(0, printCommands.length()-1);
-    return printCommands;
-	}
+    return printCommands.substring(0, printCommands.length()-1);
+  }
 
   private String logOut(CustomerID customerID) {
     return "Log out successful. Goodbye " + customerID.getKey();
