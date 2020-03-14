@@ -1,5 +1,6 @@
 package newbank.server;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -8,10 +9,12 @@ public class NewBank {
 
   private static final NewBank bank = new NewBank();
   private HashMap<String, Customer> customers;
+  private ArrayList<String> commands = new ArrayList<String>();
 
   private NewBank() {
     customers = new HashMap<>();
     addTestData();
+    addCommands(commands);
   }
 
   private void addTestData() {
@@ -33,7 +36,14 @@ public class NewBank {
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     customers.put("John", john);
   }
-
+  
+  private void addCommands(ArrayList<String> commands) {
+    // user command and description
+    commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
+    commands.add("NEWACCOUNT <name of account> -> Creates a new account under specified name e.g. NEWACCOUNT Savings");
+    commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
+  }
+  
   public static NewBank getBank() {
     return bank;
   }
@@ -65,6 +75,10 @@ public class NewBank {
           case "LOGOUT":
             customer.logOut();
             return logOut(customer);
+          case "COMMANDS" :
+            return listCommands(commands);
+          case "HELP" : 
+            return listCommands(commands);
           default:
             return "FAIL";
         }
@@ -88,6 +102,15 @@ public class NewBank {
       result = (customer.hasAccountByName(request.get(1))) ? "SUCCESS" : "FAIL";
     }
     return result;
+  }
+  
+  private String listCommands(ArrayList<String> commands) {
+    String printCommands = new String();
+    for (String command : commands) {
+      printCommands += command;
+      printCommands += "\n";
+    }
+    return printCommands.substring(0, printCommands.length()-1);
   }
 
   private String logOut(CustomerID customerID) {

@@ -17,3 +17,9 @@ Returns SUCCESS or FAIL
 PAY <Person/Company> <Ammount>
 e.g. PAY John 100
 Returns SUCCESS or FAIL
+
+COMMANDS
+Returns list of all user commands.
+
+HELP
+Returns list of all user commands.
