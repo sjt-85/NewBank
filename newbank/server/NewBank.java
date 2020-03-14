@@ -14,7 +14,7 @@ public class NewBank {
   private NewBank() {
     customers = new HashMap<>();
     addTestData();
-    addCommands;
+    addCommands(commands);
   }
 
   private void addTestData() {
