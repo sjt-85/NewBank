@@ -17,3 +17,9 @@ Returns SUCCESS or FAIL
 PAY <Person/Company> <Ammount>
 e.g. PAY John 100
 Returns SUCCESS or FAIL
+
+COMMANDS
+Returns list of commands with syntax and description.
+
+HELP
+Returns list of commands with syntax and description.
