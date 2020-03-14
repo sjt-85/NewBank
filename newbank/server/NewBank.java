@@ -1,7 +1,7 @@
 package newbank.server;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class NewBank {
 	
@@ -32,7 +32,7 @@ public class NewBank {
     private void addCommands(ArrayList<String> commands) {
     	// user command and description
 		commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
-		commands.add("NEWACCOUNT -> Creates a new account of the specified type e.g. Current, Savings");
+		commands.add("NEWACCOUNT <name of account> -> Creates a new account under specified name e.g. NEWACCOUNT Savings");
 		commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
 	}
 	
@@ -63,14 +63,14 @@ public class NewBank {
 	private String showMyAccounts(CustomerID customer) {
 		return (customers.get(customer.getKey())).accountsToString();
 	}
-	
+
 	private String listCommands(ArrayList<String> commands) {
 		String printCommands = new String();
 		for (String command : commands) {
 			printCommands += command;
 			printCommands += "\n";
 		}
-		printCommands = printCommands.substring(0, printCommands.length()-1);
+//		printCommands = printCommands.substring(0, printCommands.length()-1);
 		return printCommands;
 	}
 
