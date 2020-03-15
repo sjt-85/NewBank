@@ -23,3 +23,6 @@ Returns list of all user commands.
 
 HELP
 Returns list of all user commands.
+
+LOGOUT
+Disconnects from server and exits client application.
