@@ -4,14 +4,14 @@ import newbank.server.NewBank;
 
 // How to implement test:
 // 1. Define a class
-// 2. Define test methods where:
-//    accessibility is public
-//    no parameters
+// 2. Define a test method which:
+//    has newbank.test.NBUnit.Test annotation
+//    has no parameters
 //    return value type is void
-// 3. register the test class in the runInTestMode method.
 public class ServerTestScenarios {
 
-  public void ShowMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
+  @newbank.test.NBUnit.Test
+  private void ShowMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
     String bhagy =
         NewBank.getBank()
