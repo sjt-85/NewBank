@@ -1,13 +1,16 @@
 package newbank.server;
 
+import java.math.BigDecimal;
+
 public class Account {
   
   private String accountName;
-  private double openingBalance;
+  private BigDecimal openingBalance;
 
+  // allowing to enter the balance in double to make it easier to use but save for calculations
   public Account(String accountName, double openingBalance) {
     this.accountName = accountName;
-    this.openingBalance = openingBalance;
+    this.openingBalance = BigDecimal.valueOf(openingBalance);
   }
   
   public String toString() {
