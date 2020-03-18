@@ -17,13 +17,13 @@ public class ServerTestScenarios {
         NewBank.getBank()
             .processRequest(NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS");
 
-    newbank.test.NBUnit.AssertEqual("Main: 1000.0" + System.lineSeparator(), bhagy);
+    newbank.test.NBUnit.AssertEqual("Main: 1000.00" + System.lineSeparator(), bhagy);
 
     String christina =
         NewBank.getBank()
             .processRequest(
                 NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS");
 
-    newbank.test.NBUnit.AssertEqual("Savings: 1500.0" + System.lineSeparator(), christina);
+    newbank.test.NBUnit.AssertEqual("Savings: 1500.00" + System.lineSeparator(), christina);
   }
 }
