@@ -10,7 +10,7 @@ public class Account {
   // allowing to enter the balance in double to make it easier to use but save for calculations
   public Account(String accountName, double openingBalance) {
     this.accountName = accountName;
-    this.openingBalance = BigDecimal.valueOf(openingBalance);
+    this.openingBalance = convertDoubleToBigDecimal(openingBalance);
   }
   
   public String toString() {
@@ -19,6 +19,11 @@ public class Account {
   
   public String getAccountName() {
     return this.accountName;
+  }
+
+  private BigDecimal convertDoubleToBigDecimal(double amount) {
+    BigDecimal bd = BigDecimal.valueOf(amount);
+    return bd.setScale(2);
   }
 
 }
