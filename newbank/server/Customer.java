@@ -25,9 +25,19 @@ public class Customer {
     accounts.add(account);
   }
 
-  public boolean hasAccountByName(String accountName) {
+  public boolean hasAccount(String accountName) {
     for (Account a : accounts) {
       if (a.getAccountName().equals(accountName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  public boolean hasAccount(String accountType, String accountName) {
+    for (Account a : accounts) {
+      if ((a.getAccountName().equals(accountName))
+          && (a.getAccountType().equals(accountType))) {
         return true;
       }
     }

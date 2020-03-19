@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NewBank {
 
@@ -20,19 +22,19 @@ public class NewBank {
   private void addTestData() {
     // Password = 1
     Customer bhagy = new Customer();
-    bhagy.addAccount(new Account("Main", 1000.0));
+    bhagy.addAccount(new Account("Main", "Main 1", 1000.0));
     bhagy.assignPassword("c4ca4238a0b923820dcc509a6f75849b");
     customers.put("Bhagy", bhagy);
 
     // Password = 2
     Customer christina = new Customer();
-    christina.addAccount(new Account("Savings", 1500.0));
+    christina.addAccount(new Account("Savings", "Savings 1", 1500.0));
     christina.assignPassword("c81e728d9d4c2f636f067f89cc14862c");
     customers.put("Christina", christina);
 
     // Password = 3
     Customer john = new Customer();
-    john.addAccount(new Account("Checking", 250.0));
+    john.addAccount(new Account("Checking", "Checking 1", 250.0));
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     customers.put("John", john);
   }
@@ -91,15 +93,50 @@ public class NewBank {
     return (customers.get(customer.getKey())).accountsToString();
   }
 
+  /**
+   * 
+   * @param customerID
+   * @param request
+   * @return
+   */
   private String addNewAccount(CustomerID customerID, List<String> request) {
     String result = "FAIL";
     Customer customer = customers.get(customerID.getKey());
 
-    if ((customer != null) // customer found
-        && (request.size() == 2) // request is correct length
-        && (!customer.hasAccountByName(request.get(1)))) { // no existing account by requested name
-      customer.addAccount(new Account(request.get(1), 0));
-      result = (customer.hasAccountByName(request.get(1))) ? "SUCCESS" : "FAIL";
+    if ((customer != null)
+        && (request.size() > 1)) {
+      
+      String fullUserRequest = "";
+      // rebuild original user request
+      for (String token : request) {
+        fullUserRequest += (token + " ");
+      }
+      
+      // use regex to obtain account type and name
+      Pattern p =
+          Pattern.compile("NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)$");
+      Matcher m = p.matcher(fullUserRequest.trim());
+      
+      if (m.matches()) {
+        String accountType = m.group("accType");
+        String accountName = m.group("accName");
+        
+        if (accountName == null || accountName.isBlank()) {
+          accountName = "default name";
+        } else {
+          accountName = accountName.replace("\"", "");
+        }
+        
+        if (accountType != null && !accountType.isBlank()) {
+          accountType = accountType.replace("\"", "");
+          if (!customer.hasAccount(accountName)) {
+            customer.addAccount(new Account(accountType, accountName, 0));
+            result = (customer.hasAccount(accountType, accountName))
+                ? "SUCCESS: Opened account TYPE:\"" + accountType + "\" NAME:\"" + accountName + "\""
+                : "FAIL";
+          }
+        }
+      }
     }
     return result;
   }
