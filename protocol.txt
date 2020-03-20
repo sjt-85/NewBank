@@ -8,6 +8,10 @@ e.g. Main: 1000.0
 
 NEWACCOUNT <Type> <Name (optional)>
 e.g. NEWACCOUNT "Cash ISA" "Savings 1"
+Available account types =
+Current Account
+Savings Account
+Cash ISA
 Returns SUCCESS or FAIL
 
 MOVE <Amount> <From> <To>
