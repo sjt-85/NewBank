@@ -43,7 +43,7 @@ public class NewBank {
   private void addCommands(ArrayList<String> commands) {
     // user command and description
     commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
-    commands.add("NEWACCOUNT <name of account> -> Creates a new account under specified name e.g. NEWACCOUNT Savings");
+    commands.add("NEWACCOUNT <account type> <optional: account name> -> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\"");
     commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
   }
   
