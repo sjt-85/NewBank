@@ -7,7 +7,7 @@ Returns a list of all the customers accounts along with their current balance
 e.g. Main: 1000.0 
 
 NEWACCOUNT <Type> <Name (optional)>
-e.g. NEWACCOUNT "Instant Access ISA" "Savings 1"
+e.g. NEWACCOUNT "Cash ISA" "Savings 1"
 Returns SUCCESS or FAIL
 
 MOVE <Amount> <From> <To>
