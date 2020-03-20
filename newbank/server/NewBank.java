@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import newbank.server.Account.AccountType;
 
 public class NewBank {
 
@@ -22,19 +23,19 @@ public class NewBank {
   private void addTestData() {
     // Password = 1
     Customer bhagy = new Customer();
-    bhagy.addAccount(new Account("Main", "Main 1", 1000.0));
+    bhagy.addAccount(new Account(AccountType.Current, "Main 1", 1000.0));
     bhagy.assignPassword("c4ca4238a0b923820dcc509a6f75849b");
     customers.put("Bhagy", bhagy);
 
     // Password = 2
     Customer christina = new Customer();
-    christina.addAccount(new Account("Savings", "Savings 1", 1500.0));
+    christina.addAccount(new Account(AccountType.Savings, "Savings 1", 1500.0));
     christina.assignPassword("c81e728d9d4c2f636f067f89cc14862c");
     customers.put("Christina", christina);
 
     // Password = 3
     Customer john = new Customer();
-    john.addAccount(new Account("Checking", "Checking 1", 250.0));
+    john.addAccount(new Account(AccountType.Current, "Checking 1", 250.0));
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     customers.put("John", john);
   }
@@ -93,12 +94,6 @@ public class NewBank {
     return (customers.get(customer.getKey())).accountsToString();
   }
 
-  /**
-   * 
-   * @param customerID
-   * @param request
-   * @return
-   */
   private String addNewAccount(CustomerID customerID, List<String> request) {
     String result = "FAIL";
     Customer customer = customers.get(customerID.getKey());
@@ -106,8 +101,7 @@ public class NewBank {
     if ((customer != null)
         && (request.size() > 1)) {
       
-      String fullUserRequest = "";
-      // rebuild original user request
+      String fullUserRequest = ""; // rebuild original user request
       for (String token : request) {
         fullUserRequest += (token + " ");
       }
@@ -118,22 +112,32 @@ public class NewBank {
       Matcher m = p.matcher(fullUserRequest.trim());
       
       if (m.matches()) {
-        String accountType = m.group("accType");
-        String accountName = m.group("accName");
+        String accountName = m.group("accName"); // get account name from regex result
+        String accountTypeStr = m.group("accType"); // get account type from regex result
         
-        if (accountName == null || accountName.isBlank()) {
-          accountName = "default name";
-        } else {
-          accountName = accountName.replace("\"", "");
-        }
+        if (accountTypeStr != null) {
+          accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
+          AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
         
-        if (accountType != null && !accountType.isBlank()) {
-          accountType = accountType.replace("\"", "");
-          if (!customer.hasAccount(accountName)) {
-            customer.addAccount(new Account(accountType, accountName, 0));
-            result = (customer.hasAccount(accountType, accountName))
-                ? "SUCCESS: Opened account TYPE:\"" + accountType + "\" NAME:\"" + accountName + "\""
-                : "FAIL";
+          if (accountType != AccountType.None) {
+            if (accountName == null || accountName.isBlank()) {
+              // no name provided so build our own
+              int accountNameSuffix = 1;
+              accountName = (accountType.toString() + " " + accountNameSuffix);
+              while (customer.hasAccount(accountName)) {
+                accountName = (accountType.toString() + " " + (++accountNameSuffix));
+              }
+            } else {
+              // remove enclosing "" if present
+              accountName = accountName.replace("\"", "");
+            }
+            
+            if (!customer.hasAccount(accountName)) {
+              customer.addAccount(new Account(accountType, accountName, 0));
+              result = (customer.hasAccount(accountType, accountName))
+                  ? "SUCCESS: Opened account TYPE:\"" + accountType.toString() + "\" NAME:\"" + accountName + "\""
+                  : "FAIL";
+            }
           }
         }
       }

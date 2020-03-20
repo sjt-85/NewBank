@@ -4,26 +4,64 @@ import java.math.BigDecimal;
 
 public class Account {
   
+  public enum AccountType {
+    None {
+      @Override
+      public String toString() {
+        return "";
+      }
+    },
+    Current {
+      @Override
+      public String toString() {
+        return "Current Account";
+      }
+    },
+    Savings {
+      @Override
+      public String toString() {
+        return "Savings Account";
+      }
+    },
+    CashISA {
+      @Override
+      public String toString() {
+        return "Cash ISA";
+      }
+    };
+    
+    public static AccountType getAccountTypeFromString(String s) {
+      if (s != null) {
+        for (AccountType a : AccountType.values()) {
+          if (a.toString().equalsIgnoreCase(s)) {
+            return a;
+          }
+        }
+      }
+      return AccountType.None;
+    }
+  }
+  
   private String accountName;
-  private String accountType;
+  private AccountType accountType;
   private BigDecimal openingBalance;
 
   // allowing to enter the balance in double to make it easier to use but save for calculations
-  public Account(String accountType, String accountName, double openingBalance) {
+  public Account(AccountType accountType, String accountName, double openingBalance) {
     this.accountType = accountType;
     this.accountName = accountName;
     this.openingBalance = convertDoubleToBigDecimal(openingBalance);
   }
   
   public String toString() {
-    return (accountName + ": " + openingBalance);
+    return (accountType.toString() + ": " + accountName + ": " + openingBalance);
   }
   
   public String getAccountName() {
     return this.accountName;
   }
   
-  public String getAccountType() {
+  public AccountType getAccountType() {
     return this.accountType;
   }
 
