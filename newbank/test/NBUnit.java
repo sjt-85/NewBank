@@ -41,26 +41,24 @@ public class NBUnit {
 
   /** Test runner */
   public static void run() {
-
     try {
-      discoverTestMethods()
-          .forEach(
-              method -> {
-                try {
-                  Object testFixture =
-                      method.getDeclaringClass().getDeclaredConstructor().newInstance();
-                  method.setAccessible(true);
-                  method.invoke(testFixture);
-                  System.out.println("pass: " + method.getName());
-                } catch (InvocationTargetException e) {
-                  System.out.println("fail: " + method.getName());
-                  if (e.getTargetException() != null) e.getTargetException().printStackTrace();
-                  else e.printStackTrace();
-                } catch (Exception e) {
-                  e.printStackTrace();
-                }
-              });
+      discoverTestMethods().forEach(method -> invokeTestMethod(method));
     } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static void invokeTestMethod(Method method) {
+    try {
+      Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
+      method.setAccessible(true);
+      method.invoke(testFixture);
+      System.out.println("pass: " + method.getName());
+    } catch (InvocationTargetException e) {
+      System.out.println("fail: " + method.getName());
+      if (e.getTargetException() != null) e.getTargetException().printStackTrace();
+      else e.printStackTrace();
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
