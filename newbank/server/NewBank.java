@@ -40,7 +40,7 @@ public class NewBank {
   private void addCommands(ArrayList<String> commands) {
     // user command and description
     commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
-    commands.add("NEWACCOUNT <name of account> -> Creates a new account under specified name e.g. NEWACCOUNT Savings");
+    commands.add("NEWACCOUNT <name of account> <optional: currency> -> Creates a new account under specified name e.g. NEWACCOUNT Savings EUR");
     commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
   }
   
@@ -76,7 +76,6 @@ public class NewBank {
             customer.logOut();
             return logOut(customer);
           case "COMMANDS" :
-            return listCommands(commands);
           case "HELP" : 
             return listCommands(commands);
           default:
@@ -96,9 +95,18 @@ public class NewBank {
     Customer customer = customers.get(customerID.getKey());
 
     if ((customer != null) // customer found
-        && (request.size() == 2) // request is correct length
         && (!customer.hasAccountByName(request.get(1)))) { // no existing account by requested name
-      customer.addAccount(new Account(request.get(1), 0));
+      if (request.size() == 2) { // standard account without currency
+        customer.addAccount(new Account(request.get(1), 0));
+
+      } else if (request.size() == 3) { // account with different currency
+        Currency acceptedCurrency = Currency.createCurrency(request.get(2));
+        if (acceptedCurrency != null) { // requested currency is allowed
+          customer.addAccount(new Account(request.get(1), 0, acceptedCurrency));
+        } else {
+          return "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies();
+        }
+      }
       result = (customer.hasAccountByName(request.get(1))) ? "SUCCESS" : "FAIL";
     }
     return result;
