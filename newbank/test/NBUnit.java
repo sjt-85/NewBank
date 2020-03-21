@@ -53,9 +53,9 @@ public class NBUnit {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
       method.setAccessible(true);
       method.invoke(testFixture);
-      printGreen("pass: " + method.getName());
+      printSuccess("pass: " + method.getName());
     } catch (InvocationTargetException e) {
-      printRed("fail: " + method.getName());
+      printError("fail: " + method.getName());
       printInvocationException(e);
     } catch (Exception e) {
       e.printStackTrace();
@@ -75,7 +75,7 @@ public class NBUnit {
 
     var error = (AssertionError) e.getTargetException();
 
-    printRed(String.format("\tassertion failed: %s", error.getMessage()));
+    printError(String.format("\tassertion failed: %s", error.getMessage()));
 
     var stackTraceElement =
         Arrays.stream(error.getStackTrace())
@@ -83,7 +83,7 @@ public class NBUnit {
             .findFirst()
             .get();
 
-    printRed(
+    printError(
         String.format(
             "\tat %s.%s(%s:%s)",
             stackTraceElement.getClassName(),
@@ -159,11 +159,11 @@ public class NBUnit {
     }
   }
 
-  private static void printRed(String str) {
+  private static void printError(String str) {
     print(str, ANSI_RED);
   }
 
-  private static void printGreen(String str) {
+  private static void printSuccess(String str) {
     print(str, ANSI_GREEN);
   }
 
