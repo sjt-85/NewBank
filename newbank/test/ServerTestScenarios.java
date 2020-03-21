@@ -17,32 +17,32 @@ public class ServerTestScenarios {
         NewBank.getBank()
             .processRequest(NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS");
 
-    newbank.test.NBUnit.AssertEqual("Main: 1000.00 GBP" + System.lineSeparator(), bhagy);
+    newbank.test.NBUnit.AssertEqual("Current Account: Main 1: 1000.00 GBP" + System.lineSeparator(), bhagy);
 
     String christina =
         NewBank.getBank()
             .processRequest(
                 NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS");
 
-    newbank.test.NBUnit.AssertEqual("Savings: 1500.00 GBP" + System.lineSeparator(), christina);
+    newbank.test.NBUnit.AssertEqual("Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(), christina);
   }
 
   @newbank.test.NBUnit.Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
     String john =
             NewBank.getBank()
-                    .processRequest(NewBank.getBank().checkLogInDetails("John", "3"), "NEWACCOUNT Savings");
+                    .processRequest(NewBank.getBank().checkLogInDetails("John", "3"), "NEWACCOUNT \"Savings Account\" Saving");
 
-    newbank.test.NBUnit.AssertEqual("SUCCESS", john);
+    newbank.test.NBUnit.AssertEqual("SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP", john);
   }
 
   @newbank.test.NBUnit.Test
   private void createNewAccountWithAccountNameAndAcceptedCurrencyReturnsSuccess() {
     String john =
             NewBank.getBank()
-                    .processRequest(NewBank.getBank().checkLogInDetails("John", "3"), "NEWACCOUNT Travel eur");
+                    .processRequest(NewBank.getBank().checkLogInDetails("John", "3"), "NEWACCOUNT \"Savings Account\" Travel eur");
 
-    newbank.test.NBUnit.AssertEqual("SUCCESS", john);
+    newbank.test.NBUnit.AssertEqual("SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR", john);
   }
 
   @newbank.test.NBUnit.Test
@@ -50,7 +50,7 @@ public class ServerTestScenarios {
     String christina =
             NewBank.getBank()
                     .processRequest(
-                            NewBank.getBank().checkLogInDetails("Christina", "2"), "NEWACCOUNT Other sar");
+                            NewBank.getBank().checkLogInDetails("Christina", "2"), "NEWACCOUNT \"Savings Account\" Other sar");
 
     newbank.test.NBUnit.AssertEqual("FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD ", christina);
   }

@@ -4,10 +4,15 @@ A customer enters the command below and sees the messages returned
 
 SHOWMYACCOUNTS
 Returns a list of all the customers accounts along with their current balance 
-e.g. Main: 1000.0 
+e.g. Main: 1000.00 GBP
 
-NEWACCOUNT <Name>
-e.g. NEWACCOUNT Savings
+NEWACCOUNT <Type> <Name (optional)> <Currency (optional)>
+e.g. NEWACCOUNT "Cash ISA" "Savings 1" EUR
+Available account types =
+Current Account
+Savings Account
+Cash ISA
+Available currencies = GBP, EUR, USD
 Returns SUCCESS or FAIL
 
 MOVE <Amount> <From> <To>
