@@ -5,25 +5,25 @@ import java.math.BigDecimal;
 public class Account {
   
   public enum AccountType {
-    None {
+    NONE {
       @Override
       public String toString() {
         return "";
       }
     },
-    Current {
+    CURRENT {
       @Override
       public String toString() {
         return "Current Account";
       }
     },
-    Savings {
+    SAVINGS {
       @Override
       public String toString() {
         return "Savings Account";
       }
     },
-    CashISA {
+    CASHISA {
       @Override
       public String toString() {
         return "Cash ISA";
@@ -38,7 +38,7 @@ public class Account {
           }
         }
       }
-      return AccountType.None;
+      return AccountType.NONE;
     }
   }
   
