@@ -40,6 +40,7 @@ public class NewBankClientHandler extends Thread {
 
     public void run() throws IOException {
       CustomerID customer = getCustomerID();
+
       // If max user attempts
       if (customer == null) {
         out.println("Maximum login attempts exceeded. Please contact the User Helpdesk");
@@ -84,15 +85,13 @@ public class NewBankClientHandler extends Thread {
 
     private CustomerID getCustomerID() throws IOException {
       CustomerID customer = authenticate();
-      // record how many login attempts
-      int loginAttempts = 1;
 
       // Loop continues until user gets correct password or has 3 login attempts
-      while (customer == null && loginAttempts < 3) {
+      for (int loginAttempts = 1; customer == null && loginAttempts < 3; loginAttempts++) {
         out.println("Log In Failed");
         customer = authenticate();
-        loginAttempts++;
       }
+
       return customer;
     }
 
