@@ -4,7 +4,6 @@ import newbank.server.NewBank;
 
 import java.io.*;
 
-import static newbank.test.NBUnit.Assert;
 import static newbank.test.NBUnit.AssertEqual;
 
 // How to implement test:
@@ -16,20 +15,20 @@ import static newbank.test.NBUnit.AssertEqual;
 public class ServerTestScenarios {
 
   @newbank.test.NBUnit.Test
-  private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
+  private void ShowMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
     String bhagy =
         NewBank.getBank()
             .processRequest(NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS");
 
-    AssertEqual("Main: 1000.0" + System.lineSeparator(), bhagy);
+    AssertEqual("Main: 1000.00" + System.lineSeparator(), bhagy);
 
     String christina =
         NewBank.getBank()
             .processRequest(
                 NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS");
 
-    AssertEqual("Savings: 1500.0" + System.lineSeparator(), christina);
+    AssertEqual("Savings: 1500.00" + System.lineSeparator(), christina);
   }
 
   @newbank.test.NBUnit.Test

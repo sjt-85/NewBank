@@ -34,7 +34,7 @@ public class NBUnit {
     Assert(
         Objects.equals(expected, actual),
         String.format(
-            "extected:%s actual:%s",
+            "expected:%s actual:%s",
             expected == null ? "null" : expected.toString(),
             actual == null ? "null" : actual.toString()));
   }
