@@ -151,7 +151,6 @@ public class NewBank {
                   return "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies();
                 }
               }
-
             }
           }
         }
