@@ -68,21 +68,22 @@ public class NewBankClientHandler extends Thread {
         // If max user attempts
         if (customer == null) {
           out.println("Maximum login attempts exceeded. Please contact the User Helpdesk");
-        } else {
-          // if the user is authenticated then get requests from the user and process them
-          out.println("Log In Successful. What do you want to do?");
-          out.println();
-          out.println("COMMANDS:");
-          out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+          return;
+        }
 
-          while (true) {
-            String request = in.readLine();
-            if (request == null) break;
-            String responce = NewBank.getBank().processRequest(customer, request);
-            out.println(responce);
-            // Test whether client would like to logout
-            if (!customer.isLoggedIn()) break;
-          }
+        // if the user is authenticated then get requests from the user and process them
+        out.println("Log In Successful. What do you want to do?");
+        out.println();
+        out.println("COMMANDS:");
+        out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+
+        while (true) {
+          String request = in.readLine();
+          if (request == null) break;
+          String responce = NewBank.getBank().processRequest(customer, request);
+          out.println(responce);
+          // Test whether client would like to logout
+          if (!customer.isLoggedIn()) break;
         }
 
       } catch (IOException e) {
