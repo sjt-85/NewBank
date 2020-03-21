@@ -48,6 +48,15 @@ public class ServerTestScenarios {
             + "Checking Details..."
             + System.lineSeparator()
             + "Log In Successful. What do you want to do?"
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "COMMANDS:"
+            + System.lineSeparator()
+            + "SHOWMYACCOUNTS -> Lists all of your active accounts."
+            + "\n"
+            + "NEWACCOUNT <name of account> -> Creates a new account under specified name e.g. NEWACCOUNT Savings"
+            + "\n"
+            + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
             + System.lineSeparator();
 
     AssertEqual(initialResponse, outputString);
