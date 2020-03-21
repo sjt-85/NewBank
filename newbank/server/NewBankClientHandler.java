@@ -39,7 +39,7 @@ public class NewBankClientHandler extends Thread {
     }
 
     public void run() throws IOException {
-      CustomerID customer = getCustomerID();
+      CustomerID customer = readCustomerID();
 
       // If max user attempts
       if (customer == null) {
@@ -83,7 +83,7 @@ public class NewBankClientHandler extends Thread {
       out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
     }
 
-    private CustomerID getCustomerID() throws IOException {
+    private CustomerID readCustomerID() throws IOException {
       CustomerID customer = authenticate();
 
       // Loop continues until user gets correct password or has 3 login attempts
