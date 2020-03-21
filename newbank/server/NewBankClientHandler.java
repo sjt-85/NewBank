@@ -71,10 +71,13 @@ public class NewBankClientHandler extends Thread {
         } else {
           // if the user is authenticated then get requests from the user and process them
           out.println("Log In Successful. What do you want to do?");
+          out.println();
+          out.println("COMMANDS:");
+          out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+
           while (true) {
             String request = in.readLine();
             if (request == null) break;
-            System.out.println("Request from " + customer.getKey());
             String responce = NewBank.getBank().processRequest(customer, request);
             out.println(responce);
             // Test whether client would like to logout
