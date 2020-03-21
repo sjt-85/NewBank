@@ -1,11 +1,15 @@
 package newbank.server;
 
 import java.util.ArrayList;
+import java.util.Locale;
+
+import newbank.server.Account.AccountType;
 
 public class Customer {
 
   private ArrayList<Account> accounts;
   private String password;
+  private Locale accountNameLocale = Locale.ENGLISH;
 
   public Customer() {
     accounts = new ArrayList<>();
@@ -25,9 +29,21 @@ public class Customer {
     accounts.add(account);
   }
 
-  public boolean hasAccountByName(String accountName) {
+  public boolean hasAccount(String accountName) {
+    accountName = accountName.toLowerCase(accountNameLocale);
     for (Account a : accounts) {
-      if (a.getAccountName().equals(accountName)) {
+      if (a.getAccountName().toLowerCase(accountNameLocale).equals(accountName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  public boolean hasAccount(AccountType accountType, String accountName) {
+    accountName = accountName.toLowerCase(accountNameLocale);
+    for (Account a : accounts) {
+      if ((a.getAccountName().toLowerCase(accountNameLocale).equals(accountName))
+          && (a.getAccountType().equals(accountType))) {
         return true;
       }
     }

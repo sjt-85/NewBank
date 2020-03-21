@@ -6,8 +6,12 @@ SHOWMYACCOUNTS
 Returns a list of all the customers accounts along with their current balance 
 e.g. Main: 1000.0 
 
-NEWACCOUNT <Name>
-e.g. NEWACCOUNT Savings
+NEWACCOUNT <Type> <Name (optional)>
+e.g. NEWACCOUNT "Cash ISA" "Savings 1"
+Available account types =
+Current Account
+Savings Account
+Cash ISA
 Returns SUCCESS or FAIL
 
 MOVE <Amount> <From> <To>
