@@ -1,7 +1,6 @@
 package newbank.test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -37,6 +36,28 @@ public class NBUnit {
             "expected:%s actual:%s",
             expected == null ? "null" : expected.toString(),
             actual == null ? "null" : actual.toString()));
+  }
+
+  /** test helpers */
+  public static String runServerCommand(String userName, String password, String command) {
+
+    String inputString =
+            userName + "\n" + password + "\n" + (command + (command.length() == 0 ? "" : "\n"));
+
+    var outputStream = new ByteArrayOutputStream();
+    var writer = new PrintWriter(outputStream);
+
+    var target =
+            new newbank.server.NewBankClientHandler.ClientThreadTarget(
+                    new BufferedReader(
+                            new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
+                    writer);
+
+    target.run();
+
+    writer.flush();
+
+    return outputStream.toString();
   }
 
   /** Test runner */
