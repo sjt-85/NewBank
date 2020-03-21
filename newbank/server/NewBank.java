@@ -43,7 +43,9 @@ public class NewBank {
   private void addCommands(ArrayList<String> commands) {
     // user command and description
     commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
-    commands.add("NEWACCOUNT <account type> <optional: account name> -> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\"");
+    commands.add("NEWACCOUNT <account type> <optional: account name> <optional: currency> \n" +
+            "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n" +
+            "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.");
     commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
   }
   
@@ -79,7 +81,6 @@ public class NewBank {
             customer.logOut();
             return logOut(customer);
           case "COMMANDS" :
-            return listCommands(commands);
           case "HELP" : 
             return listCommands(commands);
           default:
@@ -108,12 +109,13 @@ public class NewBank {
       
       // use regex to obtain account type and name
       Pattern p =
-          Pattern.compile("NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)$");
+          Pattern.compile("NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
       Matcher m = p.matcher(fullUserRequest.trim());
       
       if (m.matches()) {
         String accountName = m.group("accName"); // get account name from regex result
         String accountTypeStr = m.group("accType"); // get account type from regex result
+        String currencyStr = m.group("currency"); // get currency from regex result
         
         if (accountTypeStr != null) {
           accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
@@ -133,10 +135,22 @@ public class NewBank {
             }
             
             if (!customer.hasAccount(accountName)) {
-              customer.addAccount(new Account(accountType, accountName, 0));
-              result = (customer.hasAccount(accountType, accountName))
-                  ? "SUCCESS: Opened account TYPE:\"" + accountType.toString() + "\" NAME:\"" + accountName + "\""
-                  : "FAIL";
+              if (currencyStr == null || currencyStr.isBlank()) {
+                customer.addAccount(new Account(accountType, accountName, 0));
+                result = (customer.hasAccount(accountType, accountName))
+                        ? createAccountDescriptionWhenSuccessful(accountName, accountType, Currency.GBP)
+                        : "FAIL";
+              } else {
+                Currency acceptedCurrency = Currency.createCurrency(currencyStr);
+                if (acceptedCurrency != null) { // requested currency is allowed
+                  customer.addAccount(new Account(accountType, accountName, 0, acceptedCurrency));
+                  result = (customer.hasAccount(accountType, accountName))
+                          ? createAccountDescriptionWhenSuccessful(accountName, accountType, acceptedCurrency)
+                          : "FAIL";
+                } else {
+                  return "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies();
+                }
+              }
             }
           }
         }
@@ -144,7 +158,11 @@ public class NewBank {
     }
     return result;
   }
-  
+
+  private String createAccountDescriptionWhenSuccessful(String accountName, AccountType accountType, Currency acceptedCurrency) {
+    return "SUCCESS: Opened account TYPE:\"" + accountType.toString() + "\" NAME:\"" + accountName + "\"" + " CURRENCY:" + acceptedCurrency.name();
+  }
+
   private String listCommands(ArrayList<String> commands) {
     String printCommands = new String();
     for (String command : commands) {
