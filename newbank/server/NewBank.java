@@ -82,6 +82,8 @@ public class NewBank {
             return listCommands(commands);
           case "HELP" : 
             return listCommands(commands);
+          case "VIEWACCOUNTTYPE":
+            return viewAccountTypeInfo(tokens);
           default:
             return "FAIL";
         }
@@ -156,5 +158,39 @@ public class NewBank {
 
   private String logOut(CustomerID customerID) {
     return "Log out successful. Goodbye " + customerID.getKey();
+  }
+  
+  private String viewAccountTypeInfo(List<String> request) {
+    String result = "FAIL";
+
+    if (request.size() > 1) {
+      
+      String fullUserRequest = ""; // rebuild original user request
+      for (String token : request) {
+        fullUserRequest += (token + " ");
+      }
+      
+      // use regex to obtain account type and name
+      Pattern p =
+          Pattern.compile("VIEWACCOUNTTYPE[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
+      Matcher m = p.matcher(fullUserRequest.trim());
+      
+      if (m.matches()) {
+        String accountTypeStr = m.group("accType"); // get account type from regex result
+        
+        if (accountTypeStr != null) {
+          accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
+          AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
+        
+          if (accountType != AccountType.NONE) {
+            AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
+            if (info != null) {
+              result = info.toString();
+            }
+          }
+        }
+      }
+    }
+    return result;
   }
 }
