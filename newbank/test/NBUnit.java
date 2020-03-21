@@ -42,7 +42,7 @@ public class NBUnit {
   /** Test runner */
   public static void run() {
     try {
-      discoverTestMethods().forEach(method -> invokeTestMethod(method));
+      discoverTestMethods().forEach(NBUnit::invokeTestMethod);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -53,14 +53,43 @@ public class NBUnit {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
       method.setAccessible(true);
       method.invoke(testFixture);
-      System.out.println("pass: " + method.getName());
+      printGreen("pass: " + method.getName());
     } catch (InvocationTargetException e) {
-      System.out.println("fail: " + method.getName());
-      if (e.getTargetException() != null) e.getTargetException().printStackTrace();
-      else e.printStackTrace();
+      printRed("fail: " + method.getName());
+      printInvocationException(e);
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private static void printInvocationException(InvocationTargetException e) {
+    if (e.getTargetException() == null) {
+      e.printStackTrace();
+      return;
+    }
+
+    if (!(e.getTargetException() instanceof AssertionError)) {
+      e.getTargetException().printStackTrace();
+      return;
+    }
+
+    var error = (AssertionError) e.getTargetException();
+
+    printRed(String.format("\tassertion failed: %s", error.getMessage()));
+
+    var stackTraceElement =
+        Arrays.stream(error.getStackTrace())
+            .filter(element -> element.getMethodName().indexOf("Assert") < 0)
+            .findFirst()
+            .get();
+
+    printRed(
+        String.format(
+            "\tat %s.%s(%s:%s)",
+            stackTraceElement.getClassName(),
+            stackTraceElement.getMethodName(),
+            stackTraceElement.getFileName(),
+            stackTraceElement.getLineNumber()));
   }
 
   private static Stream<Method> discoverTestMethods() throws IOException {
@@ -128,5 +157,21 @@ public class NBUnit {
       }
       return null;
     }
+  }
+
+  private static void printRed(String str) {
+    print(str, ANSI_RED);
+  }
+
+  private static void printGreen(String str) {
+    print(str, ANSI_GREEN);
+  }
+
+  public static final String ANSI_RESET = "\u001B[0m";
+  public static final String ANSI_RED = "\u001B[31m";
+  public static final String ANSI_GREEN = "\u001B[32m";
+
+  static void print(String str, String color) {
+    System.out.println(color + str + ANSI_RESET);
   }
 }
