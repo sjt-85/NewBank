@@ -13,13 +13,14 @@ Current Account
 Savings Account
 Cash ISA
 Available currencies = GBP, EUR, USD
+Note: The standard currency is GBP, to open an account with another currency, both account name and currency must be specified.
 Returns SUCCESS or FAIL
 
 MOVE <Amount> <From> <To>
 e.g. MOVE 100 Main Savings 
 Returns SUCCESS or FAIL
 
-PAY <Person/Company> <Ammount>
+PAY <Person/Company> <Amount>
 e.g. PAY John 100
 Returns SUCCESS or FAIL
 
