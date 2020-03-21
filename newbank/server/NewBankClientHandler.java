@@ -18,13 +18,17 @@ public class NewBankClientHandler extends Thread {
   }
 
   public void run() {
-    target.run();
+    try {
+      target.run();
+      target.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      target.close();
+    }
   }
 
   public static class ClientThreadTarget {
-
-    private String userName;
-    private String password;
 
     public BufferedReader in;
     public PrintWriter out;
@@ -34,69 +38,74 @@ public class NewBankClientHandler extends Thread {
       this.out = out;
     }
 
-    private void requestLoginDetails() {
+    public void run() throws IOException {
+      CustomerID customer = getCustomerID();
+      // If max user attempts
+      if (customer == null) {
+        out.println("Maximum login attempts exceeded. Please contact the User Helpdesk");
+        return;
+      }
+
+      printMenu(customer);
+
+      // if the user is authenticated then get requests from the user and process them
+      processRequests(customer);
+    }
+
+    public void processRequests(CustomerID customer) throws IOException {
+      // keep getting requests from the client and processing them
+      while (true) {
+        String request = in.readLine();
+        if (request == null) break;
+
+        out.println(NewBank.getBank().processRequest(customer, request));
+
+        // Test whether client would like to logout
+        if (!customer.isLoggedIn()) break;
+      }
+    }
+
+    public void close() {
       try {
-        // ask for user name
-        out.println("Enter Username");
-        userName = in.readLine();
-        // ask for password
-        out.println("Enter Password");
-        password = in.readLine();
-        out.println("Checking Details...");
+        in.close();
+        out.close();
       } catch (IOException e) {
         e.printStackTrace();
         Thread.currentThread().interrupt();
       }
     }
 
-    public void run() {
-      // keep getting requests from the client and processing them
-      try {
-        // Ask for Username and password
-        requestLoginDetails();
-        // record how many login attempts
-        int loginAttempts = 1;
-        // authenticate user and get customer ID token from bank for use in subsequent requests
-        CustomerID customer = NewBank.getBank().checkLogInDetails(userName, password);
-        // Loop continues until user gets correct password or has 3 login attempts
-        while (customer == null && loginAttempts < 3) {
-          out.println("Log In Failed");
-          requestLoginDetails();
-          customer = NewBank.getBank().checkLogInDetails(userName, password);
-          loginAttempts++;
-        }
-        // If max user attempts
-        if (customer == null) {
-          out.println("Maximum login attempts exceeded. Please contact the User Helpdesk");
-          return;
-        }
+    private void printMenu(CustomerID customer) {
+      out.println("Log In Successful. What do you want to do?");
+      out.println();
+      out.println("COMMANDS:");
+      out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+    }
 
-        // if the user is authenticated then get requests from the user and process them
-        out.println("Log In Successful. What do you want to do?");
-        out.println();
-        out.println("COMMANDS:");
-        out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+    private CustomerID getCustomerID() throws IOException {
+      CustomerID customer = authenticate();
+      // record how many login attempts
+      int loginAttempts = 1;
 
-        while (true) {
-          String request = in.readLine();
-          if (request == null) break;
-          String responce = NewBank.getBank().processRequest(customer, request);
-          out.println(responce);
-          // Test whether client would like to logout
-          if (!customer.isLoggedIn()) break;
-        }
-
-      } catch (IOException e) {
-        e.printStackTrace();
-      } finally {
-        try {
-          in.close();
-          out.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-          Thread.currentThread().interrupt();
-        }
+      // Loop continues until user gets correct password or has 3 login attempts
+      while (customer == null && loginAttempts < 3) {
+        out.println("Log In Failed");
+        customer = authenticate();
+        loginAttempts++;
       }
+      return customer;
+    }
+
+    private CustomerID authenticate() throws IOException {
+      // ask for user name
+      out.println("Enter Username");
+      String userName = in.readLine();
+      // ask for password
+      out.println("Enter Password");
+      String password = in.readLine();
+      out.println("Checking Details...");
+      // authenticate user and get customer ID token from bank for use in subsequent requests
+      return NewBank.getBank().checkLogInDetails(userName, password);
     }
   }
 }

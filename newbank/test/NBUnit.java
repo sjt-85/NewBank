@@ -53,7 +53,14 @@ public class NBUnit {
                             new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
                     writer);
 
-    target.run();
+    try {
+      target.run();
+      target.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      target.close();
+    }
 
     writer.flush();
 
