@@ -1,7 +1,6 @@
 package newbank.test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -39,30 +38,86 @@ public class NBUnit {
             actual == null ? "null" : actual.toString()));
   }
 
-  /** Test runner */
-  public static void run() {
+  /** test helpers */
+  public static String runServerCommand(String userName, String password, String command) {
+
+    String inputString =
+            userName + "\n" + password + "\n" + (command + (command.length() == 0 ? "" : "\n"));
+
+    var outputStream = new ByteArrayOutputStream();
+    var writer = new PrintWriter(outputStream);
+
+    var target =
+            new newbank.server.NewBankClientHandler.ClientThreadTarget(
+                    new BufferedReader(
+                            new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
+                    writer);
 
     try {
-      discoverTestMethods()
-          .forEach(
-              method -> {
-                try {
-                  Object testFixture =
-                      method.getDeclaringClass().getDeclaredConstructor().newInstance();
-                  method.setAccessible(true);
-                  method.invoke(testFixture);
-                  System.out.println("pass: " + method.getName());
-                } catch (InvocationTargetException e) {
-                  System.out.println("fail: " + method.getName());
-                  if (e.getTargetException() != null) e.getTargetException().printStackTrace();
-                  else e.printStackTrace();
-                } catch (Exception e) {
-                  e.printStackTrace();
-                }
-              });
+      target.run();
+      target.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      target.close();
+    }
+
+    writer.flush();
+
+    return outputStream.toString();
+  }
+
+  /** Test runner */
+  public static void run() {
+    try {
+      discoverTestMethods().forEach(NBUnit::invokeTestMethod);
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private static void invokeTestMethod(Method method) {
+    try {
+      Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
+      method.setAccessible(true);
+      method.invoke(testFixture);
+      printSuccess("pass: " + method.getName());
+    } catch (InvocationTargetException e) {
+      printError("fail: " + method.getName());
+      printInvocationException(e);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static void printInvocationException(InvocationTargetException e) {
+    if (e.getTargetException() == null) {
+      e.printStackTrace();
+      return;
+    }
+
+    if (!(e.getTargetException() instanceof AssertionError)) {
+      e.getTargetException().printStackTrace();
+      return;
+    }
+
+    var error = (AssertionError) e.getTargetException();
+
+    printError(String.format("\tassertion failed: %s", error.getMessage()));
+
+    var stackTraceElement =
+        Arrays.stream(error.getStackTrace())
+            .filter(element -> element.getMethodName().indexOf("Assert") < 0)
+            .findFirst()
+            .get();
+
+    printError(
+        String.format(
+            "\tat %s.%s(%s:%s)",
+            stackTraceElement.getClassName(),
+            stackTraceElement.getMethodName(),
+            stackTraceElement.getFileName(),
+            stackTraceElement.getLineNumber()));
   }
 
   private static Stream<Method> discoverTestMethods() throws IOException {
@@ -130,5 +185,21 @@ public class NBUnit {
       }
       return null;
     }
+  }
+
+  private static void printError(String str) {
+    print(str, ANSI_RED);
+  }
+
+  private static void printSuccess(String str) {
+    print(str, ANSI_GREEN);
+  }
+
+  public static final String ANSI_RESET = "\u001B[0m";
+  public static final String ANSI_RED = "\u001B[31m";
+  public static final String ANSI_GREEN = "\u001B[32m";
+
+  static void print(String str, String color) {
+    System.out.println(color + str + ANSI_RESET);
   }
 }
