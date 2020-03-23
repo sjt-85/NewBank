@@ -105,19 +105,19 @@ public class NBUnit {
 
     printError(String.format("\tassertion failed: %s", error.getMessage()));
 
-    var stackTraceElement =
+    var assertionCaller =
         Arrays.stream(error.getStackTrace())
-            .filter(element -> element.getMethodName().indexOf("Assert") < 0)
+            .filter(element -> !element.getMethodName().contains("Assert"))
             .findFirst()
             .get();
 
     printError(
         String.format(
             "\tat %s.%s(%s:%s)",
-            stackTraceElement.getClassName(),
-            stackTraceElement.getMethodName(),
-            stackTraceElement.getFileName(),
-            stackTraceElement.getLineNumber()));
+            assertionCaller.getClassName(),
+            assertionCaller.getMethodName(),
+            assertionCaller.getFileName(),
+            assertionCaller.getLineNumber()));
   }
 
   private static Stream<Method> discoverTestMethods() throws IOException {

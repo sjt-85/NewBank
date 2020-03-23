@@ -78,7 +78,7 @@ public class ServerTestScenarios {
 
     String outputString = runServerCommand(userName, password, "");
 
-    //todo: refactor to improve maintanability
+    //todo: refactor to improve maintainability
     final String initialResponse =
         "Enter Username"
             + System.lineSeparator()
