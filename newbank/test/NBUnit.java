@@ -42,16 +42,16 @@ public class NBUnit {
   public static String runServerCommand(String userName, String password, String command) {
 
     String inputString =
-            userName + "\n" + password + "\n" + (command + (command.length() == 0 ? "" : "\n"));
+        userName + "\n" + password + "\n" + (command + (command.length() == 0 ? "" : "\n"));
 
     var outputStream = new ByteArrayOutputStream();
     var writer = new PrintWriter(outputStream);
 
     var target =
-            new newbank.server.NewBankClientHandler.ClientThreadTarget(
-                    new BufferedReader(
-                            new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
-                    writer);
+        new newbank.server.NewBankClientHandler.ClientThreadTarget(
+            new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
+            writer);
 
     try {
       target.run();
@@ -77,7 +77,7 @@ public class NBUnit {
   private static void invokeTestMethod(Method method) {
     try {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-      method.setAccessible(true);
+      method.setAccessible(true); // a private method can be called by setting true.
       method.invoke(testFixture);
       printSuccess("pass: " + method.getName());
     } catch (InvocationTargetException e) {
@@ -89,18 +89,13 @@ public class NBUnit {
   }
 
   private static void printInvocationException(InvocationTargetException e) {
-    if (e.getTargetException() == null) {
-      e.printStackTrace();
-      return;
-    }
-
-    if (!(e.getTargetException() instanceof AssertionError)) {
+    if (e.getTargetException() == null) e.printStackTrace();
+    else if (!(e.getTargetException() instanceof AssertionError))
       e.getTargetException().printStackTrace();
-      return;
-    }
+    else printAssertionError((AssertionError) e.getTargetException());
+  }
 
-    var error = (AssertionError) e.getTargetException();
-
+  private static void printAssertionError(AssertionError error) {
     printError(String.format("\tassertion failed: %s", error.getMessage()));
 
     var assertionCaller =
