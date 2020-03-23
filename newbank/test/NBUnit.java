@@ -42,16 +42,16 @@ public class NBUnit {
   public static String runServerCommand(String userName, String password, String command) {
 
     String inputString =
-        userName + "\n" + password + "\n" + (command + (command.length() == 0 ? "" : "\n"));
+        String.format(
+            "%s\n%s\n%s%s", userName, password, command, command.length() == 0 ? "" : "\n");
 
     var outputStream = new ByteArrayOutputStream();
-    var writer = new PrintWriter(outputStream);
 
     var target =
         new newbank.server.NewBankClientHandler.ClientThreadTarget(
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
-            writer);
+            new PrintWriter(outputStream));
 
     try {
       target.run();
