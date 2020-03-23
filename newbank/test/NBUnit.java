@@ -62,8 +62,6 @@ public class NBUnit {
       target.close();
     }
 
-    writer.flush();
-
     return outputStream.toString();
   }
 
