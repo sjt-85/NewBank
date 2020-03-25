@@ -14,6 +14,9 @@ public  class NewAccountCommand extends newbank.server.Commands.NewBankCommand
         String command = "NEWACCOUNT";
         this.getCommandName().equals(command);
         NBUnit.AssertEqual(command, parameter.getCommandName());
+
+        newbank.server.CustomerID id = parameter.getId();
+        NBUnit.AssertIsNotNull(id);
         return null;
     }
 

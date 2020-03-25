@@ -84,17 +84,17 @@ public class NewBankClientHandler extends Thread {
       processRequests(customer);
     }
 
-    public void processRequests(newbank.server.CustomerID customer) throws IOException {
+    public void processRequests(newbank.server.CustomerID id) throws IOException {
       // keep getting requests from the client and processing them
       while (true) {
 
         String request = in.readLine();
         if (request == null) break; // fall here when called by test.
 
-        var parameter = newbank.server.Commands.NewBankCommandParameter.parse(request);
+        var parameter = newbank.server.Commands.NewBankCommandParameter.create(id, request);
         if (parameter == null) continue;
 
-        out.println(dispatch(customer, request, parameter));
+        out.println(dispatch(id, request, parameter));
 
         if (parameter.getCommandName().equals("LOGOUT")) return;
       }

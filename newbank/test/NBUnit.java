@@ -38,6 +38,10 @@ public class NBUnit {
             actual == null ? "null" : actual.toString()));
   }
 
+  public static void AssertIsNotNull(Object o) {
+    Assert(o != null, "null is not expected.");
+  }
+
   /** test helpers */
   public static String runServerCommand(String userName, String password, String command) {
 

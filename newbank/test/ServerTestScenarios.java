@@ -36,8 +36,12 @@ public class ServerTestScenarios {
 
   @newbank.test.NBUnit.Test
   private void bar() {
-    var command = new newbank.server.Commands.NewAccountCommand();
-    NewBankCommandParameter parameter = NewBankCommandParameter.parse("NEWACCOUNT \\\"Savings Account\\\" Saving\"");
+    var id = NewBank.getBank().checkLogInDetails("John", "3");
+
+    var command = (newbank.server.Commands.INewBankCommand)new newbank.server.Commands.NewAccountCommand();
+
+    NewBankCommandParameter parameter = NewBankCommandParameter.create(id, "NEWACCOUNT \\\"Savings Account\\\" Saving\"");
+
     command.run(parameter);
   }
 
