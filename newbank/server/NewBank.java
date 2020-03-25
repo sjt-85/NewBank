@@ -13,7 +13,7 @@ public class NewBank {
   private HashMap<String, Customer> customers;
 
   private NewBank() {
-    customers = new HashMap<>();
+    setCustomers(new HashMap<>());
     addTestData();
   }
 
@@ -22,19 +22,19 @@ public class NewBank {
     Customer bhagy = new Customer();
     bhagy.addAccount(new Account(AccountType.CURRENT, "Main 1", 1000.0));
     bhagy.assignPassword("c4ca4238a0b923820dcc509a6f75849b");
-    customers.put("Bhagy", bhagy);
+    getCustomers().put("Bhagy", bhagy);
 
     // Password = 2
     Customer christina = new Customer();
     christina.addAccount(new Account(AccountType.SAVINGS, "Savings 1", 1500.0));
     christina.assignPassword("c81e728d9d4c2f636f067f89cc14862c");
-    customers.put("Christina", christina);
+    getCustomers().put("Christina", christina);
 
     // Password = 3
     newbank.server.Customer john = new newbank.server.Customer();
     john.addAccount(new newbank.server.Account(AccountType.CURRENT, "Checking 1", 250.0));
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
-    customers.put("John", john);
+    getCustomers().put("John", john);
   }
 
   public static NewBank getBank() {
@@ -43,10 +43,10 @@ public class NewBank {
 
   public synchronized newbank.server.CustomerID checkLogInDetails(
       String userName, String password) {
-    if (customers.containsKey(userName)) {
+    if (getCustomers().containsKey(userName)) {
       HashGenerator generator = new HashGenerator();
       String hashedPassword = generator.generateHash(password);
-      String storedPassword = customers.get(userName).retrievePassword();
+      String storedPassword = getCustomers().get(userName).retrievePassword();
       if (hashedPassword.equals(storedPassword)) {
         return new CustomerID(userName);
       }
@@ -56,7 +56,7 @@ public class NewBank {
 
   // commands from the NewBank customer are processed in this method
   public synchronized String processRequest(CustomerID customer, String request) {
-    if (customers.containsKey(customer.getKey())) {
+    if (getCustomers().containsKey(customer.getKey())) {
 
       List<String> tokens = Arrays.asList(request.split("\\s+"));
 
@@ -79,12 +79,12 @@ public class NewBank {
   }
 
   private String showMyAccounts(CustomerID customer) {
-    return (customers.get(customer.getKey())).accountsToString();
+    return (getCustomers().get(customer.getKey())).accountsToString();
   }
 
   private String addNewAccount(newbank.server.CustomerID customerID, List<String> request) {
     String result = "FAIL";
-    newbank.server.Customer customer = customers.get(customerID.getKey());
+    newbank.server.Customer customer = getCustomers().get(customerID.getKey());
 
     if ((customer != null) && (request.size() > 1)) {
 
@@ -92,73 +92,9 @@ public class NewBank {
       for (String token : request) {
         fullUserRequest += (token + " ");
       }
-      result = addNewAccountInternal(customer, fullUserRequest);
+      return newbank.server.Commands.NewAccountCommand.addNewAccountInternal(customer, fullUserRequest).getDescription();
     }
     return result;
-  }
-
-  public static String addNewAccountInternal(newbank.server.Customer customer, String request) {
-    // use regex to obtain account type and name
-    Pattern p =
-        Pattern.compile(
-            "NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
-    Matcher m = p.matcher(request.trim());
-
-    if (!m.matches()) return "FAIL";
-
-    String accountName = m.group("accName"); // get account name from regex result
-    String accountTypeStr = m.group("accType"); // get account type from regex result
-    String currencyStr = m.group("currency"); // get currency from regex result
-
-    if (accountTypeStr == null) return "FAIL";
-
-    accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
-    AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
-
-    if (accountType == AccountType.NONE) return "FAIL";
-
-    if (accountName == null || accountName.isBlank()) {
-      // no name provided so build our own
-      int accountNameSuffix = 1;
-      accountName = (accountType.toString() + " " + accountNameSuffix);
-      while (customer.hasAccount(accountName)) {
-        accountName = (accountType.toString() + " " + (++accountNameSuffix));
-      }
-    } else {
-      // remove enclosing "" if present
-      accountName = accountName.replace("\"", "");
-    }
-
-    if (customer.hasAccount(accountName)) return "FAIL";
-
-    if (currencyStr == null || currencyStr.isBlank()) {
-      customer.addAccount(new newbank.server.Account(accountType, accountName, 0));
-      return (customer.hasAccount(accountType, accountName))
-          ? createAccountDescriptionWhenSuccessful(accountName, accountType, Currency.GBP)
-          : "FAIL";
-    } else {
-      Currency acceptedCurrency = Currency.createCurrency(currencyStr);
-      if (acceptedCurrency != null) { // requested currency is allowed
-        customer.addAccount(
-            new newbank.server.Account(accountType, accountName, 0, acceptedCurrency));
-        return (customer.hasAccount(accountType, accountName))
-            ? createAccountDescriptionWhenSuccessful(accountName, accountType, acceptedCurrency)
-            : "FAIL";
-      } else {
-        return "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies();
-      }
-    }
-  }
-
-  private static String createAccountDescriptionWhenSuccessful(
-      String accountName, AccountType accountType, Currency acceptedCurrency) {
-    return "SUCCESS: Opened account TYPE:\""
-        + accountType.toString()
-        + "\" NAME:\""
-        + accountName
-        + "\""
-        + " CURRENCY:"
-        + acceptedCurrency.name();
   }
 
   private String viewAccountTypeInfo(List<String> request) {
@@ -193,5 +129,13 @@ public class NewBank {
       }
     }
     return result;
+  }
+
+  public HashMap<String, Customer> getCustomers() {
+    return customers;
+  }
+
+  public void setCustomers(HashMap<String, Customer> customers) {
+    this.customers = customers;
   }
 }

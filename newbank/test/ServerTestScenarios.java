@@ -35,7 +35,7 @@ public class ServerTestScenarios {
   }
 
   @newbank.test.NBUnit.Test
-  private void bar() {
+  private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
     var command =
@@ -49,20 +49,8 @@ public class ServerTestScenarios {
     AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
 
     newbank.test.NBUnit.AssertEqual(
-        "Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
+        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
         response.getDescription());
-  }
-
-  @newbank.test.NBUnit.Test
-  private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
-    String john =
-        NewBank.getBank()
-            .processRequest(
-                NewBank.getBank().checkLogInDetails("John", "3"),
-                "NEWACCOUNT \"Savings Account\" Saving");
-
-    newbank.test.NBUnit.AssertEqual(
-        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP", john);
   }
 
   @newbank.test.NBUnit.Test
