@@ -49,7 +49,7 @@ public class ServerTestScenarios {
     AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
 
     newbank.test.NBUnit.AssertEqual(
-        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
+        "Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
         response.getDescription());
   }
 
