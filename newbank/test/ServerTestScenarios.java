@@ -2,8 +2,6 @@ package newbank.test;
 
 import newbank.server.NewBank;
 
-import java.io.*;
-
 import static newbank.test.NBUnit.AssertEqual;
 import static newbank.test.NBUnit.runServerCommand;
 
@@ -78,7 +76,7 @@ public class ServerTestScenarios {
 
     String outputString = runServerCommand(userName, password, "");
 
-    //todo: refactor to improve maintanability
+    // todo: refactor to improve maintanability
     final String initialResponse =
         "Enter Username"
             + System.lineSeparator()
@@ -95,11 +93,13 @@ public class ServerTestScenarios {
             + "\n"
             + "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
             + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
-            + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
-            + "\n"
-            + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
+            + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
             + "\n"
             + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\""
+            + "\n"
+            + "HELP / COMMANDS -> Show command list"
+            + "\n"
+            + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
             + System.lineSeparator();
 
     AssertEqual(initialResponse, outputString);
