@@ -13,6 +13,6 @@ public class ShowMyAccountsCommand extends newbank.server.Commands.NewBankComman
 
     @Override
     public newbank.server.Commands.NewBankCommandResponse run(newbank.server.Commands.NewBankCommandParameter parameter) {
-        return null;
+        return newbank.server.Commands.NewBankCommandResponse.failed("not implemented");
     }
 }

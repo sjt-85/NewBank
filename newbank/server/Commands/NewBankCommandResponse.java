@@ -13,6 +13,7 @@ public class NewBankCommandResponse {
   public static NewBankCommandResponse succeeded(String description) {
     return new NewBankCommandResponse(ResponseType.Succeeded, description);
   }
+
   public static NewBankCommandResponse failed(String description) {
     return new NewBankCommandResponse(ResponseType.Failed, description);
   }
