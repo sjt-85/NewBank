@@ -15,7 +15,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
     NBUnit.AssertEqual("\"Savings Account\" Saving", parameter.getCommandArgument());
 
 
-    String description = "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP";
+    String description = "Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP";
 
     return newbank.server.Commands.NewBankCommandResponse.succeeded(description);
   }
