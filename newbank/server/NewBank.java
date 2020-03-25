@@ -64,8 +64,6 @@ public class NewBank {
         switch (tokens.get(0)) {
           case "SHOWMYACCOUNTS":
             return showMyAccounts(customer);
-          case "NEWACCOUNT":
-            return addNewAccount(customer, tokens);
           case "LOGOUT":
             return "Log out successful. Goodbye " + customer.getKey();
           case "VIEWACCOUNTTYPE":
@@ -80,21 +78,6 @@ public class NewBank {
 
   private String showMyAccounts(CustomerID customer) {
     return (getCustomers().get(customer.getKey())).accountsToString();
-  }
-
-  private String addNewAccount(newbank.server.CustomerID customerID, List<String> request) {
-    String result = "FAIL";
-    newbank.server.Customer customer = getCustomers().get(customerID.getKey());
-
-    if ((customer != null) && (request.size() > 1)) {
-
-      String fullUserRequest = ""; // rebuild original user request
-      for (String token : request) {
-        fullUserRequest += (token + " ");
-      }
-      return newbank.server.Commands.NewAccountCommand.addNewAccountInternal(customer, fullUserRequest).getDescription();
-    }
-    return result;
   }
 
   private String viewAccountTypeInfo(List<String> request) {

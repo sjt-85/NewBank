@@ -57,7 +57,8 @@ public class NBUnit {
         new newbank.server.NewBankClientHandler.ClientThreadTarget(
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
-            new PrintWriter(outputStream));
+            new PrintWriter(outputStream),
+            newbank.server.NewBankServer.DefaultCommandList);
 
     try {
       target.run();

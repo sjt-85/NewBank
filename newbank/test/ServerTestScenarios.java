@@ -38,13 +38,10 @@ public class ServerTestScenarios {
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
-    var command =
-        (newbank.server.Commands.INewBankCommand) new newbank.server.Commands.NewAccountCommand();
+    var command = new newbank.server.Commands.NewAccountCommand();
 
-    NewBankCommandParameter parameter =
-        NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving");
-
-    newbank.server.Commands.NewBankCommandResponse response = command.run(parameter);
+    newbank.server.Commands.NewBankCommandResponse response =
+        command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving"));
 
     AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
 
@@ -55,26 +52,34 @@ public class ServerTestScenarios {
 
   @newbank.test.NBUnit.Test
   private void createNewAccountWithAccountNameAndAcceptedCurrencyReturnsSuccess() {
-    String john =
-        NewBank.getBank()
-            .processRequest(
-                NewBank.getBank().checkLogInDetails("John", "3"),
-                "NEWACCOUNT \"Savings Account\" Travel eur");
+    var id = NewBank.getBank().checkLogInDetails("John", "3");
+
+    var command = new newbank.server.Commands.NewAccountCommand();
+
+    newbank.server.Commands.NewBankCommandResponse response =
+        command.run(
+            NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"));
+
+    AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
 
     newbank.test.NBUnit.AssertEqual(
-        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR", john);
+        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR",
+        response.getDescription());
   }
 
   @newbank.test.NBUnit.Test
   private void createNewAccountWithWrongCurrencyReturnsFailWithMessage() {
-    String christina =
-        NewBank.getBank()
-            .processRequest(
-                NewBank.getBank().checkLogInDetails("Christina", "2"),
-                "NEWACCOUNT \"Savings Account\" Other sar");
+
+    var id = NewBank.getBank().checkLogInDetails("Christina", "2");
+
+    var command = new newbank.server.Commands.NewAccountCommand();
+
+    newbank.server.Commands.NewBankCommandResponse response =
+        command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Other sar"));
 
     newbank.test.NBUnit.AssertEqual(
-        "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD ", christina);
+        "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD ",
+        response.getDescription());
   }
 
   @newbank.test.NBUnit.Test

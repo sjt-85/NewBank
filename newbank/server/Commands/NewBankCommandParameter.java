@@ -12,12 +12,13 @@ public class NewBankCommandParameter {
     String commandName = getCommandName(request);
     if (commandName == null) return null;
 
-    NewBankCommandParameter parameter = new NewBankCommandParameter(
-        id,
-        commandName,
-        (commandName.length() == request.length())
-            ? ""
-            : request.substring(commandName.length() + 1));
+    NewBankCommandParameter parameter =
+        new NewBankCommandParameter(
+            id,
+            commandName,
+            (commandName.length() == request.length())
+                ? ""
+                : request.substring(commandName.length() + 1));
 
     return parameter;
   }
@@ -25,7 +26,6 @@ public class NewBankCommandParameter {
   private String commandName;
   private String commandArgument;
   private CustomerID id;
-
 
   // allow only the parse method for instantiation.
   protected NewBankCommandParameter(CustomerID id, String commandName, String commandArgument) {
@@ -40,6 +40,10 @@ public class NewBankCommandParameter {
 
   public CustomerID getId() {
     return this.id;
+  }
+
+  public newbank.server.Customer getCustomer() {
+    return newbank.server.NewBank.getBank().getCustomers().get(getId().getKey());
   }
 
   private static String getCommandName(String request) {

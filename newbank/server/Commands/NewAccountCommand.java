@@ -1,70 +1,109 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
-import newbank.test.NBUnit;
+import newbank.server.Currency;
+import newbank.server.Customer;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
 
-  public static newbank.server.Commands.NewBankCommandResponse addNewAccountInternal(
-      newbank.server.Customer customer, String request) {
-    // use regex to obtain account type and name
-    Pattern p =
-        Pattern.compile(
-            "NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
-    Matcher m = p.matcher(request.trim());
+  @Override
+  public String getCommandName() {
+    return "NEWACCOUNT";
+  }
 
-    if (!m.matches()) return newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+  @Override
+  public newbank.server.Commands.NewBankCommandResponse run(
+      newbank.server.Commands.NewBankCommandParameter param) {
 
-    String accountName = m.group("accName"); // get account name from regex result
-    String accountTypeStr = m.group("accType"); // get account type from regex result
-    String currencyStr = m.group("currency"); // get currency from regex result
+    var args = new NewAccountCommandArgument();
 
-    if (accountTypeStr == null)
+    if (!args.parse(param.getCommandArgument(), param.getCustomer()))
       return newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
 
-    accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
-    Account.AccountType accountType = Account.AccountType.getAccountTypeFromString(accountTypeStr);
+    Currency currency = args.getCurrency();
 
-    if (accountType == Account.AccountType.NONE)
-      return newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+    if (currency == null)
+      return newbank.server.Commands.NewBankCommandResponse.failed(
+          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
 
-    if (accountName == null || accountName.isBlank()) {
-      // no name provided so build our own
-      int accountNameSuffix = 1;
-      accountName = (accountType.toString() + " " + accountNameSuffix);
-      while (customer.hasAccount(accountName)) {
-        accountName = (accountType.toString() + " " + (++accountNameSuffix));
-      }
-    } else {
-      // remove enclosing "" if present
-      accountName = accountName.replace("\"", "");
+    // requested currency is allowed
+    param.getCustomer().addAccount(new Account(args.accountType, args.accountName, 0, currency));
+
+    return (param.getCustomer().hasAccount(args.accountType, args.accountName))
+        ? createAccountDescriptionWhenSuccessful(args.accountName, args.accountType, currency)
+        : newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+  }
+
+  private static class NewAccountCommandArgument {
+    public String accountName; // get account name from regex result
+    public Account.AccountType accountType;
+    private Currency currency;
+
+    public Currency getCurrency() {
+      return currency;
     }
 
-    if (customer.hasAccount(accountName))
-      return newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+    public boolean parse(String request, newbank.server.Customer customer) {
+      // use regex to obtain account type and name
+      Pattern p =
+          Pattern.compile(
+              "(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
 
-    if (currencyStr == null || currencyStr.isBlank()) {
-      customer.addAccount(new Account(accountType, accountName, 0));
-      return (customer.hasAccount(accountType, accountName))
-          ? createAccountDescriptionWhenSuccessful(
-              accountName, accountType, newbank.server.Currency.GBP)
-          : newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
-    } else {
-      newbank.server.Currency acceptedCurrency =
-          newbank.server.Currency.createCurrency(currencyStr);
-      if (acceptedCurrency != null) { // requested currency is allowed
-        customer.addAccount(new Account(accountType, accountName, 0, acceptedCurrency));
-        return (customer.hasAccount(accountType, accountName))
-            ? createAccountDescriptionWhenSuccessful(accountName, accountType, acceptedCurrency)
-            : newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
-      } else {
-        return newbank.server.Commands.NewBankCommandResponse.failed(
-            "FAIL: Currency not allowed. Accepted currencies: "
-                + newbank.server.Currency.listAllCurrencies());
-      }
+      Matcher m = p.matcher(request.trim());
+
+      if (!m.matches()) return false;
+
+      // get currency from regex result
+      currency = parseCurrency(m.group("currency"));
+
+      // get account type from regex result
+      accountType = parseAccountType(m.group("accType"));
+
+      if (accountType == Account.AccountType.NONE) return false;
+
+      String accountName = parseAccountName(m.group("accName"), customer, accountType);
+      if (customer.hasAccount(accountName)) return false;
+
+      this.accountName = accountName;
+
+      return true;
+    }
+
+    private static Currency parseCurrency(String currencyStr) {
+      return currencyStr == null || currencyStr.isBlank()
+          ? Currency.GBP
+          : Currency.createCurrency(currencyStr);
+    }
+
+    private static String parseAccountName(
+        String accountName, Customer customer, Account.AccountType accountType) {
+      return accountName == null || accountName.isBlank()
+          ? generateAccountName(customer, accountType)
+          : accountName.replace("\"", ""); // remove enclosing "" if present
+    }
+
+    private static String generateAccountName(
+        newbank.server.Customer customer, Account.AccountType accountType) {
+
+      int accountNameSuffix = 1;
+
+      String accountName;
+
+      do {
+        accountName = (accountType.toString() + " " + (accountNameSuffix++));
+      } while (customer.hasAccount(accountName));
+
+      return accountName;
+    }
+
+    public static Account.AccountType parseAccountType(String accountTypeStr) {
+      return accountTypeStr == null
+          ? Account.AccountType.NONE
+          : Account.AccountType.getAccountTypeFromString(
+              accountTypeStr.replace("\"", "") /* remove enclosing "" if present */);
     }
   }
 
@@ -81,21 +120,5 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
             + "\""
             + " CURRENCY:"
             + acceptedCurrency.name());
-  }
-
-  @Override
-  public String getCommandName() {
-    return "NEWACCOUNT";
-  }
-
-  @Override
-  public newbank.server.Commands.NewBankCommandResponse run(
-      newbank.server.Commands.NewBankCommandParameter parameter) {
-
-    newbank.server.Customer customer =
-        newbank.server.NewBank.getBank().getCustomers().get(parameter.getId().getKey());
-
-    return addNewAccountInternal(
-        customer, parameter.getCommandName() + " " + parameter.getCommandArgument());
   }
 }

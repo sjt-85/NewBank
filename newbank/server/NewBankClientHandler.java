@@ -1,6 +1,8 @@
 package newbank.server;
 
+import newbank.server.Commands.INewBankCommand;
 import newbank.server.Commands.NewBankCommandParameter;
+import newbank.server.Commands.NewBankCommandResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,17 +10,20 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class NewBankClientHandler extends Thread {
 
-  // todo: change private instance field later
-  public static ClientThreadTarget target;
+  private static ClientThreadTarget target;
 
   public NewBankClientHandler(Socket s) throws IOException {
     target =
         new ClientThreadTarget(
             new BufferedReader(new InputStreamReader(s.getInputStream())),
-            new PrintWriter(s.getOutputStream(), true));
+            new PrintWriter(s.getOutputStream(), true),
+            newbank.server.NewBankServer.DefaultCommandList);
   }
 
   public void run() {
@@ -34,21 +39,27 @@ public class NewBankClientHandler extends Thread {
 
   public static class ClientThreadTarget {
 
-    private static ArrayList<String> commands = new ArrayList<String>();
+    private static ArrayList<String> commandHelps = new ArrayList<String>();
+
+    private static Map<String, INewBankCommand> commands;
+
     public BufferedReader in;
     public PrintWriter out;
 
     static {
       newbank.server.NewBankClientHandler.ClientThreadTarget.addCommands(
-          newbank.server.NewBankClientHandler.ClientThreadTarget.commands);
+          newbank.server.NewBankClientHandler.ClientThreadTarget.commandHelps);
     }
 
-    public ClientThreadTarget(BufferedReader in, PrintWriter out) {
+    public ClientThreadTarget(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
       this.out = out;
+      this.commands =
+          Arrays.stream(commands)
+              .collect(Collectors.toMap(INewBankCommand::getCommandName, command -> command));
     }
 
-    private static String listCommands(ArrayList<String> commands) {
+    private static String formatCommands(ArrayList<String> commands) {
       String printCommands = new String();
       for (String command : commands) {
         printCommands += command;
@@ -94,29 +105,43 @@ public class NewBankClientHandler extends Thread {
         var parameter = newbank.server.Commands.NewBankCommandParameter.create(id, request);
         if (parameter == null) continue;
 
-        out.println(dispatch(request, parameter));
+        out.println(formatResponse(dispatch(parameter)));
 
         if (parameter.getCommandName().equals("LOGOUT")) return;
       }
     }
 
-    private static String dispatch(String request, NewBankCommandParameter parameter) {
+    private static String formatResponse(NewBankCommandResponse response) {
+      // todo: place holder for formatting a response
+      return response.getDescription();
+    }
+
+    private static NewBankCommandResponse dispatch(NewBankCommandParameter parameter) {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
-          return "Log out successful. Goodbye " + parameter.getId().getKey();
+          return NewBankCommandResponse.succeeded(
+              "Log out successful. Goodbye " + parameter.getId().getKey());
         case "COMMANDS":
         case "HELP":
-          return listCommands(commands);
+          return NewBankCommandResponse.succeeded(formatCommands(commandHelps));
         default:
-          return invokeLegacyDispatcher(request, parameter);
+          if (commands.containsKey(parameter.getCommandName()))
+            return commands.get(parameter.getCommandName()).run(parameter);
+
+          // todo: comment in when the Command Pattern refactoring is done.
+          //          return NewBankCommandResponse.failed("FAIL");
+
+          // todo: remove this call when the Command Pattern refactoring is done.
+          return NewBankCommandResponse.succeeded(invokeLegacyDispatcher(parameter));
       }
     }
 
-    // todo: remove this method and its call when the Command Pattern refactoring is done.
-    private static String invokeLegacyDispatcher(
-        String request, NewBankCommandParameter parameter) {
-      return newbank.server.NewBank.getBank().processRequest(parameter.getId(), request);
+    // todo: remove this method when the Command Pattern refactoring is done.
+    private static String invokeLegacyDispatcher(NewBankCommandParameter parameter) {
+      return newbank.server.NewBank.getBank()
+          .processRequest(
+              parameter.getId(), parameter.getCommandName() + " " + parameter.getCommandArgument());
     }
 
     public void close() {
@@ -133,7 +158,7 @@ public class NewBankClientHandler extends Thread {
       out.println("Log In Successful. What do you want to do?");
       out.println();
       out.println("COMMANDS:");
-      out.println(listCommands(commands));
+      out.println(formatCommands(commandHelps));
     }
 
     private newbank.server.CustomerID readCustomerID() throws IOException {
