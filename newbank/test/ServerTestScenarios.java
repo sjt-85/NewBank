@@ -1,8 +1,7 @@
 package newbank.test;
 
+import newbank.server.Commands.NewBankCommandParameter;
 import newbank.server.NewBank;
-
-import java.io.*;
 
 import static newbank.test.NBUnit.AssertEqual;
 import static newbank.test.NBUnit.runServerCommand;
@@ -32,6 +31,14 @@ public class ServerTestScenarios {
 
     newbank.test.NBUnit.AssertEqual(
         "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(), christina);
+  }
+
+
+  @newbank.test.NBUnit.Test
+  private void bar() {
+    var command = new newbank.server.Commands.NewAccountCommand();
+    NewBankCommandParameter parameter = NewBankCommandParameter.parse("NEWACCOUNT \\\"Savings Account\\\" Saving\"");
+    command.run(parameter);
   }
 
   @newbank.test.NBUnit.Test

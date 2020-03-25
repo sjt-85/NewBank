@@ -1,13 +1,13 @@
 package newbank.server;
 
+import newbank.server.Commands.NewBankCommandParameter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class NewBankClientHandler extends Thread {
 
@@ -38,9 +38,9 @@ public class NewBankClientHandler extends Thread {
     public BufferedReader in;
     public PrintWriter out;
 
-
     static {
-      newbank.server.NewBankClientHandler.ClientThreadTarget.addCommands(newbank.server.NewBankClientHandler.ClientThreadTarget.commands);
+      newbank.server.NewBankClientHandler.ClientThreadTarget.addCommands(
+          newbank.server.NewBankClientHandler.ClientThreadTarget.commands);
     }
 
     public ClientThreadTarget(BufferedReader in, PrintWriter out) {
@@ -57,7 +57,7 @@ public class NewBankClientHandler extends Thread {
       return printCommands.substring(0, printCommands.length() - 1);
     }
 
-    static private void addCommands(ArrayList<String> commands) {
+    private static void addCommands(ArrayList<String> commands) {
       // user command and description
       commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
       commands.add(
@@ -91,25 +91,19 @@ public class NewBankClientHandler extends Thread {
         String request = in.readLine();
         if (request == null) break; // fall here when called by test.
 
-        String commandHead = getCommandHead(request);
+        var parameter = newbank.server.Commands.NewBankCommandParameter.parse(request);
+        if (parameter == null) continue;
 
-        if (commandHead == null) continue;
+        out.println(dispatch(customer, request, parameter));
 
-        out.println(dispatch(customer, request, commandHead));
-
-        if (commandHead.equals("LOGOUT")) return;
+        if (parameter.getCommandName().equals("LOGOUT")) return;
       }
     }
 
-    private static String getCommandHead(String request) {
-      List<String> tokens = Arrays.asList(request.split("\\s+"));
-      return (tokens.size() <= 0) ? null : tokens.get(0);
-    }
-
     private static String dispatch(
-        newbank.server.CustomerID customer, String request, String command) {
+            newbank.server.CustomerID customer, String request, NewBankCommandParameter parameter) {
 
-      switch (command) {
+      switch (parameter.getCommandName()) {
         case "LOGOUT":
           return "Log out successful. Goodbye " + customer.getKey();
         case "COMMANDS":
@@ -121,7 +115,8 @@ public class NewBankClientHandler extends Thread {
     }
 
     // todo: remove this method and its call when the Command Pattern refactoring is done.
-    private static String invokeLegacyDispatcher(newbank.server.CustomerID customer, String request) {
+    private static String invokeLegacyDispatcher(
+        newbank.server.CustomerID customer, String request) {
       return newbank.server.NewBank.getBank().processRequest(customer, request);
     }
 
