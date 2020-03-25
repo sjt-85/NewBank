@@ -6,9 +6,12 @@ import java.net.Socket;
 
 public class NewBankServer extends Thread {
 
+  /** register commands here */
   public static final newbank.server.Commands.INewBankCommand[] DefaultCommandList =
       new newbank.server.Commands.INewBankCommand[] {
-        new newbank.server.Commands.NewAccountCommand()
+        new newbank.server.Commands.NewAccountCommand(),
+        new newbank.server.Commands.ShowMyAccountsCommand(),
+        new newbank.server.Commands.ViewAccountTypeCommand()
       };
 
   private ServerSocket server;

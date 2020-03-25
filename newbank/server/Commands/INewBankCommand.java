@@ -7,6 +7,8 @@ public interface INewBankCommand {
    */
   String getCommandName();
 
+  String getDescription();
+
   newbank.server.Commands.NewBankCommandResponse run(
       newbank.server.Commands.NewBankCommandParameter parameter);
 }

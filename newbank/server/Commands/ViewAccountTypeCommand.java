@@ -1,14 +1,18 @@
-import newbank.server.Commands.NewBankCommandParameter;
-import newbank.server.Commands.NewBankCommandResponse;
+package newbank.server.Commands;
 
 public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankCommand {
     @Override
     public String getCommandName() {
-        return null;
+        return "VIEWACCOUNTTYPE";
     }
 
     @Override
-    public NewBankCommandResponse run(NewBankCommandParameter parameter) {
+    public String getDescription() {
+        return "<account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"";
+    }
+
+    @Override
+    public newbank.server.Commands.NewBankCommandResponse run(newbank.server.Commands.NewBankCommandParameter parameter) {
         return null;
     }
 }

@@ -15,6 +15,13 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
   }
 
   @Override
+  public String getDescription() {
+    return "<account type> <optional: account name> <optional: currency> \n"
+        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
+        + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
+  }
+
+  @Override
   public newbank.server.Commands.NewBankCommandResponse run(
       newbank.server.Commands.NewBankCommandParameter param) {
 
@@ -33,7 +40,14 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
     param.getCustomer().addAccount(new Account(args.accountType, args.accountName, 0, currency));
 
     return (param.getCustomer().hasAccount(args.accountType, args.accountName))
-        ? createAccountDescriptionWhenSuccessful(args.accountName, args.accountType, currency)
+        ? newbank.server.Commands.NewBankCommandResponse.succeeded(
+            "SUCCESS: Opened account TYPE:\""
+                + args.accountType.toString()
+                + "\" NAME:\""
+                + args.accountName
+                + "\""
+                + " CURRENCY:"
+                + currency.name())
         : newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
   }
 
@@ -80,6 +94,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
 
     private static String parseAccountName(
         String accountName, Customer customer, Account.AccountType accountType) {
+
       return accountName == null || accountName.isBlank()
           ? generateAccountName(customer, accountType)
           : accountName.replace("\"", ""); // remove enclosing "" if present
@@ -105,20 +120,5 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
           : Account.AccountType.getAccountTypeFromString(
               accountTypeStr.replace("\"", "") /* remove enclosing "" if present */);
     }
-  }
-
-  private static newbank.server.Commands.NewBankCommandResponse
-      createAccountDescriptionWhenSuccessful(
-          String accountName,
-          Account.AccountType accountType,
-          newbank.server.Currency acceptedCurrency) {
-    return newbank.server.Commands.NewBankCommandResponse.succeeded(
-        "SUCCESS: Opened account TYPE:\""
-            + accountType.toString()
-            + "\" NAME:\""
-            + accountName
-            + "\""
-            + " CURRENCY:"
-            + acceptedCurrency.name());
   }
 }

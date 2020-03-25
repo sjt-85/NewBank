@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -41,15 +42,10 @@ public class NewBankClientHandler extends Thread {
 
     private static ArrayList<String> commandHelps = new ArrayList<String>();
 
-    private static Map<String, INewBankCommand> commands;
+    private Map<String, INewBankCommand> commands;
 
     public BufferedReader in;
     public PrintWriter out;
-
-    static {
-      newbank.server.NewBankClientHandler.ClientThreadTarget.addCommands(
-          newbank.server.NewBankClientHandler.ClientThreadTarget.commandHelps);
-    }
 
     public ClientThreadTarget(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
@@ -57,27 +53,6 @@ public class NewBankClientHandler extends Thread {
       this.commands =
           Arrays.stream(commands)
               .collect(Collectors.toMap(INewBankCommand::getCommandName, command -> command));
-    }
-
-    private static String formatCommands(ArrayList<String> commands) {
-      String printCommands = new String();
-      for (String command : commands) {
-        printCommands += command;
-        printCommands += "\n";
-      }
-      return printCommands.substring(0, printCommands.length() - 1);
-    }
-
-    private static void addCommands(ArrayList<String> commands) {
-      // user command and description
-      commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
-      commands.add(
-          "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
-              + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
-              + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.");
-      commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
-      commands.add(
-          "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"");
     }
 
     public void run() throws IOException {
@@ -111,12 +86,7 @@ public class NewBankClientHandler extends Thread {
       }
     }
 
-    private static String formatResponse(NewBankCommandResponse response) {
-      // todo: place holder for formatting a response
-      return response.getDescription();
-    }
-
-    private static NewBankCommandResponse dispatch(NewBankCommandParameter parameter) {
+    private NewBankCommandResponse dispatch(NewBankCommandParameter parameter) {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
@@ -124,7 +94,7 @@ public class NewBankClientHandler extends Thread {
               "Log out successful. Goodbye " + parameter.getId().getKey());
         case "COMMANDS":
         case "HELP":
-          return NewBankCommandResponse.succeeded(formatCommands(commandHelps));
+          return NewBankCommandResponse.succeeded(formatCommands(commands.values()));
         default:
           if (commands.containsKey(parameter.getCommandName()))
             return commands.get(parameter.getCommandName()).run(parameter);
@@ -154,11 +124,24 @@ public class NewBankClientHandler extends Thread {
       }
     }
 
+    private static String formatCommands(Collection<INewBankCommand> values) {
+      return values.stream()
+              .map(command -> command.getCommandName() + " " + command.getDescription())
+              .reduce((s, s2) -> s + "\n" + s2)
+              .get()
+              + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
+    }
+
+    private static String formatResponse(NewBankCommandResponse response) {
+      // todo: place holder for formatting a response
+      return response.getDescription();
+    }
+
     private void printMenu() {
       out.println("Log In Successful. What do you want to do?");
       out.println();
       out.println("COMMANDS:");
-      out.println(formatCommands(commandHelps));
+      out.println(formatCommands(commands.values()));
     }
 
     private newbank.server.CustomerID readCustomerID() throws IOException {

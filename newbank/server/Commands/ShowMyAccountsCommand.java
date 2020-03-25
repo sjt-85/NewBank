@@ -1,14 +1,18 @@
-import newbank.server.Commands.NewBankCommandParameter;
-import newbank.server.Commands.NewBankCommandResponse;
+package newbank.server.Commands;
 
 public class ShowMyAccountsCommand extends newbank.server.Commands.NewBankCommand {
     @Override
     public String getCommandName() {
-        return null;
+        return "SHOWMYACCOUNTS";
     }
 
     @Override
-    public NewBankCommandResponse run(NewBankCommandParameter parameter) {
+    public String getDescription() {
+        return "-> Lists all of your active accounts.";
+    }
+
+    @Override
+    public newbank.server.Commands.NewBankCommandResponse run(newbank.server.Commands.NewBankCommandParameter parameter) {
         return null;
     }
 }
