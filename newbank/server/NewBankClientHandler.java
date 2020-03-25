@@ -5,10 +5,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class NewBankClientHandler extends Thread {
 
-  ClientThreadTarget target;
+  // todo: change private instance field later
+  public static ClientThreadTarget target;
 
   public NewBankClientHandler(Socket s) throws IOException {
     target =
@@ -30,16 +34,43 @@ public class NewBankClientHandler extends Thread {
 
   public static class ClientThreadTarget {
 
+    private static ArrayList<String> commands = new ArrayList<String>();
     public BufferedReader in;
     public PrintWriter out;
+
+
+    static {
+      newbank.server.NewBankClientHandler.ClientThreadTarget.addCommands(newbank.server.NewBankClientHandler.ClientThreadTarget.commands);
+    }
 
     public ClientThreadTarget(BufferedReader in, PrintWriter out) {
       this.in = in;
       this.out = out;
     }
 
+    private static String listCommands(ArrayList<String> commands) {
+      String printCommands = new String();
+      for (String command : commands) {
+        printCommands += command;
+        printCommands += "\n";
+      }
+      return printCommands.substring(0, printCommands.length() - 1);
+    }
+
+    static private void addCommands(ArrayList<String> commands) {
+      // user command and description
+      commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
+      commands.add(
+          "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
+              + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
+              + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.");
+      commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
+      commands.add(
+          "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"");
+    }
+
     public void run() throws IOException {
-      CustomerID customer = readCustomerID();
+      newbank.server.CustomerID customer = readCustomerID();
 
       // If max user attempts
       if (customer == null) {
@@ -47,23 +78,51 @@ public class NewBankClientHandler extends Thread {
         return;
       }
 
-      printMenu(customer);
+      printMenu();
 
       // if the user is authenticated then get requests from the user and process them
       processRequests(customer);
     }
 
-    public void processRequests(CustomerID customer) throws IOException {
+    public void processRequests(newbank.server.CustomerID customer) throws IOException {
       // keep getting requests from the client and processing them
       while (true) {
+
         String request = in.readLine();
-        if (request == null) break;
+        if (request == null) break; // fall here when called by test.
 
-        out.println(NewBank.getBank().processRequest(customer, request));
+        String commandHead = getCommandHead(request);
 
-        // Test whether client would like to logout
-        if (!customer.isLoggedIn()) break;
+        if (commandHead == null) continue;
+
+        out.println(dispatch(customer, request, commandHead));
+
+        if (commandHead.equals("LOGOUT")) return;
       }
+    }
+
+    private static String getCommandHead(String request) {
+      List<String> tokens = Arrays.asList(request.split("\\s+"));
+      return (tokens.size() <= 0) ? null : tokens.get(0);
+    }
+
+    private static String dispatch(
+        newbank.server.CustomerID customer, String request, String command) {
+
+      switch (command) {
+        case "LOGOUT":
+          return "Log out successful. Goodbye " + customer.getKey();
+        case "COMMANDS":
+        case "HELP":
+          return listCommands(commands);
+        default:
+          return invokeLegacyDispatcher(customer, request);
+      }
+    }
+
+    // todo: remove this method and its call when the Command Pattern refactoring is done.
+    private static String invokeLegacyDispatcher(newbank.server.CustomerID customer, String request) {
+      return newbank.server.NewBank.getBank().processRequest(customer, request);
     }
 
     public void close() {
@@ -76,15 +135,15 @@ public class NewBankClientHandler extends Thread {
       }
     }
 
-    private void printMenu(CustomerID customer) {
+    private void printMenu() {
       out.println("Log In Successful. What do you want to do?");
       out.println();
       out.println("COMMANDS:");
-      out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+      out.println(listCommands(commands));
     }
 
-    private CustomerID readCustomerID() throws IOException {
-      CustomerID customer = authenticate();
+    private newbank.server.CustomerID readCustomerID() throws IOException {
+      newbank.server.CustomerID customer = authenticate();
 
       // Loop continues until user gets correct password or has 3 login attempts
       for (int loginAttempts = 1; customer == null && loginAttempts < 3; loginAttempts++) {
@@ -95,7 +154,7 @@ public class NewBankClientHandler extends Thread {
       return customer;
     }
 
-    private CustomerID authenticate() throws IOException {
+    private newbank.server.CustomerID authenticate() throws IOException {
       // ask for user name
       out.println("Enter Username");
       String userName = in.readLine();
@@ -104,7 +163,7 @@ public class NewBankClientHandler extends Thread {
       String password = in.readLine();
       out.println("Checking Details...");
       // authenticate user and get customer ID token from bank for use in subsequent requests
-      return NewBank.getBank().checkLogInDetails(userName, password);
+      return newbank.server.NewBank.getBank().checkLogInDetails(userName, password);
     }
   }
 }

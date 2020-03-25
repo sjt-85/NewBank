@@ -78,7 +78,7 @@ public class ServerTestScenarios {
 
     String outputString = runServerCommand(userName, password, "");
 
-    //todo: refactor to improve maintainability
+    // todo: refactor to improve maintainability
     final String initialResponse =
         "Enter Username"
             + System.lineSeparator()
@@ -100,6 +100,82 @@ public class ServerTestScenarios {
             + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
             + "\n"
             + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\""
+            + System.lineSeparator();
+
+    AssertEqual(initialResponse, outputString);
+  }
+
+  @newbank.test.NBUnit.Test
+  private void testLogoffSequence() {
+
+    String userName = "Bhagy";
+    String password = "1";
+
+    String outputString = runServerCommand(userName, password, "LOGOUT");
+
+    // todo: refactor to improve maintainability
+    final String initialResponse =
+        "Enter Username"
+            + System.lineSeparator()
+            + "Enter Password"
+            + System.lineSeparator()
+            + "Checking Details..."
+            + System.lineSeparator()
+            + "Log In Successful. What do you want to do?"
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "COMMANDS:"
+            + System.lineSeparator()
+            + "SHOWMYACCOUNTS -> Lists all of your active accounts."
+            + "\n"
+            + "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
+            + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
+            + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
+            + "\n"
+            + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
+            + "\n"
+            + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\""
+            + System.lineSeparator();
+
+    AssertEqual(
+        initialResponse + "Log out successful. Goodbye Bhagy" + System.lineSeparator(),
+        outputString);
+  }
+
+  @newbank.test.NBUnit.Test
+  private void testCommandSequence() {
+
+    String userName = "Bhagy";
+    String password = "1";
+
+    String outputString = runServerCommand(userName, password, "COMMANDS");
+
+    // todo: refactor to improve maintainability
+    String commandCommandResponse =
+        System.lineSeparator()
+            + "SHOWMYACCOUNTS -> Lists all of your active accounts."
+            + "\n"
+            + "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
+            + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
+            + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
+            + "\n"
+            + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
+            + "\n"
+            + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"";
+
+    final String initialResponse =
+        "Enter Username"
+            + System.lineSeparator()
+            + "Enter Password"
+            + System.lineSeparator()
+            + "Checking Details..."
+            + System.lineSeparator()
+            + "Log In Successful. What do you want to do?"
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "COMMANDS:"
+            + commandCommandResponse
+            + commandCommandResponse
             + System.lineSeparator();
 
     AssertEqual(initialResponse, outputString);
