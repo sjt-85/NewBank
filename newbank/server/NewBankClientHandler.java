@@ -94,30 +94,29 @@ public class NewBankClientHandler extends Thread {
         var parameter = newbank.server.Commands.NewBankCommandParameter.create(id, request);
         if (parameter == null) continue;
 
-        out.println(dispatch(id, request, parameter));
+        out.println(dispatch(request, parameter));
 
         if (parameter.getCommandName().equals("LOGOUT")) return;
       }
     }
 
-    private static String dispatch(
-            newbank.server.CustomerID customer, String request, NewBankCommandParameter parameter) {
+    private static String dispatch(String request, NewBankCommandParameter parameter) {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
-          return "Log out successful. Goodbye " + customer.getKey();
+          return "Log out successful. Goodbye " + parameter.getId().getKey();
         case "COMMANDS":
         case "HELP":
           return listCommands(commands);
         default:
-          return invokeLegacyDispatcher(customer, request);
+          return invokeLegacyDispatcher(request, parameter);
       }
     }
 
     // todo: remove this method and its call when the Command Pattern refactoring is done.
     private static String invokeLegacyDispatcher(
-        newbank.server.CustomerID customer, String request) {
-      return newbank.server.NewBank.getBank().processRequest(customer, request);
+        String request, NewBankCommandParameter parameter) {
+      return newbank.server.NewBank.getBank().processRequest(parameter.getId(), request);
     }
 
     public void close() {

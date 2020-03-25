@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class NBUnit {
@@ -30,12 +31,13 @@ public class NBUnit {
   }
 
   public static void AssertEqual(Object expected, Object actual) {
+    Function<Object, String> toString =
+        (Object o) ->
+            o == null ? "null" : (o instanceof String ? "\"" + o.toString() + "\"" : o.toString());
+
     Assert(
         Objects.equals(expected, actual),
-        String.format(
-            "expected:%s actual:%s",
-            expected == null ? "null" : expected.toString(),
-            actual == null ? "null" : actual.toString()));
+        String.format("expected:%s actual:%s", toString.apply(expected), toString.apply(actual)));
   }
 
   public static void AssertIsNotNull(Object o) {

@@ -33,14 +33,15 @@ public class ServerTestScenarios {
         "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(), christina);
   }
 
-
   @newbank.test.NBUnit.Test
   private void bar() {
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
-    var command = (newbank.server.Commands.INewBankCommand)new newbank.server.Commands.NewAccountCommand();
+    var command =
+        (newbank.server.Commands.INewBankCommand) new newbank.server.Commands.NewAccountCommand();
 
-    NewBankCommandParameter parameter = NewBankCommandParameter.create(id, "NEWACCOUNT \\\"Savings Account\\\" Saving\"");
+    NewBankCommandParameter parameter =
+        NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving");
 
     command.run(parameter);
   }
