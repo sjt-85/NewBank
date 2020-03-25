@@ -66,7 +66,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
           Pattern.compile(
               "(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
 
-      Matcher m = p.matcher(request.trim());
+      Matcher m = p.matcher(request);
 
       if (!m.matches()) return false;
 

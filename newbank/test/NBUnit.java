@@ -1,5 +1,7 @@
 package newbank.test;
 
+import newbank.server.NewBankClientHandler;
+
 import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -54,7 +56,7 @@ public class NBUnit {
     var outputStream = new ByteArrayOutputStream();
 
     var target =
-        new newbank.server.NewBankClientHandler.ClientThreadTarget(
+        new NewBankClientHandler.CommandInvoker(
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
             new PrintWriter(outputStream),

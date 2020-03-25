@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -17,11 +16,11 @@ import java.util.stream.Collectors;
 
 public class NewBankClientHandler extends Thread {
 
-  private static ClientThreadTarget target;
+  private static CommandInvoker invoker;
 
   public NewBankClientHandler(Socket s) throws IOException {
-    target =
-        new ClientThreadTarget(
+    invoker =
+        new CommandInvoker(
             new BufferedReader(new InputStreamReader(s.getInputStream())),
             new PrintWriter(s.getOutputStream(), true),
             newbank.server.NewBankServer.DefaultCommandList);
@@ -29,25 +28,22 @@ public class NewBankClientHandler extends Thread {
 
   public void run() {
     try {
-      target.run();
-      target.close();
+      invoker.run();
+      invoker.close();
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
-      target.close();
+      invoker.close();
     }
   }
 
-  public static class ClientThreadTarget {
-
-    private static ArrayList<String> commandHelps = new ArrayList<String>();
+  public static class CommandInvoker {
 
     private Map<String, INewBankCommand> commands;
+    private BufferedReader in;
+    private PrintWriter out;
 
-    public BufferedReader in;
-    public PrintWriter out;
-
-    public ClientThreadTarget(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
+    public CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
       this.out = out;
       this.commands =

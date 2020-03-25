@@ -30,7 +30,7 @@ public class NewBankCommandParameter {
   // allow only the parse method for instantiation.
   protected NewBankCommandParameter(CustomerID id, String commandName, String commandArgument) {
     this.commandName = commandName;
-    this.commandArgument = commandArgument;
+    this.commandArgument = commandArgument.trim();
     this.id = id;
   }
 
