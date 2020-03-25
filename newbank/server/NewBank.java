@@ -48,11 +48,12 @@ public class NewBank {
         "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
             + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
             + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.");
-    commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
-    commands.add("HELP / COMMANDS -> Show command list");
     commands.add(
         "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"");
+    commands.add("HELP / COMMANDS -> Show command list");
+    commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
   }
+
 
   public static NewBank getBank() {
     return bank;
