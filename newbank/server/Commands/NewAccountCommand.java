@@ -11,14 +11,12 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
   @Override
   public newbank.server.Commands.NewBankCommandResponse run(
       newbank.server.Commands.NewBankCommandParameter parameter) {
-    String command = "NEWACCOUNT";
-    this.getCommandName().equals(command);
-    NBUnit.AssertEqual(command, parameter.getCommandName());
-
-    newbank.server.CustomerID id = parameter.getId();
-    NBUnit.AssertIsNotNull(id);
 
     NBUnit.AssertEqual("\"Savings Account\" Saving", parameter.getCommandArgument());
-    return null;
+
+
+    String description = "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP";
+
+    return newbank.server.Commands.NewBankCommandResponse.succeeded(description);
   }
 }

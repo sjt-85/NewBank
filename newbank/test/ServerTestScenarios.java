@@ -1,6 +1,7 @@
 package newbank.test;
 
 import newbank.server.Commands.NewBankCommandParameter;
+import newbank.server.Commands.NewBankCommandResponse;
 import newbank.server.NewBank;
 
 import static newbank.test.NBUnit.AssertEqual;
@@ -43,7 +44,13 @@ public class ServerTestScenarios {
     NewBankCommandParameter parameter =
         NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving");
 
-    command.run(parameter);
+    newbank.server.Commands.NewBankCommandResponse response = command.run(parameter);
+
+    AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
+
+    newbank.test.NBUnit.AssertEqual(
+        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
+        response.getDescription());
   }
 
   @newbank.test.NBUnit.Test
