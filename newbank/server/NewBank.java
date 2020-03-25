@@ -104,56 +104,53 @@ public class NewBank {
             "NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
     Matcher m = p.matcher(request.trim());
 
-    if (m.matches()) {
-      String accountName = m.group("accName"); // get account name from regex result
-      String accountTypeStr = m.group("accType"); // get account type from regex result
-      String currencyStr = m.group("currency"); // get currency from regex result
+    if (!m.matches()) return "FAIL";
 
-      if (accountTypeStr != null) {
-        accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
-        AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
+    String accountName = m.group("accName"); // get account name from regex result
+    String accountTypeStr = m.group("accType"); // get account type from regex result
+    String currencyStr = m.group("currency"); // get currency from regex result
 
-        if (accountType != AccountType.NONE) {
-          if (accountName == null || accountName.isBlank()) {
-            // no name provided so build our own
-            int accountNameSuffix = 1;
-            accountName = (accountType.toString() + " " + accountNameSuffix);
-            while (customer.hasAccount(accountName)) {
-              accountName = (accountType.toString() + " " + (++accountNameSuffix));
-            }
-          } else {
-            // remove enclosing "" if present
-            accountName = accountName.replace("\"", "");
-          }
+    if (accountTypeStr == null) return "FAIL";
 
-          if (!customer.hasAccount(accountName)) {
-            if (currencyStr == null || currencyStr.isBlank()) {
-              customer.addAccount(new newbank.server.Account(accountType, accountName, 0));
-              return (customer.hasAccount(accountType, accountName))
-                  ? createAccountDescriptionWhenSuccessful(accountName, accountType, Currency.GBP)
-                  : "FAIL";
-            } else {
-              Currency acceptedCurrency = Currency.createCurrency(currencyStr);
-              if (acceptedCurrency != null) { // requested currency is allowed
-                customer.addAccount(
-                    new newbank.server.Account(accountType, accountName, 0, acceptedCurrency));
-                return (customer.hasAccount(accountType, accountName))
-                    ? createAccountDescriptionWhenSuccessful(
-                        accountName, accountType, acceptedCurrency)
-                    : "FAIL";
-              } else {
-                return "FAIL: Currency not allowed. Accepted currencies: "
-                    + Currency.listAllCurrencies();
-              }
-            }
-          }
-        }
+    accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
+    AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
+
+    if (accountType == AccountType.NONE) return "FAIL";
+
+    if (accountName == null || accountName.isBlank()) {
+      // no name provided so build our own
+      int accountNameSuffix = 1;
+      accountName = (accountType.toString() + " " + accountNameSuffix);
+      while (customer.hasAccount(accountName)) {
+        accountName = (accountType.toString() + " " + (++accountNameSuffix));
+      }
+    } else {
+      // remove enclosing "" if present
+      accountName = accountName.replace("\"", "");
+    }
+
+    if (customer.hasAccount(accountName)) return "FAIL";
+
+    if (currencyStr == null || currencyStr.isBlank()) {
+      customer.addAccount(new newbank.server.Account(accountType, accountName, 0));
+      return (customer.hasAccount(accountType, accountName))
+          ? createAccountDescriptionWhenSuccessful(accountName, accountType, Currency.GBP)
+          : "FAIL";
+    } else {
+      Currency acceptedCurrency = Currency.createCurrency(currencyStr);
+      if (acceptedCurrency != null) { // requested currency is allowed
+        customer.addAccount(
+            new newbank.server.Account(accountType, accountName, 0, acceptedCurrency));
+        return (customer.hasAccount(accountType, accountName))
+            ? createAccountDescriptionWhenSuccessful(accountName, accountType, acceptedCurrency)
+            : "FAIL";
+      } else {
+        return "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies();
       }
     }
-    return "FAIL";
   }
 
-  static private String createAccountDescriptionWhenSuccessful(
+  private static String createAccountDescriptionWhenSuccessful(
       String accountName, AccountType accountType, Currency acceptedCurrency) {
     return "SUCCESS: Opened account TYPE:\""
         + accountType.toString()
