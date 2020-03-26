@@ -1,8 +1,13 @@
 package newbank.test;
 
+import newbank.server.Commands.NewAccountCommand;
 import newbank.server.Commands.NewBankCommandParameter;
 import newbank.server.Commands.NewBankCommandResponse;
+import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
+
+import java.util.Objects;
 
 import static newbank.test.NBUnit.AssertEqual;
 import static newbank.test.NBUnit.runServerCommand;
@@ -35,23 +40,22 @@ public class ServerTestScenarios {
         + System.lineSeparator()
         + String.format("Term (months): %d", termLength)
         + System.lineSeparator()
-        + (withdrawalLimit == null
-            ? ""
-            : String.format("> " + withdrawalLimit) + System.lineSeparator())
-        + String.format("> " + otherFeatures);
+        + (withdrawalLimit == null ? "" : "> " + withdrawalLimit + System.lineSeparator())
+        + "> "
+        + otherFeatures;
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void viewAccountTypeReturnDescriptionOfAccountType() {
 
-    var command = new newbank.server.Commands.ViewAccountTypeCommand();
+    var command = new ViewAccountTypeCommand();
 
     var cashISA =
         command.run(
             NewBankCommandParameter.create(
                 NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""));
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         buildAccountTypeString(
             "Cash ISA",
             2.25,
@@ -69,84 +73,86 @@ public class ServerTestScenarios {
                 NewBank.getBank().checkLogInDetails("Bhagy", "1"),
                 "VIEWACCOUNTTYPE \"Current Account\""));
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         buildAccountTypeString(
             "Current Account", 0.25, 0, null, 250, 0, "No additional features", "GBP"),
         currentAccount.getDescription());
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
-    var command = new newbank.server.Commands.ShowMyAccountsCommand();
+    var command = new ShowMyAccountsCommand();
 
     var bhagy =
         command.run(
-            NewBankCommandParameter.create(
-                NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS"));
+            Objects.requireNonNull(
+                NewBankCommandParameter.create(
+                    NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")));
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         "Current Account: Main 1: 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
 
     var christina =
         command.run(
-            NewBankCommandParameter.create(
-                NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS"));
+            Objects.requireNonNull(
+                NewBankCommandParameter.create(
+                    NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")));
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(),
         christina.getDescription());
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
-    var command = new newbank.server.Commands.NewAccountCommand();
+    var command = new NewAccountCommand();
 
-    newbank.server.Commands.NewBankCommandResponse response =
+    NewBankCommandResponse response =
         command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving"));
 
     AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
         response.getDescription());
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void createNewAccountWithAccountNameAndAcceptedCurrencyReturnsSuccess() {
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
-    var command = new newbank.server.Commands.NewAccountCommand();
+    var command = new NewAccountCommand();
 
-    newbank.server.Commands.NewBankCommandResponse response =
+    NewBankCommandResponse response =
         command.run(
             NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"));
 
     AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR",
         response.getDescription());
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void createNewAccountWithWrongCurrencyReturnsFailWithMessage() {
 
     var id = NewBank.getBank().checkLogInDetails("Christina", "2");
 
-    var command = new newbank.server.Commands.NewAccountCommand();
+    var command = new NewAccountCommand();
 
-    newbank.server.Commands.NewBankCommandResponse response =
+    NewBankCommandResponse response =
         command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Other sar"));
 
-    newbank.test.NBUnit.AssertEqual(
+    NBUnit.AssertEqual(
         "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD ",
         response.getDescription());
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void userCanLogIn() {
 
     String userName = "Bhagy";
@@ -157,7 +163,7 @@ public class ServerTestScenarios {
     AssertEqual(initialResponse, outputString);
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void userCanLogOff() {
 
     String userName = "Bhagy";
@@ -170,7 +176,7 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  @newbank.test.NBUnit.Test
+  @NBUnit.Test
   private void userCanLongInAndRunCOMMANDW() {
 
     String userName = "Bhagy";

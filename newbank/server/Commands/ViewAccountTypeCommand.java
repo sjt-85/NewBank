@@ -1,10 +1,11 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.AccountTypeInfo;
 
 import java.util.regex.Matcher;
 
-public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankCommand {
+public class ViewAccountTypeCommand extends NewBankCommand {
 
   @Override
   public String getCommandName() {
@@ -17,23 +18,20 @@ public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankComma
   }
 
   @Override
-  public newbank.server.Commands.NewBankCommandResponse run(
-      newbank.server.Commands.NewBankCommandParameter param) {
+  public NewBankCommandResponse run(NewBankCommandParameter param) {
 
     Account.AccountType accountType = getAccountType(param);
 
     if (accountType == Account.AccountType.NONE)
-      return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
+      return NewBankCommandResponse.invalidRequest("FAIL");
 
-    newbank.server.AccountTypeInfo info =
-        newbank.server.AccountTypeInfo.getAccountTypeInfo(accountType);
-    if (info == null) return newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+    AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
+    if (info == null) return NewBankCommandResponse.failed("FAIL");
 
-    return newbank.server.Commands.NewBankCommandResponse.succeeded(info.toString());
+    return NewBankCommandResponse.succeeded(info.toString());
   }
 
-  public static Account.AccountType getAccountType(
-      newbank.server.Commands.NewBankCommandParameter param) {
+  public static Account.AccountType getAccountType(NewBankCommandParameter param) {
 
     Matcher m = param.matchCommandArgument("(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
 

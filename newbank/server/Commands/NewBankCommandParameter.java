@@ -1,6 +1,8 @@
 package newbank.server.Commands;
 
+import newbank.server.Customer;
 import newbank.server.CustomerID;
+import newbank.server.NewBank;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,8 +52,8 @@ public class NewBankCommandParameter {
     return this.id;
   }
 
-  public newbank.server.Customer getCustomer() {
-    return newbank.server.NewBank.getBank().getCustomers().get(getId().getKey());
+  public Customer getCustomer() {
+    return NewBank.getBank().getCustomers().get(getId().getKey());
   }
 
   private static String getCommandName(String request) {

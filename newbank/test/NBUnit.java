@@ -1,6 +1,7 @@
 package newbank.test;
 
 import newbank.server.NewBankClientHandler;
+import newbank.server.NewBankServer;
 
 import java.io.*;
 import java.lang.annotation.ElementType;
@@ -60,7 +61,7 @@ public class NBUnit {
             new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
             new PrintWriter(outputStream),
-            newbank.server.NewBankServer.DefaultCommandList);
+            NewBankServer.DefaultCommandList);
 
     try {
       target.run();

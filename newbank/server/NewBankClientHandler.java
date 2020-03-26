@@ -23,7 +23,7 @@ public class NewBankClientHandler extends Thread {
         new CommandInvoker(
             new BufferedReader(new InputStreamReader(s.getInputStream())),
             new PrintWriter(s.getOutputStream(), true),
-            newbank.server.NewBankServer.DefaultCommandList);
+            NewBankServer.DefaultCommandList);
   }
 
   public void run() {
@@ -58,7 +58,7 @@ public class NewBankClientHandler extends Thread {
     }
 
     public void run() throws IOException {
-      newbank.server.CustomerID customer = readCustomerID();
+      CustomerID customer = readCustomerID();
 
       // If max user attempts
       if (customer == null) {
@@ -72,14 +72,14 @@ public class NewBankClientHandler extends Thread {
       processRequests(customer);
     }
 
-    public void processRequests(newbank.server.CustomerID id) throws IOException {
+    public void processRequests(CustomerID id) throws IOException {
       // keep getting requests from the client and processing them
       while (true) {
 
         String request = in.readLine();
         if (request == null) break; // fall here when called by test.
 
-        var parameter = newbank.server.Commands.NewBankCommandParameter.create(id, request);
+        var parameter = NewBankCommandParameter.create(id, request);
         if (parameter == null) continue;
 
         out.println(formatResponse(dispatch(parameter)));
@@ -136,8 +136,8 @@ public class NewBankClientHandler extends Thread {
       out.println(formatCommands());
     }
 
-    private newbank.server.CustomerID readCustomerID() throws IOException {
-      newbank.server.CustomerID customer = authenticate();
+    private CustomerID readCustomerID() throws IOException {
+      CustomerID customer = authenticate();
 
       // Loop continues until user gets correct password or has 3 login attempts
       for (int loginAttempts = 1; customer == null && loginAttempts < 3; loginAttempts++) {
@@ -148,7 +148,7 @@ public class NewBankClientHandler extends Thread {
       return customer;
     }
 
-    private newbank.server.CustomerID authenticate() throws IOException {
+    private CustomerID authenticate() throws IOException {
       // ask for user name
       out.println("Enter Username");
       String userName = in.readLine();

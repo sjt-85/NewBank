@@ -6,7 +6,7 @@ import newbank.server.Customer;
 
 import java.util.regex.Matcher;
 
-public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
+public class NewAccountCommand extends NewBankCommand {
 
   @Override
   public String getCommandName() {
@@ -21,24 +21,24 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
   }
 
   @Override
-  public newbank.server.Commands.NewBankCommandResponse run(
-      newbank.server.Commands.NewBankCommandParameter param) {
+  public NewBankCommandResponse run(NewBankCommandParameter param) {
 
     var args = NewAccountCommandArgument.parse(param);
 
-    if (args == null) return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
+    if (args == null) return NewBankCommandResponse.invalidRequest("FAIL");
 
     if (args.getCurrency() == null)
-      return newbank.server.Commands.NewBankCommandResponse.failed(
+      return NewBankCommandResponse.failed(
           "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
 
     // requested currency is allowed
     param
         .getCustomer()
-        .addAccount(new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
+        .addAccount(
+            new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
 
     return (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
-        ? newbank.server.Commands.NewBankCommandResponse.succeeded(
+        ? NewBankCommandResponse.succeeded(
             "SUCCESS: Opened account TYPE:\""
                 + args.getAccountType().toString()
                 + "\" NAME:\""
@@ -46,13 +46,12 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
                 + "\""
                 + " CURRENCY:"
                 + args.getCurrency().name())
-        : newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+        : NewBankCommandResponse.failed("FAIL");
   }
 
   private static class NewAccountCommandArgument {
 
-    public static NewAccountCommandArgument parse(
-        newbank.server.Commands.NewBankCommandParameter param) {
+    public static NewAccountCommandArgument parse(NewBankCommandParameter param) {
 
       NewAccountCommandArgument argument = new NewAccountCommandArgument();
 
@@ -72,7 +71,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
       if (argument.accountType == Account.AccountType.NONE) return null;
 
       argument.accountName =
-          parseAccountName(m.group("accName"), param.getCustomer(), argument.accountType);
+          parseAccountName(m.group("accName"), param.getCustomer(), argument.getAccountType());
 
       if (param.getCustomer().hasAccount(argument.accountName)) return null;
 
@@ -109,8 +108,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
           : accountName.replace("\"", ""); // remove enclosing "" if present
     }
 
-    private static String generateAccountName(
-        newbank.server.Customer customer, Account.AccountType accountType) {
+    private static String generateAccountName(Customer customer, Account.AccountType accountType) {
 
       int accountNameSuffix = 1;
 
@@ -129,6 +127,5 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
           : Account.AccountType.getAccountTypeFromString(
               accountTypeStr.replace("\"", "") /* remove enclosing "" if present */);
     }
-
   }
 }

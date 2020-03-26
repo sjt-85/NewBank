@@ -1,5 +1,11 @@
 package newbank.server;
 
+import newbank.server.Commands.INewBankCommand;
+import newbank.server.Commands.NewAccountCommand;
+import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ViewAccountTypeCommand;
+import newbank.test.NBUnit;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,11 +16,11 @@ public class NewBankServer extends Thread {
    * Register commands here when you create a new command. The order in the COMMANDS command
    * reflects the order of command objects on this collection.
    */
-  public static final newbank.server.Commands.INewBankCommand[] DefaultCommandList =
-      new newbank.server.Commands.INewBankCommand[] {
-        new newbank.server.Commands.ShowMyAccountsCommand(),
-        new newbank.server.Commands.NewAccountCommand(),
-        new newbank.server.Commands.ViewAccountTypeCommand()
+  public static final INewBankCommand[] DefaultCommandList =
+      new INewBankCommand[] {
+        new ShowMyAccountsCommand(),
+        new NewAccountCommand(),
+        new ViewAccountTypeCommand()
       };
 
   private ServerSocket server;
@@ -46,7 +52,7 @@ public class NewBankServer extends Thread {
 
   public static void main(String[] args) throws IOException {
     if (args.length != 0 && args[0].equals("TEST")) {
-      newbank.test.NBUnit.run();
+      NBUnit.run();
       return;
     }
     // starts a new NewBankServer thread on a specified port number
