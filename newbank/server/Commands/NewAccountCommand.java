@@ -27,17 +27,17 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
 
     var args = new NewAccountCommandArgument();
 
-    if (!args.parse(param.getCommandArgument(), param.getCustomer()))
+    if (!args.parse(param.getCustomer(), param))
       return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
 
-    Currency currency = args.getCurrency();
-
-    if (currency == null)
+    if (args.getCurrency() == null)
       return newbank.server.Commands.NewBankCommandResponse.failed(
           "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
 
     // requested currency is allowed
-    param.getCustomer().addAccount(new Account(args.accountType, args.accountName, 0, currency));
+    param
+        .getCustomer()
+        .addAccount(new Account(args.accountType, args.accountName, 0, args.getCurrency()));
 
     return (param.getCustomer().hasAccount(args.accountType, args.accountName))
         ? newbank.server.Commands.NewBankCommandResponse.succeeded(
@@ -47,7 +47,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
                 + args.accountName
                 + "\""
                 + " CURRENCY:"
-                + currency.name())
+                + args.getCurrency().name())
         : newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
   }
 
@@ -60,13 +60,12 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
       return currency;
     }
 
-    public boolean parse(String request, newbank.server.Customer customer) {
+    public boolean parse(Customer customer, newbank.server.Commands.NewBankCommandParameter param) {
       // use regex to obtain account type and name
-      Pattern p =
-          Pattern.compile(
-              "(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
 
-      Matcher m = p.matcher(request);
+      Matcher m =
+          param.matchCommandArgument(
+              "(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
 
       if (!m.matches()) return false;
 

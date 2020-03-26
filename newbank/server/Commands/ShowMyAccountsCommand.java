@@ -14,9 +14,9 @@ public class ShowMyAccountsCommand extends newbank.server.Commands.NewBankComman
 
   @Override
   public newbank.server.Commands.NewBankCommandResponse run(
-      newbank.server.Commands.NewBankCommandParameter parameter) {
+      newbank.server.Commands.NewBankCommandParameter param) {
 
     return newbank.server.Commands.NewBankCommandResponse.succeeded(
-        parameter.getCustomer().accountsToString());
+        param.getCustomer().accountsToString());
   }
 }

@@ -4,6 +4,8 @@ import newbank.server.CustomerID;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NewBankCommandParameter {
 
@@ -32,6 +34,12 @@ public class NewBankCommandParameter {
     this.commandName = commandName.toUpperCase();
     this.commandArgument = commandArgument.trim();
     this.id = id;
+  }
+
+  public Matcher matchCommandArgument(String regex) {
+    // use regex to obtain account type and name
+    Pattern p = Pattern.compile(regex);
+    return p.matcher(getCommandArgument());
   }
 
   public String getCommandName() {

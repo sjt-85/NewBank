@@ -3,7 +3,6 @@ package newbank.server.Commands;
 import newbank.server.Account;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankCommand {
 
@@ -19,9 +18,9 @@ public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankComma
 
   @Override
   public newbank.server.Commands.NewBankCommandResponse run(
-      newbank.server.Commands.NewBankCommandParameter parameter) {
+      newbank.server.Commands.NewBankCommandParameter param) {
 
-    Account.AccountType accountType = parseArgument(parameter.getCommandArgument());
+    Account.AccountType accountType = getAccountType(param);
 
     if (accountType == Account.AccountType.NONE)
       return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
@@ -33,20 +32,15 @@ public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankComma
     return newbank.server.Commands.NewBankCommandResponse.succeeded(info.toString());
   }
 
-  private static Account.AccountType parseArgument(String argument) {
-    // use regex to obtain account type and name
-    Pattern p = Pattern.compile("(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
-    Matcher m = p.matcher(argument);
+  public static Account.AccountType getAccountType(
+      newbank.server.Commands.NewBankCommandParameter param) {
 
-    if (!m.matches()) return Account.AccountType.NONE;
+    Matcher m = param.matchCommandArgument("(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
 
-    // get account type from regex result
-    String accountTypeStr = m.group("accType");
-
-    if (accountTypeStr == null) return Account.AccountType.NONE;
-
-    accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
-
-    return Account.AccountType.getAccountTypeFromString(accountTypeStr);
+    return !m.matches()
+        ? Account.AccountType.NONE
+        : m.group("accType") == null
+            ? Account.AccountType.NONE
+            : Account.AccountType.getAccountTypeFromString(m.group("accType").replace("\"", ""));
   }
 }
