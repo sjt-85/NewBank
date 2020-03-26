@@ -59,10 +59,7 @@ public class NewBank {
   }
 
   public synchronized boolean isValidUserName(String userName) {
-    if (customers.containsKey(userName)) {
-      return true;
-    }
-    return false;
+    return customers.containsKey(userName) ? true : false;
   }
 
   public synchronized CustomerID checkLogInDetails(String userName, String password) {
