@@ -21,7 +21,7 @@ public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankComma
   public newbank.server.Commands.NewBankCommandResponse run(
       newbank.server.Commands.NewBankCommandParameter parameter) {
 
-    Account.AccountType accountType = getAccountType(parameter.getCommandArgument());
+    Account.AccountType accountType = parseAccountType(parameter.getCommandArgument());
 
     if (accountType == Account.AccountType.NONE)
       return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
@@ -33,7 +33,7 @@ public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankComma
     return newbank.server.Commands.NewBankCommandResponse.succeeded(info.toString());
   }
 
-  private static Account.AccountType getAccountType(String request) {
+  private static Account.AccountType parseAccountType(String request) {
     // use regex to obtain account type and name
     Pattern p = Pattern.compile("(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
     Matcher m = p.matcher(request);
