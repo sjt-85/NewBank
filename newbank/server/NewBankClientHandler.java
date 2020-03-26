@@ -39,6 +39,10 @@ public class NewBankClientHandler extends Thread {
 
   public static class CommandInvoker {
 
+    // hold the original order of command names to give control of the command order of the COMMANDS
+    // command to a caller.
+    private Collection<String> commandsInOriginalOrder;
+
     private Map<String, INewBankCommand> commands;
     private BufferedReader in;
     private PrintWriter out;
@@ -46,6 +50,8 @@ public class NewBankClientHandler extends Thread {
     public CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
       this.out = out;
+      this.commandsInOriginalOrder =
+          Arrays.stream(commands).map(INewBankCommand::getCommandName).collect(Collectors.toList());
       this.commands =
           Arrays.stream(commands)
               .collect(Collectors.toMap(INewBankCommand::getCommandName, command -> command));
@@ -90,7 +96,7 @@ public class NewBankClientHandler extends Thread {
               "Log out successful. Goodbye " + parameter.getId().getKey());
         case "COMMANDS":
         case "HELP":
-          return NewBankCommandResponse.succeeded(formatCommands(commands.values()));
+          return NewBankCommandResponse.succeeded(formatCommands());
         default:
           if (commands.containsKey(parameter.getCommandName()))
             return commands.get(parameter.getCommandName()).run(parameter);
@@ -108,10 +114,11 @@ public class NewBankClientHandler extends Thread {
       }
     }
 
-    private static String formatCommands(Collection<INewBankCommand> values) {
-      return values.stream()
+    private String formatCommands() {
+      return commandsInOriginalOrder.stream()
+              .map(commandName -> commands.get(commandName))
               .map(command -> command.getCommandName() + " " + command.getDescription())
-              .reduce((s, s2) -> s + "\n" + s2)
+              .reduce((s1, s2) -> s1 + "\n" + s2)
               .orElse("")
           + "\nHELP / COMMANDS -> Show command list."
           + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
@@ -126,7 +133,7 @@ public class NewBankClientHandler extends Thread {
       out.println("Log In Successful. What do you want to do?");
       out.println();
       out.println("COMMANDS:");
-      out.println(formatCommands(commands.values()));
+      out.println(formatCommands());
     }
 
     private newbank.server.CustomerID readCustomerID() throws IOException {

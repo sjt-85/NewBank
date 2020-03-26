@@ -16,8 +16,8 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
   @Override
   public String getDescription() {
     return "<account type> <optional: account name> <optional: currency> \n"
-        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n"
-        + "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
+        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. \n"
+        + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
   }
 
   @Override

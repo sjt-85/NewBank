@@ -13,7 +13,7 @@ public class ViewAccountTypeCommand extends newbank.server.Commands.NewBankComma
 
   @Override
   public String getDescription() {
-    return "<account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"";
+    return "<account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\".";
   }
 
   @Override

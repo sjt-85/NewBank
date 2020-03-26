@@ -6,11 +6,14 @@ import java.net.Socket;
 
 public class NewBankServer extends Thread {
 
-  /** register commands here */
+  /**
+   * Register commands here when you create a new command. The order in the COMMANDS command
+   * reflects the order of command objects on this collection.
+   */
   public static final newbank.server.Commands.INewBankCommand[] DefaultCommandList =
       new newbank.server.Commands.INewBankCommand[] {
-        new newbank.server.Commands.NewAccountCommand(),
         new newbank.server.Commands.ShowMyAccountsCommand(),
+        new newbank.server.Commands.NewAccountCommand(),
         new newbank.server.Commands.ViewAccountTypeCommand()
       };
 
