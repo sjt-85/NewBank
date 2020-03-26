@@ -5,7 +5,6 @@ import newbank.server.Currency;
 import newbank.server.Customer;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
 
@@ -25,10 +24,9 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
   public newbank.server.Commands.NewBankCommandResponse run(
       newbank.server.Commands.NewBankCommandParameter param) {
 
-    var args = new NewAccountCommandArgument();
+    var args = NewAccountCommandArgument.parse(param);
 
-    if (!args.parse(param.getCustomer(), param))
-      return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
+    if (args == null) return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
 
     if (args.getCurrency() == null)
       return newbank.server.Commands.NewBankCommandResponse.failed(
@@ -52,37 +50,41 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
   }
 
   private static class NewAccountCommandArgument {
+
+    public static NewAccountCommandArgument parse(
+        newbank.server.Commands.NewBankCommandParameter param) {
+
+      NewAccountCommandArgument argument = new NewAccountCommandArgument();
+
+      // use regex to obtain account type and name
+      Matcher m =
+          param.matchCommandArgument(
+              "(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
+
+      if (!m.matches()) return null;
+
+      // get currency from regex result
+      argument.currency = parseCurrency(m.group("currency"));
+
+      // get account type from regex result
+      argument.accountType = parseAccountType(m.group("accType"));
+
+      if (argument.accountType == Account.AccountType.NONE) return null;
+
+      argument.accountName =
+          parseAccountName(m.group("accName"), param.getCustomer(), argument.accountType);
+
+      if (param.getCustomer().hasAccount(argument.accountName)) return null;
+
+      return argument;
+    }
+
     public String accountName; // get account name from regex result
     public Account.AccountType accountType;
     private Currency currency;
 
     public Currency getCurrency() {
       return currency;
-    }
-
-    public boolean parse(Customer customer, newbank.server.Commands.NewBankCommandParameter param) {
-      // use regex to obtain account type and name
-
-      Matcher m =
-          param.matchCommandArgument(
-              "(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
-
-      if (!m.matches()) return false;
-
-      // get currency from regex result
-      currency = parseCurrency(m.group("currency"));
-
-      // get account type from regex result
-      accountType = parseAccountType(m.group("accType"));
-
-      if (accountType == Account.AccountType.NONE) return false;
-
-      String accountName = parseAccountName(m.group("accName"), customer, accountType);
-      if (customer.hasAccount(accountName)) return false;
-
-      this.accountName = accountName;
-
-      return true;
     }
 
     private static Currency parseCurrency(String currencyStr) {
@@ -113,7 +115,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
       return accountName;
     }
 
-    public static Account.AccountType parseAccountType(String accountTypeStr) {
+    private static Account.AccountType parseAccountType(String accountTypeStr) {
       return accountTypeStr == null
           ? Account.AccountType.NONE
           : Account.AccountType.getAccountTypeFromString(
