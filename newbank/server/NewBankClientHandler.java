@@ -1,41 +1,60 @@
 package newbank.server;
 
+import newbank.server.Commands.INewBankCommand;
+import newbank.server.Commands.NewBankCommandParameter;
+import newbank.server.Commands.NewBankCommandResponse;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class NewBankClientHandler extends Thread {
 
-  ClientThreadTarget target;
+  private static CommandInvoker invoker;
 
   public NewBankClientHandler(Socket s) throws IOException {
-    target =
-        new ClientThreadTarget(
+    invoker =
+        new CommandInvoker(
             new BufferedReader(new InputStreamReader(s.getInputStream())),
-            new PrintWriter(s.getOutputStream(), true));
+            new PrintWriter(s.getOutputStream(), true),
+            NewBankServer.DefaultCommandList);
   }
 
   public void run() {
     try {
-      target.run();
-      target.close();
+      invoker.run();
+      invoker.close();
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
-      target.close();
+      invoker.close();
     }
   }
 
-  public static class ClientThreadTarget {
+  public static class CommandInvoker {
 
-    public BufferedReader in;
-    public PrintWriter out;
+    // hold the original order of command names to give control of the command order of the COMMANDS
+    // command to a caller.
+    private Collection<String> commandsInOriginalOrder;
 
-    public ClientThreadTarget(BufferedReader in, PrintWriter out) {
+    private Map<String, INewBankCommand> commands;
+    private BufferedReader in;
+    private PrintWriter out;
+
+    public CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
       this.out = out;
+      this.commandsInOriginalOrder =
+          Arrays.stream(commands).map(INewBankCommand::getCommandName).collect(Collectors.toList());
+      this.commands =
+          Arrays.stream(commands)
+              .collect(Collectors.toMap(INewBankCommand::getCommandName, command -> command));
     }
 
     public void run() throws IOException {
@@ -47,22 +66,41 @@ public class NewBankClientHandler extends Thread {
         return;
       }
 
-      printMenu(customer);
+      printMenu();
 
       // if the user is authenticated then get requests from the user and process them
       processRequests(customer);
     }
 
-    public void processRequests(CustomerID customer) throws IOException {
+    public void processRequests(CustomerID id) throws IOException {
       // keep getting requests from the client and processing them
       while (true) {
+
         String request = in.readLine();
-        if (request == null) break;
+        if (request == null) break; // fall here when called by test.
 
-        out.println(NewBank.getBank().processRequest(customer, request));
+        var parameter = NewBankCommandParameter.create(id, request);
+        if (parameter == null) continue;
 
-        // Test whether client would like to logout
-        if (!customer.isLoggedIn()) break;
+        out.println(formatResponse(dispatch(parameter)));
+
+        if (parameter.getCommandName().equals("LOGOUT")) return;
+      }
+    }
+
+    private NewBankCommandResponse dispatch(NewBankCommandParameter parameter) {
+
+      switch (parameter.getCommandName()) {
+        case "LOGOUT":
+          return NewBankCommandResponse.succeeded(
+              "Log out successful. Goodbye " + parameter.getId().getKey());
+        case "COMMANDS":
+        case "HELP":
+          return NewBankCommandResponse.succeeded(formatCommands());
+        default:
+          if (commands.containsKey(parameter.getCommandName()))
+            return commands.get(parameter.getCommandName()).run(parameter);
+          else return NewBankCommandResponse.invalidRequest("FAIL");
       }
     }
 
@@ -76,11 +114,26 @@ public class NewBankClientHandler extends Thread {
       }
     }
 
-    private void printMenu(CustomerID customer) {
+    private String formatCommands() {
+      return commandsInOriginalOrder.stream()
+              .map(commandName -> commands.get(commandName))
+              .map(command -> command.getCommandName() + " " + command.getDescription())
+              .reduce((s1, s2) -> s1 + "\n" + s2)
+              .orElse("")
+          + "\nHELP / COMMANDS -> Show command list."
+          + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
+    }
+
+    private static String formatResponse(NewBankCommandResponse response) {
+      // todo: place holder for formatting a response
+      return response.getDescription();
+    }
+
+    private void printMenu() {
       out.println("Log In Successful. What do you want to do?");
       out.println();
       out.println("COMMANDS:");
-      out.println(NewBank.getBank().processRequest(customer, "COMMANDS"));
+      out.println(formatCommands());
     }
 
     private CustomerID readCustomerID() throws IOException {
@@ -104,7 +157,7 @@ public class NewBankClientHandler extends Thread {
       String password = in.readLine();
       out.println("Checking Details...");
       // authenticate user and get customer ID token from bank for use in subsequent requests
-      return NewBank.getBank().checkLogInDetails(userName, password);
+      return newbank.server.NewBank.getBank().checkLogInDetails(userName, password);
     }
   }
 }

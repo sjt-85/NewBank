@@ -7,5 +7,6 @@
 !protocol.txt
 !newbank/client/*.java
 !newbank/server/*.java
+!newbank/server/Commands/*.java
 !newbank/test/*.java
 !*/
