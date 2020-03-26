@@ -39,7 +39,7 @@ public class NBUnit {
 
     Assert(
         Objects.equals(expected, actual),
-        String.format("expected:%s actual:%s", toString.apply(expected), toString.apply(actual)));
+        String.format("expected:%s\nactual:%s", toString.apply(expected), toString.apply(actual)));
   }
 
   public static void AssertIsNotNull(Object o) {

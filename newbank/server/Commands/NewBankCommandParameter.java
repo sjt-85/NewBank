@@ -27,9 +27,9 @@ public class NewBankCommandParameter {
   private String commandArgument;
   private CustomerID id;
 
-  // allow only the parse method for instantiation.
+  // only parse method can instantiate
   protected NewBankCommandParameter(CustomerID id, String commandName, String commandArgument) {
-    this.commandName = commandName;
+    this.commandName = commandName.toUpperCase();
     this.commandArgument = commandArgument.trim();
     this.id = id;
   }

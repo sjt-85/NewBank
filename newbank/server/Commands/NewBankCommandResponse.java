@@ -18,6 +18,10 @@ public class NewBankCommandResponse {
     return new NewBankCommandResponse(ResponseType.Failed, description);
   }
 
+  public static NewBankCommandResponse invalidRequest(String description) {
+    return new NewBankCommandResponse(ResponseType.InvalidRequest, description);
+  }
+
   protected NewBankCommandResponse(ResponseType type, String description) {
     this.type = type;
     this.description = description;

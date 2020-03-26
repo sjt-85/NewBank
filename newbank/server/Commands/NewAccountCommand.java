@@ -28,7 +28,7 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
     var args = new NewAccountCommandArgument();
 
     if (!args.parse(param.getCommandArgument(), param.getCustomer()))
-      return newbank.server.Commands.NewBankCommandResponse.failed("FAIL");
+      return newbank.server.Commands.NewBankCommandResponse.invalidRequest("FAIL");
 
     Currency currency = args.getCurrency();
 

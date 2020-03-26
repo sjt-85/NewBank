@@ -94,20 +94,8 @@ public class NewBankClientHandler extends Thread {
         default:
           if (commands.containsKey(parameter.getCommandName()))
             return commands.get(parameter.getCommandName()).run(parameter);
-
-          // todo: comment in when the Command Pattern refactoring is done.
-          //          return NewBankCommandResponse.failed("FAIL");
-
-          // todo: remove this call when the Command Pattern refactoring is done.
-          return NewBankCommandResponse.succeeded(invokeLegacyDispatcher(parameter));
+          else return NewBankCommandResponse.invalidRequest("FAIL");
       }
-    }
-
-    // todo: remove this method when the Command Pattern refactoring is done.
-    private static String invokeLegacyDispatcher(NewBankCommandParameter parameter) {
-      return newbank.server.NewBank.getBank()
-          .processRequest(
-              parameter.getId(), parameter.getCommandName() + " " + parameter.getCommandArgument());
     }
 
     public void close() {
@@ -124,8 +112,8 @@ public class NewBankClientHandler extends Thread {
       return values.stream()
               .map(command -> command.getCommandName() + " " + command.getDescription())
               .reduce((s, s2) -> s + "\n" + s2)
-              .get()
-              + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
+              .orElse("")
+          + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
     }
 
     private static String formatResponse(NewBankCommandResponse response) {
