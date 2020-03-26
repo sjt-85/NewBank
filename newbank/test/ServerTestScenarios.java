@@ -191,6 +191,8 @@ public class ServerTestScenarios {
           + "\n"
           + "SHOWMYACCOUNTS -> Lists all of your active accounts."
           + "\n"
+          + "HELP / COMMANDS -> Show command list."
+          + "\n"
           + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
           + System.lineSeparator();
 

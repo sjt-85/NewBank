@@ -113,6 +113,7 @@ public class NewBankClientHandler extends Thread {
               .map(command -> command.getCommandName() + " " + command.getDescription())
               .reduce((s, s2) -> s + "\n" + s2)
               .orElse("")
+          + "\nHELP / COMMANDS -> Show command list."
           + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
     }
 
