@@ -35,14 +35,14 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
     // requested currency is allowed
     param
         .getCustomer()
-        .addAccount(new Account(args.accountType, args.accountName, 0, args.getCurrency()));
+        .addAccount(new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
 
-    return (param.getCustomer().hasAccount(args.accountType, args.accountName))
+    return (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
         ? newbank.server.Commands.NewBankCommandResponse.succeeded(
             "SUCCESS: Opened account TYPE:\""
-                + args.accountType.toString()
+                + args.getAccountType().toString()
                 + "\" NAME:\""
-                + args.accountName
+                + args.getAccountName()
                 + "\""
                 + " CURRENCY:"
                 + args.getCurrency().name())
@@ -79,12 +79,20 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
       return argument;
     }
 
-    public String accountName; // get account name from regex result
-    public Account.AccountType accountType;
+    private String accountName; // get account name from regex result
+    private Account.AccountType accountType;
     private Currency currency;
 
     public Currency getCurrency() {
       return currency;
+    }
+
+    public String getAccountName() {
+      return accountName;
+    }
+
+    public Account.AccountType getAccountType() {
+      return accountType;
     }
 
     private static Currency parseCurrency(String currencyStr) {
@@ -121,5 +129,6 @@ public class NewAccountCommand extends newbank.server.Commands.NewBankCommand {
           : Account.AccountType.getAccountTypeFromString(
               accountTypeStr.replace("\"", "") /* remove enclosing "" if present */);
     }
+
   }
 }
