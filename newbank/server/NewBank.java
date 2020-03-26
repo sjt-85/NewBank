@@ -1,12 +1,13 @@
 package newbank.server;
 
+import newbank.server.Account.AccountType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import newbank.server.Account.AccountType;
 
 public class NewBank {
 
@@ -39,17 +40,20 @@ public class NewBank {
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     customers.put("John", john);
   }
-  
+
   private void addCommands(ArrayList<String> commands) {
     // user command and description
     commands.add("SHOWMYACCOUNTS -> Lists all of your active accounts.");
-    commands.add("NEWACCOUNT <account type> <optional: account name> <optional: currency> \n" +
-            "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR \n" +
-            "Standard currency is GBP, please specify an account name and currency to create an account with a different currency.");
+    commands.add(
+        "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
+            + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. \n"
+            + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.");
+    commands.add(
+        "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\".");
+    commands.add("HELP / COMMANDS -> Show command list.");
     commands.add("LOGOUT -> Ends the current banking session and logs you out of NewBank.");
-    commands.add("VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"");
   }
-  
+
   public static NewBank getBank() {
     return bank;
   }
@@ -81,8 +85,8 @@ public class NewBank {
           case "LOGOUT":
             customer.logOut();
             return logOut(customer);
-          case "COMMANDS" :
-          case "HELP" : 
+          case "COMMANDS":
+          case "HELP":
             return listCommands(commands);
           case "VIEWACCOUNTTYPE":
             return viewAccountTypeInfo(tokens);
@@ -102,28 +106,28 @@ public class NewBank {
     String result = "FAIL";
     Customer customer = customers.get(customerID.getKey());
 
-    if ((customer != null)
-        && (request.size() > 1)) {
-      
+    if ((customer != null) && (request.size() > 1)) {
+
       String fullUserRequest = ""; // rebuild original user request
       for (String token : request) {
         fullUserRequest += (token + " ");
       }
-      
+
       // use regex to obtain account type and name
       Pattern p =
-          Pattern.compile("NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
+          Pattern.compile(
+              "NEWACCOUNT[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+|$)(?<accName>\"[a-zA-Z0-9 ]*\"|[a-zA-Z0-9]*)(?:[\\s]+|$)(?<currency>[a-zA-Z]*)$");
       Matcher m = p.matcher(fullUserRequest.trim());
-      
+
       if (m.matches()) {
         String accountName = m.group("accName"); // get account name from regex result
         String accountTypeStr = m.group("accType"); // get account type from regex result
         String currencyStr = m.group("currency"); // get currency from regex result
-        
+
         if (accountTypeStr != null) {
           accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
           AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
-        
+
           if (accountType != AccountType.NONE) {
             if (accountName == null || accountName.isBlank()) {
               // no name provided so build our own
@@ -136,22 +140,27 @@ public class NewBank {
               // remove enclosing "" if present
               accountName = accountName.replace("\"", "");
             }
-            
+
             if (!customer.hasAccount(accountName)) {
               if (currencyStr == null || currencyStr.isBlank()) {
                 customer.addAccount(new Account(accountType, accountName, 0));
-                result = (customer.hasAccount(accountType, accountName))
-                        ? createAccountDescriptionWhenSuccessful(accountName, accountType, Currency.GBP)
+                result =
+                    (customer.hasAccount(accountType, accountName))
+                        ? createAccountDescriptionWhenSuccessful(
+                            accountName, accountType, Currency.GBP)
                         : "FAIL";
               } else {
                 Currency acceptedCurrency = Currency.createCurrency(currencyStr);
                 if (acceptedCurrency != null) { // requested currency is allowed
                   customer.addAccount(new Account(accountType, accountName, 0, acceptedCurrency));
-                  result = (customer.hasAccount(accountType, accountName))
-                          ? createAccountDescriptionWhenSuccessful(accountName, accountType, acceptedCurrency)
+                  result =
+                      (customer.hasAccount(accountType, accountName))
+                          ? createAccountDescriptionWhenSuccessful(
+                              accountName, accountType, acceptedCurrency)
                           : "FAIL";
                 } else {
-                  return "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies();
+                  return "FAIL: Currency not allowed. Accepted currencies: "
+                      + Currency.listAllCurrencies();
                 }
               }
             }
@@ -162,8 +171,15 @@ public class NewBank {
     return result;
   }
 
-  private String createAccountDescriptionWhenSuccessful(String accountName, AccountType accountType, Currency acceptedCurrency) {
-    return "SUCCESS: Opened account TYPE:\"" + accountType.toString() + "\" NAME:\"" + accountName + "\"" + " CURRENCY:" + acceptedCurrency.name();
+  private String createAccountDescriptionWhenSuccessful(
+      String accountName, AccountType accountType, Currency acceptedCurrency) {
+    return "SUCCESS: Opened account TYPE:\""
+        + accountType.toString()
+        + "\" NAME:\""
+        + accountName
+        + "\""
+        + " CURRENCY:"
+        + acceptedCurrency.name();
   }
 
   private String listCommands(ArrayList<String> commands) {
@@ -172,35 +188,35 @@ public class NewBank {
       printCommands += command;
       printCommands += "\n";
     }
-    return printCommands.substring(0, printCommands.length()-1);
+    return printCommands.substring(0, printCommands.length() - 1);
   }
 
   private String logOut(CustomerID customerID) {
     return "Log out successful. Goodbye " + customerID.getKey();
   }
-  
+
   private String viewAccountTypeInfo(List<String> request) {
     String result = "FAIL";
 
     if (request.size() > 1) {
-      
+
       String fullUserRequest = ""; // rebuild original user request
       for (String token : request) {
         fullUserRequest += (token + " ");
       }
-      
+
       // use regex to obtain account type and name
       Pattern p =
           Pattern.compile("VIEWACCOUNTTYPE[\\s]+(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
       Matcher m = p.matcher(fullUserRequest.trim());
-      
+
       if (m.matches()) {
         String accountTypeStr = m.group("accType"); // get account type from regex result
-        
+
         if (accountTypeStr != null) {
           accountTypeStr = accountTypeStr.replace("\"", ""); // remove enclosing "" if present
           AccountType accountType = AccountType.getAccountTypeFromString(accountTypeStr);
-        
+
           if (accountType != AccountType.NONE) {
             AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
             if (info != null) {
