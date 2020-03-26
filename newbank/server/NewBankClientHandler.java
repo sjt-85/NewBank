@@ -84,21 +84,36 @@ public class NewBankClientHandler extends Thread {
     }
 
     private CustomerID readCustomerID() throws IOException {
-      CustomerID customer = authenticate();
-
+      String userName = null;
+      // Loop until correct user name entered
+      while (userName == null) {
+        userName = checkUserName();
+      }
+      
+      CustomerID customer = authenticate(userName);
       // Loop continues until user gets correct password or has 3 login attempts
       for (int loginAttempts = 1; customer == null && loginAttempts < 3; loginAttempts++) {
         out.println("Log In Failed");
-        customer = authenticate();
+        customer = authenticate(userName);
       }
 
       return customer;
     }
 
-    private CustomerID authenticate() throws IOException {
+    private String checkUserName() throws IOException {
       // ask for user name
       out.println("Enter Username");
       String userName = in.readLine();
+      if (NewBank.getBank().isValidUserName(userName)) {
+        return userName;
+      }
+      else {
+        out.println("Invalid Username - please try again");
+      }
+      return null;
+    }
+    
+    private CustomerID authenticate(String userName) throws IOException {
       // ask for password
       out.println("Enter Password");
       String password = in.readLine();
@@ -106,5 +121,6 @@ public class NewBankClientHandler extends Thread {
       // authenticate user and get customer ID token from bank for use in subsequent requests
       return NewBank.getBank().checkLogInDetails(userName, password);
     }
+    
   }
 }

@@ -58,6 +58,13 @@ public class NewBank {
     return bank;
   }
 
+  public synchronized boolean isValidUserName(String userName) {
+    if (customers.containsKey(userName)) {
+      return true;
+    }
+    return false;
+  }
+
   public synchronized CustomerID checkLogInDetails(String userName, String password) {
     if (customers.containsKey(userName)) {
       HashGenerator generator = new HashGenerator();
