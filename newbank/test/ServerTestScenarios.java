@@ -1,10 +1,6 @@
 package newbank.test;
 
-import newbank.server.Commands.NewAccountCommand;
-import newbank.server.Commands.NewBankCommandParameter;
-import newbank.server.Commands.NewBankCommandResponse;
-import newbank.server.Commands.ShowMyAccountsCommand;
-import newbank.server.Commands.ViewAccountTypeCommand;
+import newbank.server.Commands.*;
 import newbank.server.NewBank;
 
 import java.util.Objects;
@@ -196,6 +192,12 @@ public class ServerTestScenarios {
           + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
           + "\n"
           + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"."
+          + "\n"
+          + "TRANSFER <Account Name>/<Account Name>/<Amount>"
+          + "\n"
+          + "-> Transfer from the first listed account into the second."
+          + "\n"
+          + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0."
           + "\n"
           + "HELP / COMMANDS -> Show command list."
           + "\n"

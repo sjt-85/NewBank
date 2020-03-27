@@ -14,9 +14,9 @@ public class TransferCommand extends NewBankCommand {
 
   @Override
   public String getDescription() {
-    return "<Account Name>/<Account Name>/<Amount> \n"
-        + "-> Transfer from the first listed account into the second. \n"
-        + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0";
+    return "<Account Name>/<Account Name>/<Amount>\n"
+        + "-> Transfer from the first listed account into the second.\n"
+        + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0.";
   }
 
   @Override
@@ -28,8 +28,8 @@ public class TransferCommand extends NewBankCommand {
     if (request.length != 3) {
       return NewBankCommandResponse.invalidRequest("Not enough arguments. Please try again.");
     }
-    Account debitedAccount = customer.getAccoutFromName(request[0]);
-    Account creditedAccount = customer.getAccoutFromName(request[1]);
+    Account debitedAccount = customer.getAccountFromName(request[0]);
+    Account creditedAccount = customer.getAccountFromName(request[1]);
 
     if (debitedAccount == null) {
       return NewBankCommandResponse.failed(

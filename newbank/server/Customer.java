@@ -58,7 +58,7 @@ public class Customer {
     return password;
   }
 
-  public Account getAccoutFromName(String name) {
+  public Account getAccountFromName(String name) {
     for (Account a : accounts) {
       if (a.getAccountName().equals(name)) {
         return a;
