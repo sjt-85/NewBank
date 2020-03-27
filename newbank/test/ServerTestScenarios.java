@@ -1,6 +1,10 @@
 package newbank.test;
 
-import newbank.server.Commands.*;
+import newbank.server.Commands.NewAccountCommand;
+import newbank.server.Commands.NewBankCommandParameter;
+import newbank.server.Commands.NewBankCommandResponse;
+import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
 
 import java.util.Objects;
@@ -209,7 +213,7 @@ public class ServerTestScenarios {
 
     // Test 3
     String outputString3 =
-        runServerCommand(userName, password, "TRANSFER Checking 1/Checking 1/100");
+        runServerCommand(userName, password, "TRANSFER \"Checking 1\"/\"Checking 1\"/100");
     AssertEqual(
         initialResponse
             + "The debiting and crediting accounts are the same. Please try again."
@@ -224,7 +228,8 @@ public class ServerTestScenarios {
         outputString4);
 
     // Test 5
-    String outputString5 = runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/t");
+    String outputString5 =
+        runServerCommand(userName, password, "TRANSFER \"Saving 1\"/\"Checking 1\"/t");
     AssertEqual(
         initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
         outputString5);

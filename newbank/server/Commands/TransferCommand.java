@@ -28,8 +28,8 @@ public class TransferCommand extends NewBankCommand {
     if (request.length != 3) {
       return NewBankCommandResponse.invalidRequest("Not enough arguments. Please try again.");
     }
-    Account debitedAccount = customer.getAccountFromName(request[0]);
-    Account creditedAccount = customer.getAccountFromName(request[1]);
+    Account debitedAccount = customer.getAccountFromName(request[0].replaceAll("\"", ""));
+    Account creditedAccount = customer.getAccountFromName(request[1].replaceAll("\"", ""));
 
     if (debitedAccount == null) {
       return NewBankCommandResponse.failed(
@@ -49,7 +49,7 @@ public class TransferCommand extends NewBankCommand {
           "The currency of each account is not the same. Please try again.");
     }
 
-    if (!ValidAmount(request[2])) {
+    if (!validAmount(request[2])) {
       return NewBankCommandResponse.failed("Amount is invalid. Please try again.");
     }
 
@@ -75,7 +75,7 @@ public class TransferCommand extends NewBankCommand {
             + ".");
   }
 
-  private boolean ValidAmount(String amountInput) {
+  private boolean validAmount(String amountInput) {
     double amount;
     try {
       amount = Double.parseDouble(amountInput);

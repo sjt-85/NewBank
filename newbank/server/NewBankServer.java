@@ -1,6 +1,10 @@
 package newbank.server;
 
-import newbank.server.Commands.*;
+import newbank.server.Commands.INewBankCommand;
+import newbank.server.Commands.NewAccountCommand;
+import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.TransferCommand;
+import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.test.NBUnit;
 
 import java.io.IOException;
