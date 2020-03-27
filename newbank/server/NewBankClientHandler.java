@@ -118,10 +118,10 @@ public class NewBankClientHandler extends Thread {
       return commandsInOriginalOrder.stream()
               .map(commandName -> commands.get(commandName))
               .map(command -> command.getCommandName() + " " + command.getDescription())
-              .reduce((s1, s2) -> s1 + "\n" + s2)
+              .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
               .orElse("")
-          + "\nHELP / COMMANDS -> Show command list."
-          + "\nLOGOUT -> Ends the current banking session and logs you out of NewBank.";
+          + System.lineSeparator() + "HELP / COMMANDS -> Show command list."
+          + System.lineSeparator() + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
     }
 
     private static String formatResponse(NewBankCommandResponse response) {

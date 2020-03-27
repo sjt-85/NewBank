@@ -267,9 +267,9 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/321.62");
     AssertEqual(
         initialResponse
-            + "Transfer successful."
-            + "\nThe balance of Checking 1 is now 571.62."
-            + "\nThe balance of Saving 1 is now 178.38."
+            + "Transfer successful."  + System.lineSeparator()
+            + "The balance of Checking 1 is now 571.62."  + System.lineSeparator()
+            + "The balance of Saving 1 is now 178.38."
             + System.lineSeparator(),
         outputString);
   }
@@ -277,21 +277,23 @@ public class ServerTestScenarios {
   // todo: refactor to improve maintainability
   final String commandList =
       "SHOWMYACCOUNTS -> Lists all of your active accounts."
-          + "\n"
-          + "NEWACCOUNT <account type> <optional: account name> <optional: currency> \n"
-          + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. \n"
+          + System.lineSeparator()
+          + "NEWACCOUNT <account type> <optional: account name> <optional: currency> " 
+          + System.lineSeparator()
+          + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
+          + System.lineSeparator()
           + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
-          + "\n"
+          + System.lineSeparator()
           + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"."
-          + "\n"
+          + System.lineSeparator()
           + "TRANSFER <Account Name>/<Account Name>/<Amount>"
-          + "\n"
+          + System.lineSeparator()
           + "-> Transfer from the first listed account into the second."
-          + "\n"
+          + System.lineSeparator()
           + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0."
-          + "\n"
+          + System.lineSeparator()
           + "HELP / COMMANDS -> Show command list."
-          + "\n"
+          + System.lineSeparator()
           + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
           + System.lineSeparator();
 
