@@ -33,6 +33,9 @@ Returns list of all user commands.
 LOGOUT
 Disconnects from server and exits client application.
 
+VIEWACCOUNTTYPE
+Returns details of all account types.
+
 VIEWACCOUNTTYPE <Type>
 e.g. VIEWACCOUNTTYPE "Cash ISA"
 Returns details of account type or FAIL.
