@@ -37,6 +37,6 @@ VIEWACCOUNTTYPE <Type>
 e.g. VIEWACCOUNTTYPE "Cash ISA"
 Returns details of account type or FAIL.
 
-TRANSFER
+TRANSFER <Account Name>/<Account Name>/<Amount>
 Transfer from the first listed account into the second.
 To format add / between accounts and amount eg TRANSFER account 1/account 2/100.
