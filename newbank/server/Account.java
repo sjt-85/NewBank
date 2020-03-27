@@ -79,14 +79,16 @@ public class Account {
     return this.balance;
   }
 
-  public void moneyIn(double amount) {
-    BigDecimal in = convertDoubleToBigDecimal(amount);
-    this.balance = balance.add(in);
+  public Currency getCurrency() {
+    return this.currency;
+  }
+  // As not called by commandline used bigdecimal
+  public void moneyIn(BigDecimal in) {
+    this.balance = this.balance.add(in);
   }
 
-  public void moneyOut(double amount) {
-    BigDecimal out = convertDoubleToBigDecimal(-amount);
-    this.balance = balance.add(out);
+  public void moneyOut(BigDecimal out) {
+    this.balance = this.balance.subtract(out);
   }
 
   private BigDecimal convertDoubleToBigDecimal(double amount) {

@@ -1,9 +1,9 @@
 package newbank.server;
 
+import newbank.server.Account.AccountType;
+
 import java.util.ArrayList;
 import java.util.Locale;
-
-import newbank.server.Account.AccountType;
 
 public class Customer {
 
@@ -38,7 +38,7 @@ public class Customer {
     }
     return false;
   }
-  
+
   public boolean hasAccount(AccountType accountType, String accountName) {
     accountName = accountName.toLowerCase(accountNameLocale);
     for (Account a : accounts) {
@@ -56,5 +56,14 @@ public class Customer {
 
   public String retrievePassword() {
     return password;
+  }
+
+  public Account getAccoutFromName(String name) {
+    for (Account a : accounts) {
+      if (a.getAccountName().equals(name)) {
+        return a;
+      }
+    }
+    return null;
   }
 }
