@@ -55,7 +55,8 @@ public class Account {
     this.currency = Currency.GBP;
   }
 
-  public Account(AccountType accountType, String accountName, double openingBalance, Currency currency) {
+  public Account(
+      AccountType accountType, String accountName, double openingBalance, Currency currency) {
     this.accountType = accountType;
     this.accountName = accountName;
     this.balance = convertDoubleToBigDecimal(openingBalance);
@@ -63,7 +64,7 @@ public class Account {
   }
 
   public String toString() {
-    return (accountType.toString() + ": " + accountName + ": " + openingBalance + " " + currency.name());
+    return (accountType.toString() + ": " + accountName + ": " + balance + " " + currency.name());
   }
 
   public String getAccountName() {
@@ -78,13 +79,13 @@ public class Account {
     return this.balance;
   }
 
-  public void moneyIn(double amount){
+  public void moneyIn(double amount) {
     BigDecimal in = convertDoubleToBigDecimal(amount);
     this.balance = balance.add(in);
   }
 
-  public void moneyOut(double amount){
-    BigDecimal out = convertDoubleToBigDecimal(- amount);
+  public void moneyOut(double amount) {
+    BigDecimal out = convertDoubleToBigDecimal(-amount);
     this.balance = balance.add(out);
   }
 
@@ -92,6 +93,4 @@ public class Account {
     BigDecimal bd = BigDecimal.valueOf(amount);
     return bd.setScale(2);
   }
-
-
 }
