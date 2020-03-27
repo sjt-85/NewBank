@@ -1,6 +1,7 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.AccountTypeInfo;
 import newbank.server.Currency;
 import newbank.server.Customer;
 
@@ -22,14 +23,22 @@ public class NewAccountCommand extends NewBankCommand {
 
   @Override
   public NewBankCommandResponse run(NewBankCommandParameter param) {
-
     var args = NewAccountCommandArgument.parse(param);
 
-    if (args == null) return NewBankCommandResponse.invalidRequest("FAIL");
+    // Either account type was not specified or account already exists
+    if (args == null) {
+      if (NewAccountCommandArgument.duplicateError)
+        return NewBankCommandResponse.invalidRequest(
+            "FAIL: Duplicate name. Please choose a unique name.");
+      return NewBankCommandResponse.invalidRequest(
+          "FAIL: Account type must be specified. Accepted account types: "
+              + AccountTypeInfo.listAllAccountTypes()
+              + ".");
+    }
 
     if (args.getCurrency() == null)
       return NewBankCommandResponse.failed(
-          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
+          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
 
     // requested currency is allowed
     param
@@ -46,7 +55,7 @@ public class NewAccountCommand extends NewBankCommand {
                 + "\""
                 + " CURRENCY:"
                 + args.getCurrency().name())
-        : NewBankCommandResponse.failed("FAIL");
+        : NewBankCommandResponse.failed("FAIL: Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {
@@ -54,6 +63,7 @@ public class NewAccountCommand extends NewBankCommand {
     public static NewAccountCommandArgument parse(NewBankCommandParameter param) {
 
       NewAccountCommandArgument argument = new NewAccountCommandArgument();
+      NewAccountCommandArgument.duplicateError = false;
 
       // use regex to obtain account type and name
       Matcher m =
@@ -73,7 +83,10 @@ public class NewAccountCommand extends NewBankCommand {
       argument.accountName =
           parseAccountName(m.group("accName"), param.getCustomer(), argument.getAccountType());
 
-      if (param.getCustomer().hasAccount(argument.accountName)) return null;
+      if (param.getCustomer().hasAccount(argument.accountName)) {
+        NewAccountCommandArgument.duplicateError = true;
+        return null;
+      }
 
       return argument;
     }
@@ -81,6 +94,7 @@ public class NewAccountCommand extends NewBankCommand {
     private String accountName; // get account name from regex result
     private Account.AccountType accountType;
     private Currency currency;
+    private static boolean duplicateError;
 
     public Currency getCurrency() {
       return currency;
