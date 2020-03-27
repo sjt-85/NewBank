@@ -77,6 +77,7 @@ public final class AccountTypeInfo {
     for (AccountType accType : sortedAccountInfo.keySet()) {
       sb.append(accountInfo.get(accType));
       sb.append(System.lineSeparator());
+      sb.append(System.lineSeparator());
     }
     String descriptions = sb.toString().trim();
     return descriptions;
