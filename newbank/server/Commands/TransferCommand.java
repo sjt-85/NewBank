@@ -41,12 +41,12 @@ public class TransferCommand extends NewBankCommand {
     }
     if (request[0].equals(request[1])) {
       return NewBankCommandResponse.failed(
-          "The debiting and crediting accounts are the same. Please try again");
+          "The debiting and crediting accounts are the same. Please try again.");
     }
 
     if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
       return NewBankCommandResponse.failed(
-          "The currency of each account is not the same. Please try again");
+          "The currency of each account is not the same. Please try again.");
     }
 
     if (!ValidAmount(request[2])) {
@@ -64,9 +64,15 @@ public class TransferCommand extends NewBankCommand {
     creditedAccount.moneyIn(amount);
 
     return NewBankCommandResponse.succeeded(
-        "Transfer successful. The balance of " + creditedAccount.getAccountName() + " is now "
-                + creditedAccount.getBalance().toPlainString() + ". \nThe balance of " + debitedAccount.getAccountName() + " is now "
-                + debitedAccount.getBalance().toPlainString());
+        "Transfer successful.\nThe balance of "
+            + creditedAccount.getAccountName()
+            + " is now "
+            + creditedAccount.getBalance().toPlainString()
+            + ".\nThe balance of "
+            + debitedAccount.getAccountName()
+            + " is now "
+            + debitedAccount.getBalance().toPlainString()
+            + ".");
   }
 
   private boolean ValidAmount(String amountInput) {
