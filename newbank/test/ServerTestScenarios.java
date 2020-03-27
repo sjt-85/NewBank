@@ -187,6 +187,93 @@ public class ServerTestScenarios {
     AssertEqual(initialResponse + commandList, outputString);
   }
 
+  @NBUnit.Test
+  private void userTriesToTransferWithBadArgument() {
+
+    String userName = "John";
+    String password = "3";
+
+    // Test 1
+    String outputString =
+        runServerCommand(userName, password, "TRANSFER Checking 1/Checking 2/200");
+    AssertEqual(
+        initialResponse
+            + "Account to be credited does not exist. Please try again."
+            + System.lineSeparator(),
+        outputString);
+
+    // Test 2
+    String outputString2 =
+        runServerCommand(userName, password, "TRANSFER Checking 2/Checking 1/200");
+    AssertEqual(
+        initialResponse
+            + "Account to be debited does not exist. Please try again."
+            + System.lineSeparator(),
+        outputString2);
+
+    // Test 3
+    String outputString3 =
+        runServerCommand(userName, password, "TRANSFER \"Checking 1\"/\"Checking 1\"/100");
+    AssertEqual(
+        initialResponse
+            + "The debiting and crediting accounts are the same. Please try again."
+            + System.lineSeparator(),
+        outputString3);
+
+    // Test 4
+    String outputString4 =
+        runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/-100");
+    AssertEqual(
+        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
+        outputString4);
+
+    // Test 5
+    String outputString5 =
+        runServerCommand(userName, password, "TRANSFER \"Saving 1\"/\"Checking 1\"/t");
+    AssertEqual(
+        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
+        outputString5);
+
+    // Test 6
+    String outputString6 = runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1");
+    AssertEqual(
+        initialResponse + "Not enough arguments. Please try again." + System.lineSeparator(),
+        outputString6);
+  }
+
+  // separate from bad arguments in case overdraft functionality added
+  @NBUnit.Test
+  private void userTriesToTransferWithoutEnoughFunds() {
+
+    String userName = "John";
+    String password = "3";
+
+    String outputString =
+        runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/500.01");
+    AssertEqual(
+        initialResponse
+            + "Not enough funds in account to be debited. Please try again."
+            + System.lineSeparator(),
+        outputString);
+  }
+
+  @NBUnit.Test
+  private void userSuccessfullyTransfers() {
+
+    String userName = "John";
+    String password = "3";
+
+    String outputString =
+        runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/321.62");
+    AssertEqual(
+        initialResponse
+            + "Transfer successful."
+            + "\nThe balance of Checking 1 is now 571.62."
+            + "\nThe balance of Saving 1 is now 178.38."
+            + System.lineSeparator(),
+        outputString);
+  }
+
   // todo: refactor to improve maintainability
   final String commandList =
       "SHOWMYACCOUNTS -> Lists all of your active accounts."
@@ -196,6 +283,12 @@ public class ServerTestScenarios {
           + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
           + "\n"
           + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"."
+          + "\n"
+          + "TRANSFER <Account Name>/<Account Name>/<Amount>"
+          + "\n"
+          + "-> Transfer from the first listed account into the second."
+          + "\n"
+          + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0."
           + "\n"
           + "HELP / COMMANDS -> Show command list."
           + "\n"

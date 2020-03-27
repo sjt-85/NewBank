@@ -30,6 +30,7 @@ public class NewBank {
     // Password = 3
     Customer john = new Customer();
     john.addAccount(new Account(AccountType.CURRENT, "Checking 1", 250.0));
+    john.addAccount(new Account(AccountType.SAVINGS, "Saving 1", 500.0));
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     getCustomers().put("John", john);
   }
