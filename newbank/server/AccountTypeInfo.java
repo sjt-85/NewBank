@@ -1,10 +1,12 @@
 package newbank.server;
 
+import java.lang.StringBuilder;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.TreeMap;
 
 import newbank.server.Account.AccountType;
 
@@ -67,6 +69,18 @@ public final class AccountTypeInfo {
     this.monthlyFee.setScale(2);
     this.term = term;
     this.otherFeatures = otherFeatures;
+  }
+
+  public static String getAllAccountTypeDescriptions() {
+    StringBuilder sb = new StringBuilder();
+    Map<AccountType, AccountTypeInfo> sortedAccountInfo = new TreeMap<AccountType, AccountTypeInfo>(accountInfo);
+    for (AccountType accType : sortedAccountInfo.keySet()) {
+      sb.append(accountInfo.get(accType));
+      sb.append(System.lineSeparator());
+      sb.append(System.lineSeparator());
+    }
+    String descriptions = sb.toString().trim();
+    return descriptions;
   }
   
   public static AccountTypeInfo getAccountTypeInfo(AccountType type) {
