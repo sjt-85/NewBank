@@ -34,7 +34,7 @@ public class NewAccountCommand extends NewBankCommand {
               + ".");
 
     // Previously this was tested in NewBankArgument
-    if (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
+    if (param.getCustomer().hasAccount(args.getAccountName()))
       return NewBankCommandResponse.invalidRequest("FAIL: Please choose a unique name.");
 
     if (args.getCurrency() == null)
