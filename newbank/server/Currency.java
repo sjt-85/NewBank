@@ -1,12 +1,14 @@
 package newbank.server;
 
 public enum Currency {
-
-  GBP, EUR, USD;
+  GBP,
+  EUR,
+  USD;
 
   /**
-   * Creates a {@linkplain Currency} if the given string matches an accepted currency or
-   * null if the given currency string is invalid
+   * Creates a {@linkplain Currency} if the given string matches an accepted currency or null if the
+   * given currency string is invalid
+   *
    * @param currencyString 3-letter string of currency
    * @return null if string invalid, else the requested currency
    */
@@ -19,9 +21,7 @@ public enum Currency {
     return null;
   }
 
-  /**
-   * @return String listing all allowed currencies
-   */
+  /** @return String listing all allowed currencies */
   public static String listAllCurrencies() {
     StringBuilder sb = new StringBuilder();
     for (Currency currency : Currency.values()) {
@@ -29,6 +29,6 @@ public enum Currency {
       sb.append(", ");
     }
     sb.deleteCharAt(sb.length() - 2); // delete last comma
-    return sb.toString();
+    return sb.toString().trim();
   }
 }

@@ -16,8 +16,10 @@ public class NewAccountCommand extends NewBankCommand {
 
   @Override
   public String getDescription() {
-    return "<account type> <optional: account name> <optional: currency> " + System.lineSeparator()
-        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. " + System.lineSeparator()
+    return "<account type> <optional: account name> <optional: currency> "
+        + System.lineSeparator()
+        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
+        + System.lineSeparator()
         + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
   }
 
@@ -28,16 +30,16 @@ public class NewAccountCommand extends NewBankCommand {
     if (args == null)
       return NewBankCommandResponse.invalidRequest(
           "FAIL: Account type must be specified. Accepted account types: "
-              + AccountTypeInfo.listAllAccountTypes()
+              + AccountTypeInfo.listAllAccountTypesCommaDelimited()
               + ".");
 
     // Previously this was tested in NewBankArgument
-    if(param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName())) return NewBankCommandResponse.invalidRequest(
-            "FAIL: Please choose a unique name.");
+    if (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
+      return NewBankCommandResponse.invalidRequest("FAIL: Please choose a unique name.");
 
     if (args.getCurrency() == null)
       return NewBankCommandResponse.failed(
-          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
+          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
 
     // requested currency is allowed
     param
@@ -81,7 +83,6 @@ public class NewAccountCommand extends NewBankCommand {
 
       argument.accountName =
           parseAccountName(m.group("accName"), param.getCustomer(), argument.getAccountType());
-
 
       return argument;
     }

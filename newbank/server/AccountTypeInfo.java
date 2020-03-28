@@ -115,7 +115,7 @@ public final class AccountTypeInfo {
   }
 
   /** @return String listing all allowed account types */
-  public static String listAllAccountTypes() {
+  public static String listAllAccountTypesCommaDelimited() {
     StringBuilder sb = new StringBuilder();
     for (AccountType type : AccountType.values()) {
       if (type == AccountType.NONE) continue;
@@ -123,6 +123,6 @@ public final class AccountTypeInfo {
       sb.append(", ");
     }
     sb.deleteCharAt(sb.length() - 2); // delete last comma
-    return sb.toString();
+    return sb.toString().trim();
   }
 }
