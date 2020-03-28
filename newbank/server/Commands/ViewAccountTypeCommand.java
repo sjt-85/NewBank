@@ -3,6 +3,7 @@ package newbank.server.Commands;
 import newbank.server.Account;
 import newbank.server.AccountTypeInfo;
 
+
 import java.util.regex.Matcher;
 
 public class ViewAccountTypeCommand extends NewBankCommand {
@@ -22,11 +23,14 @@ public class ViewAccountTypeCommand extends NewBankCommand {
 
     Account.AccountType accountType = getAccountType(param);
 
+    if (param.getCommandArgument().isEmpty()) {
+      return NewBankCommandResponse.succeeded(AccountTypeInfo.getAllAccountTypeDescriptions().toString());
+    }
     if (accountType == Account.AccountType.NONE)
-      return NewBankCommandResponse.invalidRequest("FAIL");
+      return NewBankCommandResponse.invalidRequest("Invalid account type.");
 
     AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
-    if (info == null) return NewBankCommandResponse.failed("FAIL");
+    if (info == null) return NewBankCommandResponse.failed("Could not retrieve account info.");
 
     return NewBankCommandResponse.succeeded(info.toString());
   }

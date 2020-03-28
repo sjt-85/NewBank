@@ -14,8 +14,8 @@ public class TransferCommand extends NewBankCommand {
 
   @Override
   public String getDescription() {
-    return "<Account Name>/<Account Name>/<Amount>\n"
-        + "-> Transfer from the first listed account into the second.\n"
+    return "<Account Name>/<Account Name>/<Amount>" + System.lineSeparator()
+        + "-> Transfer from the first listed account into the second." + System.lineSeparator()
         + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0.";
   }
 
@@ -64,11 +64,11 @@ public class TransferCommand extends NewBankCommand {
     creditedAccount.moneyIn(amount);
 
     return NewBankCommandResponse.succeeded(
-        "Transfer successful.\nThe balance of "
+        "Transfer successful." + System.lineSeparator() + "The balance of "
             + creditedAccount.getAccountName()
             + " is now "
             + creditedAccount.getBalance().toPlainString()
-            + ".\nThe balance of "
+            + "." + System.lineSeparator() + "The balance of "
             + debitedAccount.getAccountName()
             + " is now "
             + debitedAccount.getBalance().toPlainString()

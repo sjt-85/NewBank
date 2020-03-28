@@ -16,8 +16,8 @@ public class NewAccountCommand extends NewBankCommand {
 
   @Override
   public String getDescription() {
-    return "<account type> <optional: account name> <optional: currency> \n"
-        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. \n"
+    return "<account type> <optional: account name> <optional: currency> " + System.lineSeparator()
+        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. " + System.lineSeparator()
         + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
   }
 
