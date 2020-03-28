@@ -25,16 +25,15 @@ public class NewAccountCommand extends NewBankCommand {
   public NewBankCommandResponse run(NewBankCommandParameter param) {
     var args = NewAccountCommandArgument.parse(param);
 
-    // Either account type was not specified or account already exists
     if (args == null)
       return NewBankCommandResponse.invalidRequest(
           "FAIL: Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypes()
               + ".");
 
-
+    // Previously this was tested in NewBankArgument
     if(param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName())) return NewBankCommandResponse.invalidRequest(
-            "FAIL: Please choose a unique name");
+            "FAIL: Please choose a unique name.");
 
     if (args.getCurrency() == null)
       return NewBankCommandResponse.failed(
@@ -77,12 +76,11 @@ public class NewAccountCommand extends NewBankCommand {
       // get account type from regex result
       argument.accountType = parseAccountType(m.group("accType"));
 
+      // Null only added if account type null, duplicates are checked for by caller
       if (argument.accountType == Account.AccountType.NONE) return null;
 
       argument.accountName =
           parseAccountName(m.group("accName"), param.getCustomer(), argument.getAccountType());
-
-      // if (param.getCustomer().hasAccount(argument.accountName)) return null;
 
 
       return argument;
