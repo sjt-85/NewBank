@@ -78,7 +78,7 @@ public class NewAccountCommand extends NewBankCommand {
       // get account type from regex result
       argument.accountType = parseAccountType(m.group("accType"));
 
-      // Null only added if account type null, duplicates are checked for by caller
+      // Null only added if account type = none, duplicates are checked for by caller
       if (argument.accountType == Account.AccountType.NONE) return null;
 
       argument.accountName =
