@@ -40,7 +40,8 @@ public class NBUnit {
 
     Assert(
         Objects.equals(expected, actual),
-        String.format("expected:%s\nactual:%s", toString.apply(expected), toString.apply(actual)));
+        String.format("expected:%s" + System.lineSeparator() 
+        + "actual:%s", toString.apply(expected), toString.apply(actual)));
   }
 
   public static void AssertIsNotNull(Object o) {
@@ -52,7 +53,8 @@ public class NBUnit {
 
     String inputString =
         String.format(
-            "%s\n%s\n%s%s", userName, password, command, command.length() == 0 ? "" : "\n");
+            "%s" + System.lineSeparator() + "%s" + System.lineSeparator() 
+            + "%s%s", userName, password, command, command.length() == 0 ? "" :  System.lineSeparator());
 
     var outputStream = new ByteArrayOutputStream();
 
