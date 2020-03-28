@@ -148,8 +148,30 @@ public class ServerTestScenarios {
         command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Other sar"));
 
     NBUnit.AssertEqual(
-        "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD ",
+        "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD.",
         response.getDescription());
+  }
+
+  @NBUnit.Test
+  private void createNewAccountWithDuplicateNameThenIncorrectType() {
+
+    var id = NewBank.getBank().checkLogInDetails("Christina", "2");
+
+    var command = new NewAccountCommand();
+
+    NewBankCommandResponse response =
+        command.run(
+            NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""));
+
+    NBUnit.AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
+
+    NewBankCommandResponse response2 =
+        command.run(
+            NewBankCommandParameter.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""));
+
+    NBUnit.AssertEqual(
+        "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA.",
+        response2.getDescription());
   }
 
   @NBUnit.Test
@@ -267,8 +289,10 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/321.62");
     AssertEqual(
         initialResponse
-            + "Transfer successful."  + System.lineSeparator()
-            + "The balance of Checking 1 is now 571.62."  + System.lineSeparator()
+            + "Transfer successful."
+            + System.lineSeparator()
+            + "The balance of Checking 1 is now 571.62."
+            + System.lineSeparator()
             + "The balance of Saving 1 is now 178.38."
             + System.lineSeparator(),
         outputString);
@@ -278,7 +302,7 @@ public class ServerTestScenarios {
   final String commandList =
       "SHOWMYACCOUNTS -> Lists all of your active accounts."
           + System.lineSeparator()
-          + "NEWACCOUNT <account type> <optional: account name> <optional: currency> " 
+          + "NEWACCOUNT <account type> <optional: account name> <optional: currency> "
           + System.lineSeparator()
           + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
           + System.lineSeparator()

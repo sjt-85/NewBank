@@ -1,6 +1,7 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.AccountTypeInfo;
 import newbank.server.Currency;
 import newbank.server.Customer;
 
@@ -15,21 +16,30 @@ public class NewAccountCommand extends NewBankCommand {
 
   @Override
   public String getDescription() {
-    return "<account type> <optional: account name> <optional: currency> " + System.lineSeparator()
-        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. " + System.lineSeparator()
+    return "<account type> <optional: account name> <optional: currency> "
+        + System.lineSeparator()
+        + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
+        + System.lineSeparator()
         + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
   }
 
   @Override
   public NewBankCommandResponse run(NewBankCommandParameter param) {
-
     var args = NewAccountCommandArgument.parse(param);
 
-    if (args == null) return NewBankCommandResponse.invalidRequest("FAIL");
+    if (args == null)
+      return NewBankCommandResponse.invalidRequest(
+          "FAIL: Account type must be specified. Accepted account types: "
+              + AccountTypeInfo.listAllAccountTypesCommaDelimited()
+              + ".");
+
+    // Previously this was tested in NewBankArgument
+    if (param.getCustomer().hasAccount(args.getAccountName()))
+      return NewBankCommandResponse.invalidRequest("FAIL: Please choose a unique name.");
 
     if (args.getCurrency() == null)
       return NewBankCommandResponse.failed(
-          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
+          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
 
     // requested currency is allowed
     param
@@ -46,7 +56,7 @@ public class NewAccountCommand extends NewBankCommand {
                 + "\""
                 + " CURRENCY:"
                 + args.getCurrency().name())
-        : NewBankCommandResponse.failed("FAIL");
+        : NewBankCommandResponse.failed("FAIL: Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {
@@ -68,12 +78,11 @@ public class NewAccountCommand extends NewBankCommand {
       // get account type from regex result
       argument.accountType = parseAccountType(m.group("accType"));
 
+      // Null only added if account type = none, duplicates are checked for by caller
       if (argument.accountType == Account.AccountType.NONE) return null;
 
       argument.accountName =
           parseAccountName(m.group("accName"), param.getCustomer(), argument.getAccountType());
-
-      if (param.getCustomer().hasAccount(argument.accountName)) return null;
 
       return argument;
     }
