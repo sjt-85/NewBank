@@ -26,19 +26,19 @@ public class NewAccountCommand extends NewBankCommand {
     var args = NewAccountCommandArgument.parse(param);
 
     // Either account type was not specified or account already exists
-    if (args == null) {
-      if (NewAccountCommandArgument.duplicateError)
-        return NewBankCommandResponse.invalidRequest(
-            "FAIL: Duplicate name. Please choose a unique name.");
+    if (args == null)
       return NewBankCommandResponse.invalidRequest(
           "FAIL: Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypes()
               + ".");
-    }
+
+
+    if(param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName())) return NewBankCommandResponse.invalidRequest(
+            "FAIL: Please choose a unique name");
 
     if (args.getCurrency() == null)
       return NewBankCommandResponse.failed(
-          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
+          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies());
 
     // requested currency is allowed
     param
@@ -63,7 +63,6 @@ public class NewAccountCommand extends NewBankCommand {
     public static NewAccountCommandArgument parse(NewBankCommandParameter param) {
 
       NewAccountCommandArgument argument = new NewAccountCommandArgument();
-      NewAccountCommandArgument.duplicateError = false;
 
       // use regex to obtain account type and name
       Matcher m =
@@ -83,10 +82,8 @@ public class NewAccountCommand extends NewBankCommand {
       argument.accountName =
           parseAccountName(m.group("accName"), param.getCustomer(), argument.getAccountType());
 
-      if (param.getCustomer().hasAccount(argument.accountName)) {
-        NewAccountCommandArgument.duplicateError = true;
-        return null;
-      }
+      // if (param.getCustomer().hasAccount(argument.accountName)) return null;
+
 
       return argument;
     }
@@ -94,7 +91,6 @@ public class NewAccountCommand extends NewBankCommand {
     private String accountName; // get account name from regex result
     private Account.AccountType accountType;
     private Currency currency;
-    private static boolean duplicateError;
 
     public Currency getCurrency() {
       return currency;
