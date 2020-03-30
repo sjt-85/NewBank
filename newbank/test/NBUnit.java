@@ -1,6 +1,15 @@
 package newbank.test;
 
-import java.io.*;
+import newbank.server.NewBankClientHandler;
+import newbank.server.NewBankServer;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -11,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class NBUnit {
@@ -30,28 +40,36 @@ public class NBUnit {
   }
 
   public static void AssertEqual(Object expected, Object actual) {
+    Function<Object, String> toString =
+        (Object o) ->
+            o == null ? "null" : (o instanceof String ? "\"" + o.toString() + "\"" : o.toString());
+
     Assert(
         Objects.equals(expected, actual),
-        String.format(
-            "expected:%s actual:%s",
-            expected == null ? "null" : expected.toString(),
-            actual == null ? "null" : actual.toString()));
+        String.format("expected:%s" + System.lineSeparator() 
+        + "actual:%s", toString.apply(expected), toString.apply(actual)));
+  }
+
+  public static void AssertIsNotNull(Object o) {
+    Assert(o != null, "null is not expected.");
   }
 
   /** test helpers */
   public static String runServerCommand(String userName, String password, String command) {
 
     String inputString =
-            userName + "\n" + password + "\n" + (command + (command.length() == 0 ? "" : "\n"));
+        String.format(
+            "%s" + System.lineSeparator() + "%s" + System.lineSeparator() 
+            + "%s%s", userName, password, command, command.length() == 0 ? "" :  System.lineSeparator());
 
     var outputStream = new ByteArrayOutputStream();
-    var writer = new PrintWriter(outputStream);
 
     var target =
-            new newbank.server.NewBankClientHandler.ClientThreadTarget(
-                    new BufferedReader(
-                            new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
-                    writer);
+        new NewBankClientHandler.CommandInvoker(
+            new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
+            new PrintWriter(outputStream),
+            NewBankServer.DefaultCommandList);
 
     try {
       target.run();
@@ -61,8 +79,6 @@ public class NBUnit {
     } finally {
       target.close();
     }
-
-    writer.flush();
 
     return outputStream.toString();
   }
@@ -79,7 +95,7 @@ public class NBUnit {
   private static void invokeTestMethod(Method method) {
     try {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-      method.setAccessible(true);
+      method.setAccessible(true); // a private method can be called by setting true.
       method.invoke(testFixture);
       printSuccess("pass: " + method.getName());
     } catch (InvocationTargetException e) {
@@ -91,33 +107,28 @@ public class NBUnit {
   }
 
   private static void printInvocationException(InvocationTargetException e) {
-    if (e.getTargetException() == null) {
-      e.printStackTrace();
-      return;
-    }
-
-    if (!(e.getTargetException() instanceof AssertionError)) {
+    if (e.getTargetException() == null) e.printStackTrace();
+    else if (!(e.getTargetException() instanceof AssertionError))
       e.getTargetException().printStackTrace();
-      return;
-    }
+    else printAssertionError((AssertionError) e.getTargetException());
+  }
 
-    var error = (AssertionError) e.getTargetException();
-
+  private static void printAssertionError(AssertionError error) {
     printError(String.format("\tassertion failed: %s", error.getMessage()));
 
-    var stackTraceElement =
+    var assertionCaller =
         Arrays.stream(error.getStackTrace())
-            .filter(element -> element.getMethodName().indexOf("Assert") < 0)
+            .filter(element -> !element.getMethodName().contains("Assert"))
             .findFirst()
             .get();
 
     printError(
         String.format(
             "\tat %s.%s(%s:%s)",
-            stackTraceElement.getClassName(),
-            stackTraceElement.getMethodName(),
-            stackTraceElement.getFileName(),
-            stackTraceElement.getLineNumber()));
+            assertionCaller.getClassName(),
+            assertionCaller.getMethodName(),
+            assertionCaller.getFileName(),
+            assertionCaller.getLineNumber()));
   }
 
   private static Stream<Method> discoverTestMethods() throws IOException {

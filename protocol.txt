@@ -1,6 +1,6 @@
-This document details the protocol for interacting with the NewBank server.  
+This document details the protocol for interacting with the NewBank server.
 
-A customer enters the command below and sees the messages returned 
+A customer enters the command below and sees the messages returned
 
 SHOWMYACCOUNTS
 Returns a list of all the customers accounts along with their current balance
@@ -17,7 +17,7 @@ Note: The standard currency is GBP, to open an account with another currency, bo
 Returns SUCCESS or FAIL
 
 MOVE <Amount> <From> <To>
-e.g. MOVE 100 Main Savings 
+e.g. MOVE 100 Main Savings
 Returns SUCCESS or FAIL
 
 PAY <Person/Company> <Amount>
@@ -33,6 +33,13 @@ Returns list of all user commands.
 LOGOUT
 Disconnects from server and exits client application.
 
+VIEWACCOUNTTYPE
+Returns details of all account types.
+
 VIEWACCOUNTTYPE <Type>
 e.g. VIEWACCOUNTTYPE "Cash ISA"
 Returns details of account type or FAIL.
+
+TRANSFER <Account Name>/<Account Name>/<Amount>
+Transfer from the first listed account into the second.
+To format add / between accounts and amount eg TRANSFER account 1/account 2/100.
