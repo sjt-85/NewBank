@@ -5,24 +5,25 @@ public class NewBankCommandResponse {
   private String description;
 
   public enum ResponseType {
-    Succeeded,
-    Failed,
-    InvalidRequest
+    SUCCEEDED,
+    FAILED,
+    INVALIDREQUEST,
+    HELP
   }
 
   public static NewBankCommandResponse succeeded(String description) {
-    return new NewBankCommandResponse(ResponseType.Succeeded, description);
+    return new NewBankCommandResponse(ResponseType.SUCCEEDED, description);
   }
 
   public static NewBankCommandResponse failed(String description) {
-    return new NewBankCommandResponse(ResponseType.Failed, description);
+    return new NewBankCommandResponse(ResponseType.FAILED, description);
   }
 
   public static NewBankCommandResponse invalidRequest(String description) {
-    return new NewBankCommandResponse(ResponseType.InvalidRequest, description);
+    return new NewBankCommandResponse(ResponseType.INVALIDREQUEST, description);
   }
 
-  protected NewBankCommandResponse(ResponseType type, String description) {
+  public NewBankCommandResponse(ResponseType type, String description) {
     this.type = type;
     this.description = description;
   }

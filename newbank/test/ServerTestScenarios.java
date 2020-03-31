@@ -7,6 +7,7 @@ import newbank.server.Commands.ShowMyAccountsCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
 
+import java.util.Map;
 import java.util.Objects;
 
 import static newbank.test.NBUnit.AssertEqual;
@@ -113,7 +114,7 @@ public class ServerTestScenarios {
     NewBankCommandResponse response =
         command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving"));
 
-    AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
+    AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
     NBUnit.AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
@@ -130,7 +131,7 @@ public class ServerTestScenarios {
         command.run(
             NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"));
 
-    AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
+    AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
     NBUnit.AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR",
@@ -221,6 +222,8 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "Account to be credited does not exist. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString);
 
@@ -230,6 +233,8 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "Account to be debited does not exist. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString2);
 
@@ -239,6 +244,8 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "The debiting and crediting accounts are the same. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString3);
 
@@ -246,20 +253,29 @@ public class ServerTestScenarios {
     String outputString4 =
         runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/-100");
     AssertEqual(
-        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
+        initialResponse + "Amount is invalid. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
+            + System.lineSeparator(),
         outputString4);
 
     // Test 5
     String outputString5 =
         runServerCommand(userName, password, "TRANSFER \"Saving 1\"/\"Checking 1\"/t");
     AssertEqual(
-        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
+        initialResponse + "Amount is invalid. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
+            + System.lineSeparator(),
         outputString5);
 
     // Test 6
     String outputString6 = runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1");
     AssertEqual(
-        initialResponse + "Not enough arguments. Please try again." + System.lineSeparator(),
+        initialResponse + "Not enough arguments. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
+            + System.lineSeparator(),
         outputString6);
   }
 
@@ -275,6 +291,8 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "Not enough funds in account to be debited. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString);
   }
@@ -300,25 +318,20 @@ public class ServerTestScenarios {
 
   // todo: refactor to improve maintainability
   final String commandList =
-      "SHOWMYACCOUNTS -> Lists all of your active accounts."
+      "> SHOWMYACCOUNTS"
           + System.lineSeparator()
-          + "NEWACCOUNT <account type> <optional: account name> <optional: currency> "
+          + "> NEWACCOUNT"
           + System.lineSeparator()
-          + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
+          + "> VIEWACCOUNTTYPE"
           + System.lineSeparator()
-          + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
+          + "> TRANSFER"
           + System.lineSeparator()
-          + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"."
+          + "> HELP / COMMANDS -> Show command list."
           + System.lineSeparator()
-          + "TRANSFER <Account Name>/<Account Name>/<Amount>"
+          + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
           + System.lineSeparator()
-          + "-> Transfer from the first listed account into the second."
           + System.lineSeparator()
-          + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0."
-          + System.lineSeparator()
-          + "HELP / COMMANDS -> Show command list."
-          + System.lineSeparator()
-          + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
+          + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\"."
           + System.lineSeparator();
 
   final String initialResponse =
@@ -334,4 +347,24 @@ public class ServerTestScenarios {
           + "COMMANDS:"
           + System.lineSeparator()
           + commandList;
+  
+  final Map<String, String> commandDescriptions = Map.of(
+      "SHOWMYACCOUNTS",
+      "-> Lists all of your active accounts.",
+      
+      "NEWACCOUNT",
+      "<account type> <optional: account name> <optional: currency> "
+          + System.lineSeparator()
+          + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
+          + System.lineSeparator()
+          + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.",
+      
+      "VIEWACCOUNTTYPE",
+      "<account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \\\"Cash ISA\\\".",
+      
+      "TRANSFER",
+      "<Account Name>/<Account Name>/<Amount>" + System.lineSeparator()
+          + "-> Transfer from the first listed account into the second." + System.lineSeparator()
+          + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0.");
+      
 }
