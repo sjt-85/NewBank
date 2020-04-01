@@ -5,18 +5,18 @@ import newbank.server.Customer;
 
 import java.math.BigDecimal;
 
-public class TransferCommand extends NewBankCommand {
+public class MoveCommand extends NewBankCommand {
 
   @Override
   public String getCommandName() {
-    return "TRANSFER";
+    return "MOVE";
   }
 
   @Override
   public String getDescription() {
     return "<Account Name>/<Account Name>/<Amount>" + System.lineSeparator()
-        + "-> Transfer from the first listed account into the second." + System.lineSeparator()
-        + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0.";
+        + "-> Move money from the first listed account into the second." + System.lineSeparator()
+        + "   To format add \"/\" between accounts and amount eg MOVE account 1/account 2/100.0.";
   }
 
   @Override
@@ -64,7 +64,7 @@ public class TransferCommand extends NewBankCommand {
     creditedAccount.moneyIn(amount);
 
     return NewBankCommandResponse.succeeded(
-        "Transfer successful." + System.lineSeparator() + "The balance of "
+        "Move successful." + System.lineSeparator() + "The balance of "
             + creditedAccount.getAccountName()
             + " is now "
             + creditedAccount.getBalance().toPlainString()
