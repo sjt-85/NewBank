@@ -43,6 +43,7 @@ public class Account {
   }
 
   private String accountName;
+  private int accountNumber;
   private AccountType accountType;
   private BigDecimal balance;
   private Currency currency;
@@ -53,6 +54,7 @@ public class Account {
     this.accountName = accountName;
     this.balance = convertDoubleToBigDecimal(openingBalance);
     this.currency = Currency.GBP;
+    this.accountNumber = getNextAccountNumber();
   }
 
   public Account(
@@ -61,10 +63,11 @@ public class Account {
     this.accountName = accountName;
     this.balance = convertDoubleToBigDecimal(openingBalance);
     this.currency = currency;
+    this.accountNumber = getNextAccountNumber();
   }
 
   public String toString() {
-    return (accountType.toString() + ": " + accountName + ": " + balance + " " + currency.name());
+    return (accountType.toString() + ": " + accountName + " (" + String.format("%03d", accountNumber) + "): " + balance + " " + currency.name());
   }
 
   public String getAccountName() {
@@ -94,5 +97,9 @@ public class Account {
   private BigDecimal convertDoubleToBigDecimal(double amount) {
     BigDecimal bd = BigDecimal.valueOf(amount);
     return bd.setScale(2);
+  }
+
+  private int getNextAccountNumber() {
+    return NewBankServer.getNextAccountNumber();
   }
 }
