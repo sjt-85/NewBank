@@ -92,44 +92,30 @@ public class NewBankClientHandler extends Thread {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
-          return NewBankCommandResponse.succeeded(
+          return NewBankCommandResponse.succeeded(null,
               "Log out successful. Goodbye " + parameter.getId().getKey());
         case "COMMANDS":
         case "HELP":
-          return NewBankCommandResponse.succeeded(formatCommands());
+          return NewBankCommandResponse.succeeded(null, formatCommands());
         default:
           return runCommand(parameter);
       }
     }
     
     private NewBankCommandResponse runCommand(NewBankCommandParameter parameter) {
-      // recognised command?
       if (commands.containsKey(parameter.getCommandName())) {
-        
+
         // check if user is requesting help
         if (parameter.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$")) {
-          return new NewBankCommandResponse(
-              NewBankCommandResponse.ResponseType.HELP,
-              parameter.getCommandName() + " " + commands.get(parameter.getCommandName()).getDescription());
+          return NewBankCommandResponse.help(commands.get(parameter.getCommandName()));
+        } else {
+          return commands.get(parameter.getCommandName()).run(parameter);
         }
-        
-        // run command
-        NewBankCommandResponse response = commands.get(parameter.getCommandName()).run(parameter);
-        
-        switch (response.getType()) {
-        case SUCCEEDED:
-          return response;
-        default:
-          // not succeeded so append command description to response
-          return new NewBankCommandResponse(response.getType(),
-              response.getDescription()
-              + System.lineSeparator()
-              + System.lineSeparator()
-              + parameter.getCommandName() + " " + commands.get(parameter.getCommandName()).getDescription());
-        }
-        
+
+      } else if (parameter.getCommandName().isBlank()) {
+        return NewBankCommandResponse.EMPTY;
       } else {
-        return NewBankCommandResponse.invalidRequest("FAIL");
+        return NewBankCommandResponse.invalidRequest(null, "FAIL");
       }
     }
 
@@ -156,8 +142,24 @@ public class NewBankClientHandler extends Thread {
     }
 
     private static String formatResponse(NewBankCommandResponse response) {
-      // todo: place holder for formatting a response
-      return response.getDescription();
+      switch (response.getType()) {
+      case HELP:
+      case INVALIDREQUEST:
+        return response.getDescription().isBlank()
+               ? getHelpInfo(response.getCommand())
+               : response.getDescription()
+                     + System.lineSeparator()
+                     + System.lineSeparator()
+                     + getHelpInfo(response.getCommand());
+
+      default: return response.getDescription();
+      }
+    }
+
+    private static String getHelpInfo(INewBankCommand command) {
+      return (command != null)
+             ? command.getCommandName() + " " + command.getDescription()
+             : "Unrecognized command";
     }
 
     private void printMenu() {

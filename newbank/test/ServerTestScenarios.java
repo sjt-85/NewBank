@@ -222,8 +222,6 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "Account to be credited does not exist. Please try again."
-            + System.lineSeparator()
-            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString);
 
@@ -233,8 +231,6 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "Account to be debited does not exist. Please try again."
-            + System.lineSeparator()
-            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString2);
 
@@ -244,8 +240,6 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "The debiting and crediting accounts are the same. Please try again."
-            + System.lineSeparator()
-            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString3);
 
@@ -254,8 +248,6 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/-100");
     AssertEqual(
         initialResponse + "Amount is invalid. Please try again."
-            + System.lineSeparator()
-            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString4);
 
@@ -264,8 +256,6 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "TRANSFER \"Saving 1\"/\"Checking 1\"/t");
     AssertEqual(
         initialResponse + "Amount is invalid. Please try again."
-            + System.lineSeparator()
-            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString5);
 
@@ -291,8 +281,6 @@ public class ServerTestScenarios {
     AssertEqual(
         initialResponse
             + "Not enough funds in account to be debited. Please try again."
-            + System.lineSeparator()
-            + System.lineSeparator() + "TRANSFER " + commandDescriptions.get("TRANSFER")
             + System.lineSeparator(),
         outputString);
   }
