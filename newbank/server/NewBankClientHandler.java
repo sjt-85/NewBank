@@ -159,7 +159,7 @@ public class NewBankClientHandler extends Thread {
     private static String getHelpInfo(INewBankCommand command) {
       return (command != null)
              ? command.getCommandName() + " " + command.getDescription()
-             : "Unrecognized command";
+             : "Unrecognised command";
     }
 
     private void printMenu() {

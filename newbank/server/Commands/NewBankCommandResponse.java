@@ -13,7 +13,7 @@ public class NewBankCommandResponse {
     HELP
   }
   
-  public static NewBankCommandResponse EMPTY = new NewBankCommandResponse(null, ResponseType.EMPTY, "");
+  public static final NewBankCommandResponse EMPTY = new NewBankCommandResponse(null, ResponseType.EMPTY, "");
 
   public static NewBankCommandResponse succeeded(INewBankCommand command, String description) {
     return new NewBankCommandResponse(command, ResponseType.SUCCEEDED, description);
