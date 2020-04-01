@@ -25,7 +25,7 @@ public class MoveCommand extends NewBankCommand {
     Customer customer = param.getCustomer();
     Matcher m = 
       param.matchCommandArgument(
-        "(?<amount>[0-9]+)(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
+        "(?<amount>[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
     
     if (!m.matches()) return NewBankCommandResponse.invalidRequest("Not enough arguments. Please try again.");
 
