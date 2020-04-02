@@ -7,7 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.Objects;
 
-import static newbank.test.NBUnit.*;
+import static newbank.test.NBUnit.AssertEqual;
+import static newbank.test.NBUnit.Test;
+import static newbank.test.NBUnit.buildInputStream;
+import static newbank.test.NBUnit.runServerCommand;
 
 // How to implement test:
 // 1. Define a class
