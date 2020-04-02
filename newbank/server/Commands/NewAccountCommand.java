@@ -28,17 +28,17 @@ public class NewAccountCommand extends NewBankCommand {
     var args = NewAccountCommandArgument.parse(param);
 
     if (args == null)
-      return NewBankCommandResponse.invalidRequest(this,
+      return NewBankCommandResponse.invalidRequest(
           "FAIL: Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypesCommaDelimited()
               + ".");
 
     // Previously this was tested in NewBankArgument
     if (param.getCustomer().hasAccount(args.getAccountName()))
-      return NewBankCommandResponse.invalidRequest(this, "FAIL: Please choose a unique name.");
+      return NewBankCommandResponse.invalidRequest("FAIL: Please choose a unique name.");
 
     if (args.getCurrency() == null)
-      return NewBankCommandResponse.failed(this,
+      return NewBankCommandResponse.failed(
           "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
 
     // requested currency is allowed
@@ -48,7 +48,7 @@ public class NewAccountCommand extends NewBankCommand {
             new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
 
     return (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
-        ? NewBankCommandResponse.succeeded(this,
+        ? NewBankCommandResponse.succeeded(
             "SUCCESS: Opened account TYPE:\""
                 + args.getAccountType().toString()
                 + "\" NAME:\""
@@ -56,7 +56,7 @@ public class NewAccountCommand extends NewBankCommand {
                 + "\""
                 + " CURRENCY:"
                 + args.getCurrency().name())
-        : NewBankCommandResponse.failed(this, "FAIL: Account could not be opened. Please try again.");
+        : NewBankCommandResponse.failed("FAIL: Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {

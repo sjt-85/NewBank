@@ -92,30 +92,15 @@ public class NewBankClientHandler extends Thread {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
-          return NewBankCommandResponse.succeeded(null,
+          return NewBankCommandResponse.succeeded(
               "Log out successful. Goodbye " + parameter.getId().getKey());
         case "COMMANDS":
         case "HELP":
-          return NewBankCommandResponse.succeeded(null, formatCommands());
+          return NewBankCommandResponse.succeeded(formatCommands());
         default:
-          return runCommand(parameter);
-      }
-    }
-    
-    private NewBankCommandResponse runCommand(NewBankCommandParameter parameter) {
-      if (commands.containsKey(parameter.getCommandName())) {
-
-        // check if user is requesting help
-        if (parameter.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$")) {
-          return NewBankCommandResponse.help(commands.get(parameter.getCommandName()));
-        } else {
-          return commands.get(parameter.getCommandName()).run(parameter);
-        }
-
-      } else if (parameter.getCommandName().isBlank()) {
-        return NewBankCommandResponse.EMPTY;
-      } else {
-        return NewBankCommandResponse.invalidRequest(null, "FAIL");
+          if (commands.containsKey(parameter.getCommandName()))
+            return commands.get(parameter.getCommandName()).run(parameter);
+          else return NewBankCommandResponse.invalidRequest("FAIL");
       }
     }
 
@@ -132,34 +117,16 @@ public class NewBankClientHandler extends Thread {
     private String formatCommands() {
       return commandsInOriginalOrder.stream()
               .map(commandName -> commands.get(commandName))
-              .map(command -> "> " + command.getCommandName())
+              .map(command -> command.getCommandName() + " " + command.getDescription())
               .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
               .orElse("")
-          + System.lineSeparator() + "> HELP / COMMANDS -> Show command list."
-          + System.lineSeparator() + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
-          + System.lineSeparator()
-          + System.lineSeparator() + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\".";
+          + System.lineSeparator() + "HELP / COMMANDS -> Show command list."
+          + System.lineSeparator() + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
     }
 
     private static String formatResponse(NewBankCommandResponse response) {
-      switch (response.getType()) {
-      case HELP:
-      case INVALIDREQUEST:
-        return response.getDescription().isBlank()
-               ? getHelpInfo(response.getCommand())
-               : response.getDescription()
-                     + System.lineSeparator()
-                     + System.lineSeparator()
-                     + getHelpInfo(response.getCommand());
-
-      default: return response.getDescription();
-      }
-    }
-
-    private static String getHelpInfo(INewBankCommand command) {
-      return (command != null)
-             ? command.getCommandName() + " " + command.getDescription()
-             : "Unrecognised command";
+      // todo: place holder for formatting a response
+      return response.getDescription();
     }
 
     private void printMenu() {

@@ -1,40 +1,30 @@
 package newbank.server.Commands;
 
 public class NewBankCommandResponse {
-  private final INewBankCommand command;
   private final ResponseType type;
   private String description;
 
   public enum ResponseType {
-    EMPTY,
-    SUCCEEDED,
-    FAILED,
-    INVALIDREQUEST,
-    HELP
-  }
-  
-  public static final NewBankCommandResponse EMPTY = new NewBankCommandResponse(null, ResponseType.EMPTY, "");
-
-  public static NewBankCommandResponse succeeded(INewBankCommand command, String description) {
-    return new NewBankCommandResponse(command, ResponseType.SUCCEEDED, description);
+    Succeeded,
+    Failed,
+    InvalidRequest
   }
 
-  public static NewBankCommandResponse failed(INewBankCommand command, String description) {
-    return new NewBankCommandResponse(command, ResponseType.FAILED, description);
+  public static NewBankCommandResponse succeeded(String description) {
+    return new NewBankCommandResponse(ResponseType.Succeeded, description);
   }
 
-  public static NewBankCommandResponse invalidRequest(INewBankCommand command, String description) {
-    return new NewBankCommandResponse(command, ResponseType.INVALIDREQUEST, description);
+  public static NewBankCommandResponse failed(String description) {
+    return new NewBankCommandResponse(ResponseType.Failed, description);
   }
-  
-  public static NewBankCommandResponse help(INewBankCommand command) {
-    return new NewBankCommandResponse(command, ResponseType.HELP, "");
+
+  public static NewBankCommandResponse invalidRequest(String description) {
+    return new NewBankCommandResponse(ResponseType.InvalidRequest, description);
   }
-  
-  protected NewBankCommandResponse(INewBankCommand command, ResponseType type, String description) {
+
+  protected NewBankCommandResponse(ResponseType type, String description) {
     this.type = type;
     this.description = description;
-    this.command = command;
   }
 
   public ResponseType getType() {
@@ -43,9 +33,5 @@ public class NewBankCommandResponse {
 
   public String getDescription() {
     return description;
-  }
-  
-  public INewBankCommand getCommand() {
-    return command;
   }
 }
