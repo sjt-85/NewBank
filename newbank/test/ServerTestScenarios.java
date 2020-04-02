@@ -31,9 +31,19 @@ public class ServerTestScenarios {
 
     @Override
     public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
+      // this is a sample sequence of a user interaction inside a command
 
-      Assert(false);
-      response.createSucceeded("");
+      // you can ask a question to a user by providing a message
+      String stringResponse = response.query("What are you doing?");
+      // and get a string response from the user.
+      AssertEqual("I'm coding.", stringResponse);
+
+      // you can also ask a close-ended question to a user
+      boolean boolResponse = response.confirm("Do you finish the feature?");
+      // and get a boolean response.
+      AssertEqual(false, boolResponse);
+
+      response.succeeded("Good luck!");
     }
   }
 
@@ -45,9 +55,28 @@ public class ServerTestScenarios {
     var out = new ByteArrayOutputStream();
 
     runServerCommand(
-        buildInputStream(userName, password, "PROMPTSTUB", "Y"),
+        buildInputStream(userName, password, "PROMPTSTUB", "I'm coding.", "N"),
         out,
         new INewBankCommand[] {new PromptStub()});
+
+    AssertEqual(
+        initialResponseCore
+            + "> PROMPTSTUB"
+            + System.lineSeparator()
+            + "> HELP / COMMANDS -> Show command list."
+            + System.lineSeparator()
+            + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\"."
+            + System.lineSeparator()
+            + "What are you doing? :"
+            + System.lineSeparator()
+            + "Do you finish the feature? [Y]es/[N]o :"
+            + System.lineSeparator()
+            + "Good luck!"
+            + System.lineSeparator(),
+        out.toString());
   }
 
   private static String buildAccountTypeString(
@@ -382,7 +411,7 @@ public class ServerTestScenarios {
           + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\"."
           + System.lineSeparator();
 
-  final String initialResponse =
+  public static final String initialResponseCore =
       "Enter Username"
           + System.lineSeparator()
           + "Enter Password"
@@ -393,8 +422,9 @@ public class ServerTestScenarios {
           + System.lineSeparator()
           + System.lineSeparator()
           + "COMMANDS:"
-          + System.lineSeparator()
-          + commandList;
+          + System.lineSeparator();
+
+  final String initialResponse = initialResponseCore + commandList;
 
   final Map<String, String> commandDescriptions =
       Map.of(

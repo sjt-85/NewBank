@@ -1,8 +1,14 @@
 package newbank.server.Commands;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class NewBankCommandResponse {
   private ResponseType type;
   private String description;
+  private BufferedReader in;
+  private PrintWriter out;
 
   public enum ResponseType {
     EMPTY,
@@ -13,7 +19,7 @@ public class NewBankCommandResponse {
   }
 
   public static final NewBankCommandResponse EMPTY =
-      new NewBankCommandResponse().set(ResponseType.EMPTY, "");
+      new NewBankCommandResponse().setState(ResponseType.EMPTY, "");
 
   public static NewBankCommandResponse createSucceeded(String description) {
     return new NewBankCommandResponse().succeeded(description);
@@ -32,25 +38,51 @@ public class NewBankCommandResponse {
   }
 
   public NewBankCommandResponse succeeded(String description) {
-    return set(ResponseType.SUCCEEDED, description);
+    return setState(ResponseType.SUCCEEDED, description);
   }
 
   public NewBankCommandResponse failed(String description) {
-    return set(ResponseType.FAILED, description);
+    return setState(ResponseType.FAILED, description);
   }
 
   public NewBankCommandResponse invalidRequest(String description) {
-    return set(ResponseType.INVALIDREQUEST, description);
+    return setState(ResponseType.INVALIDREQUEST, description);
   }
 
   public NewBankCommandResponse help(String description) {
-    return set(ResponseType.HELP, description);
+    return setState(ResponseType.HELP, description);
   }
 
-  private NewBankCommandResponse set(ResponseType type, String description) {
+  public String query(String message) {
+    try {
+      out.println(message + " :");
+      return in.readLine();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return "";
+    }
+  }
+
+  public boolean confirm(String message) {
+    do {
+      switch (query(message + " [Y]es/[N]o").toUpperCase()) {
+        case "Y":
+          return true;
+        case "N":
+          return false;
+      }
+    } while (true);
+  }
+
+  private NewBankCommandResponse setState(ResponseType type, String description) {
     this.type = type;
     this.description = description;
     return this;
+  }
+
+  public void setStream(BufferedReader in, PrintWriter out) {
+    this.in = in;
+    this.out = out;
   }
 
   public NewBankCommandResponse() {}
