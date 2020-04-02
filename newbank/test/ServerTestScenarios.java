@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.Objects;
 
+import static newbank.server.Commands.NewBankCommandResponse.succeeded;
 import static newbank.test.NBUnit.Assert;
 import static newbank.test.NBUnit.AssertEqual;
 import static newbank.test.NBUnit.Test;
@@ -43,7 +44,7 @@ public class ServerTestScenarios {
       public NewBankCommandResponse run(NewBankCommandParameter param) {
 
         Assert(false);
-        return NewBankCommandResponse.succeeded("");
+        return succeeded("");
       }
     }
 
@@ -80,7 +81,7 @@ public class ServerTestScenarios {
         + otherFeatures;
   }
 
-  @NBUnit.Test
+  @Test
   private void viewAccountTypeReturnDescriptionOfAccountType() {
 
     var command = new ViewAccountTypeCommand();
@@ -90,7 +91,7 @@ public class ServerTestScenarios {
             NewBankCommandParameter.create(
                 NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""));
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         buildAccountTypeString(
             "Cash ISA",
             2.25,
@@ -108,13 +109,13 @@ public class ServerTestScenarios {
                 NewBank.getBank().checkLogInDetails("Bhagy", "1"),
                 "VIEWACCOUNTTYPE \"Current Account\""));
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         buildAccountTypeString(
             "Current Account", 0.25, 0, null, 250, 0, "No additional features", "GBP"),
         currentAccount.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
     var command = new ShowMyAccountsCommand();
@@ -125,7 +126,7 @@ public class ServerTestScenarios {
                 NewBankCommandParameter.create(
                     NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")));
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "Current Account: Main 1: 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
 
     var christina =
@@ -134,12 +135,12 @@ public class ServerTestScenarios {
                 NewBankCommandParameter.create(
                     NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")));
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(),
         christina.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
 
     var id = NewBank.getBank().checkLogInDetails("John", "3");
@@ -151,12 +152,12 @@ public class ServerTestScenarios {
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
         response.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithAccountNameAndAcceptedCurrencyReturnsSuccess() {
 
     var id = NewBank.getBank().checkLogInDetails("John", "3");
@@ -169,12 +170,12 @@ public class ServerTestScenarios {
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR",
         response.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithWrongCurrencyReturnsFailWithMessage() {
 
     var id = NewBank.getBank().checkLogInDetails("Christina", "2");
@@ -184,12 +185,12 @@ public class ServerTestScenarios {
     NewBankCommandResponse response =
         command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Other sar"));
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD.",
         response.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithDuplicateNameThenIncorrectType() {
 
     var id = NewBank.getBank().checkLogInDetails("Christina", "2");
@@ -200,18 +201,18 @@ public class ServerTestScenarios {
         command.run(
             NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""));
 
-    NBUnit.AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
+    AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
 
     NewBankCommandResponse response2 =
         command.run(
             NewBankCommandParameter.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""));
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA.",
         response2.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void userCanLogIn() {
 
     String userName = "Bhagy";
@@ -223,7 +224,7 @@ public class ServerTestScenarios {
     AssertEqual(initialResponse, outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userCanLogOff() {
 
     String userName = "Bhagy";
@@ -237,7 +238,7 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userCanLongInAndRunCOMMANDW() {
 
     String userName = "Bhagy";
@@ -249,7 +250,7 @@ public class ServerTestScenarios {
     AssertEqual(initialResponse + commandList, outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userTriesToTransferWithBadArgument() {
 
     String userName = "John";
@@ -324,7 +325,7 @@ public class ServerTestScenarios {
 
   // separate from bad arguments in case overdraft functionality added
 
-  @NBUnit.Test
+  @Test
   private void userTriesToTransferWithoutEnoughFunds() {
 
     String userName = "John";
@@ -341,7 +342,7 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userSuccessfullyTransfers() {
 
     String userName = "John";

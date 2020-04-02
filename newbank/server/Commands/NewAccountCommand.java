@@ -7,6 +7,9 @@ import newbank.server.Customer;
 
 import java.util.regex.Matcher;
 
+import static newbank.server.Commands.NewBankCommandResponse.failed;
+import static newbank.server.Commands.NewBankCommandResponse.succeeded;
+
 public class NewAccountCommand extends NewBankCommand {
 
   @Override
@@ -29,7 +32,7 @@ public class NewAccountCommand extends NewBankCommand {
 
     if (args == null)
       return NewBankCommandResponse.invalidRequest(
-              "FAIL: Account type must be specified. Accepted account types: "
+          "FAIL: Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypesCommaDelimited()
               + ".");
 
@@ -38,8 +41,8 @@ public class NewAccountCommand extends NewBankCommand {
       return NewBankCommandResponse.invalidRequest("FAIL: Please choose a unique name.");
 
     if (args.getCurrency() == null)
-      return NewBankCommandResponse.failed(
-              "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
+      return failed(
+          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
 
     // requested currency is allowed
     param
@@ -48,7 +51,7 @@ public class NewAccountCommand extends NewBankCommand {
             new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
 
     return (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
-        ? NewBankCommandResponse.succeeded(
+        ? succeeded(
             "SUCCESS: Opened account TYPE:\""
                 + args.getAccountType().toString()
                 + "\" NAME:\""
@@ -56,7 +59,7 @@ public class NewAccountCommand extends NewBankCommand {
                 + "\""
                 + " CURRENCY:"
                 + args.getCurrency().name())
-        : NewBankCommandResponse.failed("FAIL: Account could not be opened. Please try again.");
+        : failed("FAIL: Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {

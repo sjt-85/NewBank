@@ -3,8 +3,9 @@ package newbank.server.Commands;
 import newbank.server.Account;
 import newbank.server.AccountTypeInfo;
 
-
 import java.util.regex.Matcher;
+
+import static newbank.server.Commands.NewBankCommandResponse.succeeded;
 
 public class ViewAccountTypeCommand extends NewBankCommand {
 
@@ -23,16 +24,16 @@ public class ViewAccountTypeCommand extends NewBankCommand {
 
     Account.AccountType accountType = getAccountType(param);
 
-    if (param.getCommandArgument().isEmpty()) {
-      return NewBankCommandResponse.succeeded(AccountTypeInfo.getAllAccountTypeDescriptions().toString());
-    }
+    if (param.getCommandArgument().isEmpty())
+      return succeeded(AccountTypeInfo.getAllAccountTypeDescriptions());
+
     if (accountType == Account.AccountType.NONE)
       return NewBankCommandResponse.invalidRequest("Invalid account type.");
 
     AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
     if (info == null) return NewBankCommandResponse.failed("Could not retrieve account info.");
 
-    return NewBankCommandResponse.succeeded(info.toString());
+    return succeeded(info.toString());
   }
 
   public static Account.AccountType getAccountType(NewBankCommandParameter param) {
