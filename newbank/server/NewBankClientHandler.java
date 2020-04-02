@@ -11,6 +11,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static newbank.server.Commands.NewBankCommandResponse.invalidRequest;
+import static newbank.server.Commands.NewBankCommandResponse.succeeded;
+
 public class NewBankClientHandler extends Thread {
 
   private static CommandInvoker invoker;
@@ -113,6 +116,12 @@ public class NewBankClientHandler extends Thread {
             return response.getDescription();
         }
       }
+
+      private static String getHelpInfo(INewBankCommand command) {
+        return (command != null)
+                ? command.getCommandName() + " " + command.getDescription()
+                : "Unrecognised command";
+      }
     }
 
     private DispatchResult dispatch(NewBankCommandParameter parameter) {
@@ -120,12 +129,10 @@ public class NewBankClientHandler extends Thread {
       switch (parameter.getCommandName()) {
         case "LOGOUT":
           return new DispatchResult(
-              null,
-              NewBankCommandResponse.succeeded(
-                  null, "Log out successful. Goodbye " + parameter.getId().getKey()));
+              null, succeeded("Log out successful. Goodbye " + parameter.getId().getKey()));
         case "COMMANDS":
         case "HELP":
-          return new DispatchResult(null, NewBankCommandResponse.succeeded(null, formatCommands()));
+          return new DispatchResult(null, succeeded(formatCommands()));
         default:
           return runCommand(parameter);
       }
@@ -138,14 +145,14 @@ public class NewBankClientHandler extends Thread {
 
         // check if user is requesting help
         if (parameter.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$"))
-          return new DispatchResult(command, NewBankCommandResponse.help(command));
+          return new DispatchResult(command, NewBankCommandResponse.help());
 
         return new DispatchResult(command, command.run(parameter));
 
       } else if (parameter.getCommandName().isBlank()) {
         return new DispatchResult(null, NewBankCommandResponse.EMPTY);
       } else {
-        return new DispatchResult(null, NewBankCommandResponse.invalidRequest(null, "FAIL"));
+        return new DispatchResult(null, invalidRequest("FAIL"));
       }
     }
 
@@ -172,12 +179,6 @@ public class NewBankClientHandler extends Thread {
           + System.lineSeparator()
           + System.lineSeparator()
           + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\".";
-    }
-
-    private static String getHelpInfo(INewBankCommand command) {
-      return (command != null)
-          ? command.getCommandName() + " " + command.getDescription()
-          : "Unrecognised command";
     }
 
     private void printMenu() {

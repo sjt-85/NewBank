@@ -43,7 +43,7 @@ public class ServerTestScenarios {
       public NewBankCommandResponse run(NewBankCommandParameter param) {
 
         Assert(false);
-        return NewBankCommandResponse.succeeded(null, "");
+        return NewBankCommandResponse.succeeded("");
       }
     }
 

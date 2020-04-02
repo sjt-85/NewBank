@@ -26,45 +26,45 @@ public class TransferCommand extends NewBankCommand {
     // TODO make / a forbidden character when naming new accounts
     String[] request = input.split("/");
     if (request.length != 3) {
-      return NewBankCommandResponse.invalidRequest(this, "Not enough arguments. Please try again.");
+      return NewBankCommandResponse.invalidRequest("Not enough arguments. Please try again.");
     }
     Account debitedAccount = customer.getAccountFromName(request[0].replaceAll("\"", ""));
     Account creditedAccount = customer.getAccountFromName(request[1].replaceAll("\"", ""));
 
     if (debitedAccount == null) {
-      return NewBankCommandResponse.failed(this,
-          "Account to be debited does not exist. Please try again.");
+      return NewBankCommandResponse.failed(
+              "Account to be debited does not exist. Please try again.");
     }
     if (creditedAccount == null) {
-      return NewBankCommandResponse.failed(this,
-          "Account to be credited does not exist. Please try again.");
+      return NewBankCommandResponse.failed(
+              "Account to be credited does not exist. Please try again.");
     }
     if (request[0].equals(request[1])) {
-      return NewBankCommandResponse.failed(this,
-          "The debiting and crediting accounts are the same. Please try again.");
+      return NewBankCommandResponse.failed(
+              "The debiting and crediting accounts are the same. Please try again.");
     }
 
     if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
-      return NewBankCommandResponse.failed(this,
-          "The currency of each account is not the same. Please try again.");
+      return NewBankCommandResponse.failed(
+              "The currency of each account is not the same. Please try again.");
     }
 
     if (!validAmount(request[2])) {
-      return NewBankCommandResponse.failed(this, "Amount is invalid. Please try again.");
+      return NewBankCommandResponse.failed("Amount is invalid. Please try again.");
     }
 
     BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(request[2]));
 
     if (debitedAccount.getBalance().compareTo(amount) < 0) {
-      return NewBankCommandResponse.failed(this,
-          "Not enough funds in account to be debited. Please try again.");
+      return NewBankCommandResponse.failed(
+              "Not enough funds in account to be debited. Please try again.");
     }
 
     debitedAccount.moneyOut(amount);
     creditedAccount.moneyIn(amount);
 
-    return NewBankCommandResponse.succeeded(this,
-        "Transfer successful." + System.lineSeparator() + "The balance of "
+    return NewBankCommandResponse.succeeded(
+            "Transfer successful." + System.lineSeparator() + "The balance of "
             + creditedAccount.getAccountName()
             + " is now "
             + creditedAccount.getBalance().toPlainString()
