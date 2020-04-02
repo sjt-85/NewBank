@@ -150,8 +150,7 @@ public class NewBankClientHandler extends Thread {
         if (request.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$"))
           return new DispatchResult(command, NewBankCommandResponse.createHelp());
 
-        NewBankCommandResponse response = new NewBankCommandResponse();
-        response.setStream(in, out);
+        NewBankCommandResponse response = new NewBankCommandResponse(in, out);
 
         command.run(request, response);
 

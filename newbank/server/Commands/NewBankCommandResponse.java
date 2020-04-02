@@ -10,6 +10,10 @@ public class NewBankCommandResponse {
   private BufferedReader in;
   private PrintWriter out;
 
+  public NewBankCommandResponse(BufferedReader in, PrintWriter out) {
+    setStream(in, out);
+  }
+
   public enum ResponseType {
     EMPTY,
     SUCCEEDED,
