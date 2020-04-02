@@ -5,8 +5,6 @@ import newbank.server.Customer;
 
 import java.math.BigDecimal;
 
-import static newbank.server.Commands.NewBankCommandResponse.*;
-
 public class TransferCommand extends NewBankCommand {
 
   @Override
@@ -24,40 +22,55 @@ public class TransferCommand extends NewBankCommand {
   }
 
   @Override
-  public NewBankCommandResponse run(NewBankCommandParameter param) {
+  public void run(NewBankCommandRequest param, NewBankCommandResponse response) {
     Customer customer = param.getCustomer();
     String input = param.getCommandArgument();
     // TODO make / a forbidden character when naming new accounts
     String[] request = input.split("/");
 
-    if (request.length != 3) return invalidRequest("Not enough arguments. Please try again.");
+    if (request.length != 3) {
+      response.invalidRequest("Not enough arguments. Please try again.");
+      return;
+    }
 
     Account debitedAccount = customer.getAccountFromName(request[0].replaceAll("\"", ""));
     Account creditedAccount = customer.getAccountFromName(request[1].replaceAll("\"", ""));
 
-    if (debitedAccount == null)
-      return failed("Account to be debited does not exist. Please try again.");
+    if (debitedAccount == null) {
+      response.failed("Account to be debited does not exist. Please try again.");
+      return;
+    }
 
-    if (creditedAccount == null)
-      return failed("Account to be credited does not exist. Please try again.");
+    if (creditedAccount == null) {
+      response.failed("Account to be credited does not exist. Please try again.");
+      return;
+    }
 
-    if (request[0].equals(request[1]))
-      return failed("The debiting and crediting accounts are the same. Please try again.");
+    if (request[0].equals(request[1])) {
+      response.failed("The debiting and crediting accounts are the same. Please try again.");
+      return;
+    }
 
-    if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency()))
-      return failed("The currency of each account is not the same. Please try again.");
+    if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
+      response.failed("The currency of each account is not the same. Please try again.");
+      return;
+    }
 
-    if (!validAmount(request[2])) return failed("Amount is invalid. Please try again.");
-
+    if (!validAmount(request[2])) {
+      response.failed("Amount is invalid. Please try again.");
+      return;
+    }
     BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(request[2]));
 
-    if (debitedAccount.getBalance().compareTo(amount) < 0)
-      return failed("Not enough funds in account to be debited. Please try again.");
+    if (debitedAccount.getBalance().compareTo(amount) < 0) {
+      response.failed("Not enough funds in account to be debited. Please try again.");
+      return;
+    }
 
     debitedAccount.moneyOut(amount);
     creditedAccount.moneyIn(amount);
 
-    return succeeded(
+    response.succeeded(
         "Transfer successful."
             + System.lineSeparator()
             + "The balance of "

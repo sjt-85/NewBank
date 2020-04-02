@@ -1,7 +1,5 @@
 package newbank.server.Commands;
 
-import static newbank.server.Commands.NewBankCommandResponse.succeeded;
-
 public class ShowMyAccountsCommand extends NewBankCommand {
 
   @Override
@@ -15,7 +13,7 @@ public class ShowMyAccountsCommand extends NewBankCommand {
   }
 
   @Override
-  public NewBankCommandResponse run(NewBankCommandParameter param) {
-    return succeeded(param.getCustomer().accountsToString());
+  public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
+    response.succeeded(request.getCustomer().accountsToString());
   }
 }

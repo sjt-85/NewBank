@@ -1,7 +1,7 @@
 package newbank.server;
 
 import newbank.server.Commands.INewBankCommand;
-import newbank.server.Commands.NewBankCommandParameter;
+import newbank.server.Commands.NewBankCommandRequest;
 import newbank.server.Commands.NewBankCommandResponse;
 
 import java.io.*;
@@ -11,8 +11,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static newbank.server.Commands.NewBankCommandResponse.invalidRequest;
-import static newbank.server.Commands.NewBankCommandResponse.succeeded;
+import static newbank.server.Commands.NewBankCommandResponse.createInvalidRequest;
+import static newbank.server.Commands.NewBankCommandResponse.createSucceeded;
 
 public class NewBankClientHandler extends Thread {
 
@@ -83,7 +83,7 @@ public class NewBankClientHandler extends Thread {
         String request = in.readLine();
         if (request == null) break; // fall here when called by test.
 
-        var parameter = NewBankCommandParameter.create(id, request);
+        var parameter = NewBankCommandRequest.create(id, request);
         if (parameter == null) continue;
 
         out.println(dispatch(parameter).format());
@@ -124,35 +124,38 @@ public class NewBankClientHandler extends Thread {
       }
     }
 
-    private DispatchResult dispatch(NewBankCommandParameter parameter) {
+    private DispatchResult dispatch(NewBankCommandRequest parameter) {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
           return new DispatchResult(
-              null, succeeded("Log out successful. Goodbye " + parameter.getId().getKey()));
+              null, createSucceeded("Log out successful. Goodbye " + parameter.getId().getKey()));
         case "COMMANDS":
         case "HELP":
-          return new DispatchResult(null, succeeded(formatCommands()));
+          return new DispatchResult(null, createSucceeded(formatCommands()));
         default:
           return runCommand(parameter);
       }
     }
 
-    private DispatchResult runCommand(NewBankCommandParameter parameter) {
+    private DispatchResult runCommand(NewBankCommandRequest parameter) {
       if (commands.containsKey(parameter.getCommandName())) {
 
         INewBankCommand command = commands.get(parameter.getCommandName());
 
         // check if user is requesting help
         if (parameter.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$"))
-          return new DispatchResult(command, NewBankCommandResponse.help());
+          return new DispatchResult(command, NewBankCommandResponse.createHelp());
 
-        return new DispatchResult(command, command.run(parameter));
+        NewBankCommandResponse response = new NewBankCommandResponse();
+        command.run(parameter, response);
+
+        return new DispatchResult(command, response);
 
       } else if (parameter.getCommandName().isBlank()) {
         return new DispatchResult(null, NewBankCommandResponse.EMPTY);
       } else {
-        return new DispatchResult(null, invalidRequest("FAIL"));
+        return new DispatchResult(null, createInvalidRequest("FAIL"));
       }
     }
 

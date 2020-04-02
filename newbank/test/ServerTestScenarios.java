@@ -7,12 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.Objects;
 
-import static newbank.server.Commands.NewBankCommandResponse.succeeded;
-import static newbank.test.NBUnit.Assert;
-import static newbank.test.NBUnit.AssertEqual;
-import static newbank.test.NBUnit.Test;
-import static newbank.test.NBUnit.buildInputStream;
-import static newbank.test.NBUnit.runServerCommand;
+import static newbank.test.NBUnit.*;
 
 // How to implement test:
 // 1. Define a class
@@ -23,37 +18,36 @@ import static newbank.test.NBUnit.runServerCommand;
 
 public class ServerTestScenarios {
 
+  class PromptStub extends NewBankCommand {
+    @Override
+    public String getCommandName() {
+      return "PROMPTSTUB";
+    }
+
+    @Override
+    public String getDescription() {
+      return "";
+    }
+
+    @Override
+    public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
+
+      Assert(false);
+      response.createSucceeded("");
+    }
+  }
 
   @Test
   private void commandCanShowPrompt() {
     String userName = "Bhagy";
     String password = "1";
 
-    class PromptStub extends NewBankCommand {
-      @Override
-      public String getCommandName() {
-        return "PROMPTSTUB";
-      }
-
-      @Override
-      public String getDescription() {
-        return "";
-      }
-
-      @Override
-      public NewBankCommandResponse run(NewBankCommandParameter param) {
-
-        Assert(false);
-        return succeeded("");
-      }
-    }
-
     var out = new ByteArrayOutputStream();
 
     runServerCommand(
-            buildInputStream(userName, password, "PROMPTSTUB", "Y"),
-            out,
-            new INewBankCommand[] {new PromptStub()});
+        buildInputStream(userName, password, "PROMPTSTUB", "Y"),
+        out,
+        new INewBankCommand[] {new PromptStub()});
   }
 
   private static String buildAccountTypeString(
@@ -86,10 +80,11 @@ public class ServerTestScenarios {
 
     var command = new ViewAccountTypeCommand();
 
-    var cashISA =
-        command.run(
-            NewBankCommandParameter.create(
-                NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""));
+    var cashISA = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(
+            NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""),
+        cashISA);
 
     AssertEqual(
         buildAccountTypeString(
@@ -103,11 +98,12 @@ public class ServerTestScenarios {
             "GBP"),
         cashISA.getDescription());
 
-    var currentAccount =
-        command.run(
-            NewBankCommandParameter.create(
-                NewBank.getBank().checkLogInDetails("Bhagy", "1"),
-                "VIEWACCOUNTTYPE \"Current Account\""));
+    var currentAccount = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(
+            NewBank.getBank().checkLogInDetails("Bhagy", "1"),
+            "VIEWACCOUNTTYPE \"Current Account\""),
+        currentAccount);
 
     AssertEqual(
         buildAccountTypeString(
@@ -120,20 +116,22 @@ public class ServerTestScenarios {
 
     var command = new ShowMyAccountsCommand();
 
-    var bhagy =
-        command.run(
-            Objects.requireNonNull(
-                NewBankCommandParameter.create(
-                    NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")));
+    var bhagy = new NewBankCommandResponse();
+    command.run(
+        Objects.requireNonNull(
+            NewBankCommandRequest.create(
+                NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")),
+        bhagy);
 
     AssertEqual(
         "Current Account: Main 1: 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
 
-    var christina =
-        command.run(
-            Objects.requireNonNull(
-                NewBankCommandParameter.create(
-                    NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")));
+    var christina = new NewBankCommandResponse();
+    command.run(
+        Objects.requireNonNull(
+            NewBankCommandRequest.create(
+                NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")),
+        christina);
 
     AssertEqual(
         "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(),
@@ -147,8 +145,9 @@ public class ServerTestScenarios {
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving"));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Saving"), response);
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
@@ -164,9 +163,9 @@ public class ServerTestScenarios {
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(
-            NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"), response);
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
@@ -182,8 +181,9 @@ public class ServerTestScenarios {
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Other sar"));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Other sar"), response);
 
     AssertEqual(
         "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD.",
@@ -197,15 +197,15 @@ public class ServerTestScenarios {
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(
-            NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""), response);
 
     AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
 
-    NewBankCommandResponse response2 =
-        command.run(
-            NewBankCommandParameter.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""));
+    NewBankCommandResponse response2 = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""), response2);
 
     AssertEqual(
         "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA.",
