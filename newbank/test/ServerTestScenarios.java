@@ -1,6 +1,12 @@
 package newbank.test;
 
-import newbank.server.Commands.*;
+import newbank.server.Commands.INewBankCommand;
+import newbank.server.Commands.NewAccountCommand;
+import newbank.server.Commands.NewBankCommand;
+import newbank.server.Commands.NewBankCommandRequest;
+import newbank.server.Commands.NewBankCommandResponse;
+import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
 
 import java.io.ByteArrayOutputStream;
