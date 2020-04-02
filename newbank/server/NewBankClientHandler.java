@@ -107,20 +107,20 @@ public class NewBankClientHandler extends Thread {
           case HELP:
           case INVALIDREQUEST:
             return response.getDescription().isBlank()
-                ? getHelpInfo(command)
+                ? getHelpInfo()
                 : response.getDescription()
                     + System.lineSeparator()
                     + System.lineSeparator()
-                    + getHelpInfo(command);
+                    + getHelpInfo();
           default:
             return response.getDescription();
         }
       }
 
-      private static String getHelpInfo(INewBankCommand command) {
-        return (command != null)
-                ? command.getCommandName() + " " + command.getDescription()
-                : "Unrecognised command";
+      private String getHelpInfo() {
+        return (this.command != null)
+            ? this.command.getCommandName() + " " + this.command.getDescription()
+            : "Unrecognised command";
       }
     }
 
