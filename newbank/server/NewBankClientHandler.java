@@ -4,10 +4,7 @@ import newbank.server.Commands.INewBankCommand;
 import newbank.server.Commands.NewBankCommandParameter;
 import newbank.server.Commands.NewBankCommandResponse;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,11 +16,9 @@ public class NewBankClientHandler extends Thread {
   private static CommandInvoker invoker;
 
   public NewBankClientHandler(Socket s) throws IOException {
-    invoker =
-        new CommandInvoker(
-            new BufferedReader(new InputStreamReader(s.getInputStream())),
-            new PrintWriter(s.getOutputStream(), true),
-            NewBankServer.DefaultCommandList);
+    InputStream inputStream = s.getInputStream();
+    OutputStream outputStream = s.getOutputStream();
+    invoker = new CommandInvoker(inputStream, outputStream, NewBankServer.DefaultCommandList);
   }
 
   public void run() {
@@ -47,7 +42,7 @@ public class NewBankClientHandler extends Thread {
     private BufferedReader in;
     private PrintWriter out;
 
-    public CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
+    protected CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
       this.out = out;
       this.commandsInOriginalOrder =
@@ -55,6 +50,10 @@ public class NewBankClientHandler extends Thread {
       this.commands =
           Arrays.stream(commands)
               .collect(Collectors.toMap(INewBankCommand::getCommandName, command -> command));
+    }
+
+    public CommandInvoker(InputStream in, OutputStream out, INewBankCommand[] commands) {
+      this(new BufferedReader(new InputStreamReader(in)), new PrintWriter(out, true), commands);
     }
 
     public void run() throws IOException {
@@ -120,8 +119,10 @@ public class NewBankClientHandler extends Thread {
               .map(command -> command.getCommandName() + " " + command.getDescription())
               .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
               .orElse("")
-          + System.lineSeparator() + "HELP / COMMANDS -> Show command list."
-          + System.lineSeparator() + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
+          + System.lineSeparator()
+          + "HELP / COMMANDS -> Show command list."
+          + System.lineSeparator()
+          + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
     }
 
     private static String formatResponse(NewBankCommandResponse response) {
@@ -142,7 +143,7 @@ public class NewBankClientHandler extends Thread {
       while (userName == null) {
         userName = checkUserName();
       }
-      
+
       CustomerID customer = authenticate(userName);
       // Loop continues until user gets correct password or has 3 login attempts
       for (int loginAttempts = 1; customer == null && loginAttempts < 3; loginAttempts++) {
@@ -159,13 +160,12 @@ public class NewBankClientHandler extends Thread {
       String userName = in.readLine();
       if (NewBank.getBank().isValidUserName(userName)) {
         return userName;
-      }
-      else {
+      } else {
         out.println("Invalid Username - please try again");
       }
       return null;
     }
-    
+
     private CustomerID authenticate(String userName) throws IOException {
       // ask for password
       out.println("Enter Password");
@@ -174,6 +174,5 @@ public class NewBankClientHandler extends Thread {
       // authenticate user and get customer ID token from bank for use in subsequent requests
       return newbank.server.NewBank.getBank().checkLogInDetails(userName, password);
     }
-    
   }
 }

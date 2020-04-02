@@ -1,15 +1,13 @@
 package newbank.test;
 
+import newbank.server.Commands.INewBankCommand;
 import newbank.server.NewBankClientHandler;
 import newbank.server.NewBankServer;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,8 +44,10 @@ public class NBUnit {
 
     Assert(
         Objects.equals(expected, actual),
-        String.format("expected:%s" + System.lineSeparator() 
-        + "actual:%s", toString.apply(expected), toString.apply(actual)));
+        String.format(
+            "expected:%s" + System.lineSeparator() + "actual:%s",
+            toString.apply(expected),
+            toString.apply(actual)));
   }
 
   public static void AssertIsNotNull(Object o) {
@@ -55,21 +55,38 @@ public class NBUnit {
   }
 
   /** test helpers */
-  public static String runServerCommand(String userName, String password, String command) {
+  public static String runServerCommand(String userName, String password, String... commands) {
 
-    String inputString =
+    return runServerCommand(NewBankServer.DefaultCommandList, userName, password, commands);
+  }
+
+  public static String runServerCommand(
+      INewBankCommand[] commandObjects, String userName, String password, String... commands) {
+
+    return runServerCommand(
+        buildInputStream(userName, password, commands),
+        new ByteArrayOutputStream(),
+        commandObjects);
+  }
+
+  public static ByteArrayInputStream buildInputStream(
+      String userName, String password, String... commands) {
+
+    return new ByteArrayInputStream(
         String.format(
-            "%s" + System.lineSeparator() + "%s" + System.lineSeparator() 
-            + "%s%s", userName, password, command, command.length() == 0 ? "" :  System.lineSeparator());
+                "%s" + System.lineSeparator() + "%s" + System.lineSeparator() + "%s",
+                userName,
+                password,
+                Arrays.stream(commands)
+                    .reduce((acc, command) -> acc + System.lineSeparator() + command)
+                    .orElse(""))
+            .getBytes());
+  }
 
-    var outputStream = new ByteArrayOutputStream();
+  public static String runServerCommand(
+      ByteArrayInputStream in, ByteArrayOutputStream out, INewBankCommand[] commands) {
 
-    var target =
-        new NewBankClientHandler.CommandInvoker(
-            new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
-            new PrintWriter(outputStream),
-            NewBankServer.DefaultCommandList);
+    var target = new NewBankClientHandler.CommandInvoker(in, out, commands);
 
     try {
       target.run();
@@ -80,7 +97,7 @@ public class NBUnit {
       target.close();
     }
 
-    return outputStream.toString();
+    return out.toString();
   }
 
   /** Test runner */
