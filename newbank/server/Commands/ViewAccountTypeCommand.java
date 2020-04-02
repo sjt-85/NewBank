@@ -24,15 +24,15 @@ public class ViewAccountTypeCommand extends NewBankCommand {
     Account.AccountType accountType = getAccountType(param);
 
     if (param.getCommandArgument().isEmpty()) {
-      return NewBankCommandResponse.succeeded(AccountTypeInfo.getAllAccountTypeDescriptions().toString());
+      return NewBankCommandResponse.succeeded(this, AccountTypeInfo.getAllAccountTypeDescriptions().toString());
     }
     if (accountType == Account.AccountType.NONE)
-      return NewBankCommandResponse.invalidRequest("Invalid account type.");
+      return NewBankCommandResponse.invalidRequest(this, "Invalid account type.");
 
     AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
-    if (info == null) return NewBankCommandResponse.failed("Could not retrieve account info.");
+    if (info == null) return NewBankCommandResponse.failed(this, "Could not retrieve account info.");
 
-    return NewBankCommandResponse.succeeded(info.toString());
+    return NewBankCommandResponse.succeeded(this, info.toString());
   }
 
   public static Account.AccountType getAccountType(NewBankCommandParameter param) {
