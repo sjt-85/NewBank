@@ -1,38 +1,59 @@
 package newbank.test;
 
-import newbank.server.Commands.NewAccountCommand;
-
-import newbank.server.Commands.NewBankCommandParameter;
-
-import newbank.server.Commands.NewBankCommandResponse;
-
-import newbank.server.Commands.ShowMyAccountsCommand;
-
-import newbank.server.Commands.ViewAccountTypeCommand;
-
+import newbank.server.Commands.*;
 import newbank.server.NewBank;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
-
 import java.util.Objects;
 
+import static newbank.test.NBUnit.Assert;
 import static newbank.test.NBUnit.AssertEqual;
-
+import static newbank.test.NBUnit.Test;
+import static newbank.test.NBUnit.buildInputStream;
 import static newbank.test.NBUnit.runServerCommand;
 
 // How to implement test:
-
 // 1. Define a class
-
 // 2. Define a test method which:
-
 //    has newbank.test.NBUnit.Test annotation
-
 //    has no parameters
-
 //    return value type is void
 
 public class ServerTestScenarios {
+
+
+  @Test
+  private void commandCanShowPrompt() {
+    String userName = "Bhagy";
+    String password = "1";
+
+    class PromptStub extends NewBankCommand {
+      @Override
+      public String getCommandName() {
+        return "PROMPTSTUB";
+      }
+
+      @Override
+      public String getDescription() {
+        return "";
+      }
+
+      @Override
+      public NewBankCommandResponse run(NewBankCommandParameter param) {
+
+        Assert(false);
+        return NewBankCommandResponse.succeeded(null, "");
+      }
+    }
+
+    var out = new ByteArrayOutputStream();
+
+    runServerCommand(
+            buildInputStream(userName, password, "PROMPTSTUB", "Y"),
+            out,
+            new INewBankCommand[] {new PromptStub()});
+  }
 
   private static String buildAccountTypeString(
       String type,
