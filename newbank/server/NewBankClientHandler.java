@@ -136,8 +136,10 @@ public class NewBankClientHandler extends Thread {
               .map(command -> "> " + command.getCommandName())
               .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
               .orElse("")
-          + System.lineSeparator() + "HELP / COMMANDS -> Show command list."
-          + System.lineSeparator() + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
+              + System.lineSeparator() + "> HELP / COMMANDS -> Show command list."
+              + System.lineSeparator() + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
+              + System.lineSeparator()
+              + System.lineSeparator() + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\".";
     }
 
     private static String formatResponse(NewBankCommandResponse response) {
