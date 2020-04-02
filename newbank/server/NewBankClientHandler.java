@@ -16,9 +16,11 @@ public class NewBankClientHandler extends Thread {
   private static CommandInvoker invoker;
 
   public NewBankClientHandler(Socket s) throws IOException {
-    InputStream inputStream = s.getInputStream();
-    OutputStream outputStream = s.getOutputStream();
-    invoker = new CommandInvoker(inputStream, outputStream, NewBankServer.DefaultCommandList);
+    invoker =
+        new CommandInvoker(
+            new BufferedReader(new InputStreamReader(s.getInputStream())),
+            new PrintWriter(s.getOutputStream(), true),
+            NewBankServer.DefaultCommandList);
   }
 
   public void run() {
@@ -91,15 +93,30 @@ public class NewBankClientHandler extends Thread {
 
       switch (parameter.getCommandName()) {
         case "LOGOUT":
-          return NewBankCommandResponse.succeeded(
+          return NewBankCommandResponse.succeeded(null,
               "Log out successful. Goodbye " + parameter.getId().getKey());
         case "COMMANDS":
         case "HELP":
-          return NewBankCommandResponse.succeeded(formatCommands());
+          return NewBankCommandResponse.succeeded(null, formatCommands());
         default:
-          if (commands.containsKey(parameter.getCommandName()))
-            return commands.get(parameter.getCommandName()).run(parameter);
-          else return NewBankCommandResponse.invalidRequest("FAIL");
+          return runCommand(parameter);
+      }
+    }
+
+    private NewBankCommandResponse runCommand(NewBankCommandParameter parameter) {
+      if (commands.containsKey(parameter.getCommandName())) {
+
+        // check if user is requesting help
+        if (parameter.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$")) {
+          return NewBankCommandResponse.help(commands.get(parameter.getCommandName()));
+        } else {
+          return commands.get(parameter.getCommandName()).run(parameter);
+        }
+
+      } else if (parameter.getCommandName().isBlank()) {
+        return NewBankCommandResponse.EMPTY;
+      } else {
+        return NewBankCommandResponse.invalidRequest(null, "FAIL");
       }
     }
 
@@ -116,18 +133,32 @@ public class NewBankClientHandler extends Thread {
     private String formatCommands() {
       return commandsInOriginalOrder.stream()
               .map(commandName -> commands.get(commandName))
-              .map(command -> command.getCommandName() + " " + command.getDescription())
+              .map(command -> "> " + command.getCommandName())
               .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
               .orElse("")
-          + System.lineSeparator()
-          + "HELP / COMMANDS -> Show command list."
-          + System.lineSeparator()
-          + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
+          + System.lineSeparator() + "HELP / COMMANDS -> Show command list."
+          + System.lineSeparator() + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
     }
 
     private static String formatResponse(NewBankCommandResponse response) {
-      // todo: place holder for formatting a response
-      return response.getDescription();
+      switch (response.getType()) {
+      case HELP:
+      case INVALIDREQUEST:
+        return response.getDescription().isBlank()
+               ? getHelpInfo(response.getCommand())
+               : response.getDescription()
+                     + System.lineSeparator()
+                     + System.lineSeparator()
+                     + getHelpInfo(response.getCommand());
+
+      default: return response.getDescription();
+      }
+    }
+
+    private static String getHelpInfo(INewBankCommand command) {
+      return (command != null)
+             ? command.getCommandName() + " " + command.getDescription()
+             : "Unrecognised command";
     }
 
     private void printMenu() {
@@ -174,5 +205,6 @@ public class NewBankClientHandler extends Thread {
       // authenticate user and get customer ID token from bank for use in subsequent requests
       return newbank.server.NewBank.getBank().checkLogInDetails(userName, password);
     }
+    
   }
 }
