@@ -1,6 +1,12 @@
 package newbank.test;
 
-import newbank.server.Commands.*;
+import newbank.server.Commands.INewBankCommand;
+import newbank.server.Commands.NewAccountCommand;
+import newbank.server.Commands.NewBankCommand;
+import newbank.server.Commands.NewBankCommandRequest;
+import newbank.server.Commands.NewBankCommandResponse;
+import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
 import newbank.server.NewBankServer;
 
@@ -10,7 +16,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static newbank.test.NBUnit.*;
+import static newbank.test.NBUnit.AssertEqual;
+import static newbank.test.NBUnit.Test;
+import static newbank.test.NBUnit.buildInputStream;
+import static newbank.test.NBUnit.runServerCommand;
 
 // How to implement test:
 // 1. Define a class
