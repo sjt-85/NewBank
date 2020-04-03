@@ -18,9 +18,9 @@ Available currencies = GBP, EUR, USD
 Note: The standard currency is GBP, to open an account with another currency, both account name and currency must be specified.
 Returns SUCCESS or FAIL
 
-MOVE <Amount> <From> <To>
-e.g. MOVE 100 Main Savings
-Returns SUCCESS or FAIL
+MOVE <Amount> <Account Name> <Account Name>
+Move money from the first listed account into the second.
+e.g. MOVE 100 "Main" "Savings"
 
 PAY <Person/Company> <Amount>
 e.g. PAY John 100
@@ -41,7 +41,3 @@ Returns details of all account types.
 VIEWACCOUNTTYPE <Type>
 e.g. VIEWACCOUNTTYPE "Cash ISA"
 Returns details of account type or FAIL.
-
-TRANSFER <Account Name>/<Account Name>/<Amount>
-Transfer from the first listed account into the second.
-To format add / between accounts and amount eg TRANSFER account 1/account 2/100.

@@ -8,10 +8,13 @@ import newbank.server.Commands.NewBankCommandResponse;
 import newbank.server.Commands.ShowMyAccountsCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
+import newbank.server.NewBankServer;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static newbank.test.NBUnit.AssertEqual;
 import static newbank.test.NBUnit.Test;
@@ -24,7 +27,6 @@ import static newbank.test.NBUnit.runServerCommand;
 //    has newbank.test.NBUnit.Test annotation
 //    has no parameters
 //    return value type is void
-
 public class ServerTestScenarios {
 
   class PromptStub extends NewBankCommand {
@@ -162,8 +164,8 @@ public class ServerTestScenarios {
         bhagy);
 
     NBUnit.AssertEqual(
-        "Current Account: Main 1 (001): 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
-
+        "Current Account: Main 1 (001): 1000.00 GBP" + System.lineSeparator(),
+        bhagy.getDescription());
 
     var christina = new NewBankCommandResponse();
     command.run(
@@ -174,7 +176,6 @@ public class ServerTestScenarios {
 
     NBUnit.AssertEqual(
         "Savings Account: Savings 1 (002): 1500.00 GBP" + System.lineSeparator(),
-
         christina.getDescription());
   }
 
@@ -256,7 +257,6 @@ public class ServerTestScenarios {
   private void userCanLogIn() {
 
     String userName = "Bhagy";
-
     String password = "1";
 
     String outputString = runServerCommand(userName, password, "");
@@ -268,7 +268,6 @@ public class ServerTestScenarios {
   private void userCanLogOff() {
 
     String userName = "Bhagy";
-
     String password = "1";
 
     String outputString = runServerCommand(userName, password, "LOGOUT");
@@ -282,7 +281,6 @@ public class ServerTestScenarios {
   private void userCanLongInAndRunCOMMANDW() {
 
     String userName = "Bhagy";
-
     String password = "1";
 
     String outputString = runServerCommand(userName, password, "COMMANDS");
@@ -291,17 +289,14 @@ public class ServerTestScenarios {
   }
 
   @Test
-  private void userTriesToTransferWithBadArgument() {
+  private void userTriesToMoveWithBadArgument() {
 
     String userName = "John";
-
     String password = "3";
 
     // Test 1
-
     String outputString =
-        runServerCommand(userName, password, "TRANSFER Checking 1/Checking 2/200");
-
+        runServerCommand(userName, password, "MOVE 200 \"Checking 1\" \"Checking 2\"");
     AssertEqual(
         initialResponse
             + "Account to be credited does not exist. Please try again."
@@ -309,10 +304,8 @@ public class ServerTestScenarios {
         outputString);
 
     // Test 2
-
     String outputString2 =
-        runServerCommand(userName, password, "TRANSFER Checking 2/Checking 1/200");
-
+        runServerCommand(userName, password, "MOVE 200 \"Checking 2\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Account to be debited does not exist. Please try again."
@@ -320,10 +313,8 @@ public class ServerTestScenarios {
         outputString2);
 
     // Test 3
-
     String outputString3 =
-        runServerCommand(userName, password, "TRANSFER \"Checking 1\"/\"Checking 1\"/100");
-
+        runServerCommand(userName, password, "MOVE 200 \"Checking 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "The debiting and crediting accounts are the same. Please try again."
@@ -331,50 +322,47 @@ public class ServerTestScenarios {
         outputString3);
 
     // Test 4
-
     String outputString4 =
-        runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/-100");
-
+        runServerCommand(userName, password, "MOVE -200 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
         outputString4);
 
     // Test 5
-
     String outputString5 =
-        runServerCommand(userName, password, "TRANSFER \"Saving 1\"/\"Checking 1\"/t");
-
-    AssertEqual(
-        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
-        outputString5);
-
-    // Test 6
-
-    String outputString6 = runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1");
-
+        runServerCommand(userName, password, "MOVE /t \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Not enough arguments. Please try again."
             + System.lineSeparator()
             + System.lineSeparator()
-            + "TRANSFER "
-            + commandDescriptions.get("TRANSFER")
+            + "MOVE "
+            + commandDescriptions.get("MOVE")
+            + System.lineSeparator(),
+        outputString5);
+
+    // Test 6
+    String outputString6 = runServerCommand(userName, password, "MOVE \"Saving 1\" \"Checking 1\"");
+    AssertEqual(
+        initialResponse
+            + "Not enough arguments. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "MOVE "
+            + commandDescriptions.get("MOVE")
             + System.lineSeparator(),
         outputString6);
   }
 
   // separate from bad arguments in case overdraft functionality added
-
   @Test
-  private void userTriesToTransferWithoutEnoughFunds() {
+  private void userTriesToMoveWithoutEnoughFunds() {
 
     String userName = "John";
-
     String password = "3";
 
     String outputString =
-        runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/500.01");
-
+        runServerCommand(userName, password, "MOVE 500.01 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Not enough funds in account to be debited. Please try again."
@@ -383,18 +371,16 @@ public class ServerTestScenarios {
   }
 
   @Test
-  private void userSuccessfullyTransfers() {
+  private void userSuccessfullyMoves() {
 
     String userName = "John";
-
     String password = "3";
 
     String outputString =
-        runServerCommand(userName, password, "TRANSFER Saving 1/Checking 1/321.62");
-
+        runServerCommand(userName, password, "MOVE 321.62 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "Transfer successful."
+            + "Move successful."
             + System.lineSeparator()
             + "The balance of Checking 1 is now 571.62."
             + System.lineSeparator()
@@ -403,16 +389,13 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  // todo: refactor to improve maintainability
-
   final String commandList =
-      "> SHOWMYACCOUNTS"
-          + System.lineSeparator()
-          + "> NEWACCOUNT"
-          + System.lineSeparator()
-          + "> VIEWACCOUNTTYPE"
-          + System.lineSeparator()
-          + "> TRANSFER"
+      Arrays.stream(NewBankServer.DefaultCommandList)
+              .map(command -> command.getCommandName())
+              .reduce(
+                  "",
+                  (acc, cmd) ->
+                      acc + (acc.length() == 0 ? "" : System.lineSeparator()) + "> " + cmd)
           + System.lineSeparator()
           + "> HELP / COMMANDS -> Show command list."
           + System.lineSeparator()
@@ -438,21 +421,7 @@ public class ServerTestScenarios {
   final String initialResponse = initialResponseCore + commandList;
 
   final Map<String, String> commandDescriptions =
-      Map.of(
-          "SHOWMYACCOUNTS",
-          "-> Lists all of your active accounts.",
-          "NEWACCOUNT",
-          "<account type> <optional: account name> <optional: currency> "
-              + System.lineSeparator()
-              + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
-              + System.lineSeparator()
-              + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.",
-          "VIEWACCOUNTTYPE",
-          "<account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \\\"Cash ISA\\\".",
-          "TRANSFER",
-          "<Account Name>/<Account Name>/<Amount>"
-              + System.lineSeparator()
-              + "-> Transfer from the first listed account into the second."
-              + System.lineSeparator()
-              + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0.");
+      Arrays.stream(NewBankServer.DefaultCommandList)
+          .collect(
+              Collectors.toMap(INewBankCommand::getCommandName, INewBankCommand::getDescription));
 }

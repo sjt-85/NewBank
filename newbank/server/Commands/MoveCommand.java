@@ -4,37 +4,40 @@ import newbank.server.Account;
 import newbank.server.Customer;
 
 import java.math.BigDecimal;
+import java.util.regex.Matcher;
 
-public class TransferCommand extends NewBankCommand {
+public class MoveCommand extends NewBankCommand {
 
   @Override
   public String getCommandName() {
-    return "TRANSFER";
+    return "MOVE";
   }
 
   @Override
   public String getDescription() {
-    return "<Account Name>/<Account Name>/<Amount>"
+    return "<Amount> <Account Name> <Account Name>"
         + System.lineSeparator()
-        + "-> Transfer from the first listed account into the second."
+        + "-> Move money from the first listed account into the second."
         + System.lineSeparator()
-        + "   To format add \"/\" between accounts and amount eg TRANSFER account 1/account 2/100.0.";
+        + "   e.g. MOVE 100 \"Current Account\" \"Savings Account\"";
   }
 
   @Override
   public void run(NewBankCommandRequest param, NewBankCommandResponse response) {
-    Customer customer = param.getCustomer();
-    String input = param.getCommandArgument();
-    // TODO make / a forbidden character when naming new accounts
-    String[] request = input.split("/");
 
-    if (request.length != 3) {
+    Customer customer = param.getCustomer();
+
+    Matcher m =
+        param.matchCommandArgument(
+            "(?<amount>-?[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
+
+    if (!m.matches()) {
       response.invalidRequest("Not enough arguments. Please try again.");
       return;
     }
 
-    Account debitedAccount = customer.getAccountFromName(request[0].replaceAll("\"", ""));
-    Account creditedAccount = customer.getAccountFromName(request[1].replaceAll("\"", ""));
+    Account debitedAccount = customer.getAccountFromName(parseAccountName(m.group("fromAccount")));
+    Account creditedAccount = customer.getAccountFromName(parseAccountName(m.group("toAccount")));
 
     if (debitedAccount == null) {
       response.failed("Account to be debited does not exist. Please try again.");
@@ -46,7 +49,7 @@ public class TransferCommand extends NewBankCommand {
       return;
     }
 
-    if (request[0].equals(request[1])) {
+    if (m.group("fromAccount").equals(m.group("toAccount"))) {
       response.failed("The debiting and crediting accounts are the same. Please try again.");
       return;
     }
@@ -56,11 +59,12 @@ public class TransferCommand extends NewBankCommand {
       return;
     }
 
-    if (!validAmount(request[2])) {
+    if (!validAmount(m.group("amount"))) {
       response.failed("Amount is invalid. Please try again.");
       return;
     }
-    BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(request[2]));
+
+    BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(m.group("amount")));
 
     if (debitedAccount.getBalance().compareTo(amount) < 0) {
       response.failed("Not enough funds in account to be debited. Please try again.");
@@ -71,7 +75,7 @@ public class TransferCommand extends NewBankCommand {
     creditedAccount.moneyIn(amount);
 
     response.succeeded(
-        "Transfer successful."
+        "Move successful."
             + System.lineSeparator()
             + "The balance of "
             + creditedAccount.getAccountName()
@@ -99,5 +103,9 @@ public class TransferCommand extends NewBankCommand {
   private BigDecimal convertDoubleToBigDecimal(double amount) {
     BigDecimal bd = BigDecimal.valueOf(amount);
     return bd.setScale(2);
+  }
+
+  private static String parseAccountName(String accountName) {
+    return accountName.replace("\"", "");
   }
 }
