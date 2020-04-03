@@ -1,9 +1,18 @@
 package newbank.server.Commands;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class NewBankCommandResponse {
-  private final INewBankCommand command;
-  private final ResponseType type;
+  private ResponseType type;
   private String description;
+  private BufferedReader in;
+  private PrintWriter out;
+
+  public NewBankCommandResponse(BufferedReader in, PrintWriter out) {
+    setStream(in, out);
+  }
 
   public enum ResponseType {
     EMPTY,
@@ -12,30 +21,75 @@ public class NewBankCommandResponse {
     INVALIDREQUEST,
     HELP
   }
-  
-  public static final NewBankCommandResponse EMPTY = new NewBankCommandResponse(null, ResponseType.EMPTY, "");
 
-  public static NewBankCommandResponse succeeded(INewBankCommand command, String description) {
-    return new NewBankCommandResponse(command, ResponseType.SUCCEEDED, description);
-  }
+  public static final NewBankCommandResponse EMPTY =
+      new NewBankCommandResponse().setState(ResponseType.EMPTY, "");
 
-  public static NewBankCommandResponse failed(INewBankCommand command, String description) {
-    return new NewBankCommandResponse(command, ResponseType.FAILED, description);
+  public static NewBankCommandResponse createSucceeded(String description) {
+    return new NewBankCommandResponse().succeeded(description);
   }
 
-  public static NewBankCommandResponse invalidRequest(INewBankCommand command, String description) {
-    return new NewBankCommandResponse(command, ResponseType.INVALIDREQUEST, description);
+  public static NewBankCommandResponse createFailed(String description) {
+    return new NewBankCommandResponse().failed(description);
   }
-  
-  public static NewBankCommandResponse help(INewBankCommand command) {
-    return new NewBankCommandResponse(command, ResponseType.HELP, "");
+
+  public static NewBankCommandResponse createInvalidRequest(String description) {
+    return new NewBankCommandResponse().invalidRequest(description);
   }
-  
-  protected NewBankCommandResponse(INewBankCommand command, ResponseType type, String description) {
+
+  public static NewBankCommandResponse createHelp() {
+    return new NewBankCommandResponse().help("");
+  }
+
+  public NewBankCommandResponse succeeded(String description) {
+    return setState(ResponseType.SUCCEEDED, description);
+  }
+
+  public NewBankCommandResponse failed(String description) {
+    return setState(ResponseType.FAILED, description);
+  }
+
+  public NewBankCommandResponse invalidRequest(String description) {
+    return setState(ResponseType.INVALIDREQUEST, description);
+  }
+
+  public NewBankCommandResponse help(String description) {
+    return setState(ResponseType.HELP, description);
+  }
+
+  public String query(String message) {
+    try {
+      out.println(message + " :");
+      return in.readLine();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return "";
+    }
+  }
+
+  public boolean confirm(String message) {
+    do {
+      switch (query(message + " [Y]es/[N]o").toUpperCase()) {
+        case "Y":
+          return true;
+        case "N":
+          return false;
+      }
+    } while (true);
+  }
+
+  private NewBankCommandResponse setState(ResponseType type, String description) {
     this.type = type;
     this.description = description;
-    this.command = command;
+    return this;
   }
+
+  public void setStream(BufferedReader in, PrintWriter out) {
+    this.in = in;
+    this.out = out;
+  }
+
+  public NewBankCommandResponse() {}
 
   public ResponseType getType() {
     return this.type;
@@ -43,9 +97,5 @@ public class NewBankCommandResponse {
 
   public String getDescription() {
     return description;
-  }
-  
-  public INewBankCommand getCommand() {
-    return command;
   }
 }

@@ -24,44 +24,50 @@ public class NewAccountCommand extends NewBankCommand {
   }
 
   @Override
-  public NewBankCommandResponse run(NewBankCommandParameter param) {
-    var args = NewAccountCommandArgument.parse(param);
+  public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
+    var args = NewAccountCommandArgument.parse(request);
 
-    if (args == null)
-      return NewBankCommandResponse.invalidRequest(this,
+    if (args == null) {
+      response.invalidRequest(
           "FAIL: Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypesCommaDelimited()
               + ".");
+      return;
+    }
 
     // Previously this was tested in NewBankArgument
-    if (param.getCustomer().hasAccount(args.getAccountName()))
-      return NewBankCommandResponse.invalidRequest(this, "FAIL: Please choose a unique name.");
+    if (request.getCustomer().hasAccount(args.getAccountName())) {
+      response.invalidRequest("FAIL: Please choose a unique name.");
+      return;
+    }
 
-    if (args.getCurrency() == null)
-      return NewBankCommandResponse.failed(this,
+    if (args.getCurrency() == null) {
+      response.failed(
           "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
+      return;
+    }
 
     // requested currency is allowed
-    param
+    request
         .getCustomer()
         .addAccount(
             new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
 
-    return (param.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
-        ? NewBankCommandResponse.succeeded(this,
-            "SUCCESS: Opened account TYPE:\""
-                + args.getAccountType().toString()
-                + "\" NAME:\""
-                + args.getAccountName()
-                + "\""
-                + " CURRENCY:"
-                + args.getCurrency().name())
-        : NewBankCommandResponse.failed(this, "FAIL: Account could not be opened. Please try again.");
+    if (request.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
+      response.succeeded(
+          "SUCCESS: Opened account TYPE:\""
+              + args.getAccountType().toString()
+              + "\" NAME:\""
+              + args.getAccountName()
+              + "\""
+              + " CURRENCY:"
+              + args.getCurrency().name());
+    else response.failed("FAIL: Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {
 
-    public static NewAccountCommandArgument parse(NewBankCommandParameter param) {
+    public static NewAccountCommandArgument parse(NewBankCommandRequest param) {
 
       NewAccountCommandArgument argument = new NewAccountCommandArgument();
 
