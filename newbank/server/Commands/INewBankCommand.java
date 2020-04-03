@@ -9,5 +9,5 @@ public interface INewBankCommand {
 
   String getDescription();
 
-  NewBankCommandResponse run(NewBankCommandParameter param);
+  void run(NewBankCommandRequest request, NewBankCommandResponse response);
 }

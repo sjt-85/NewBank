@@ -3,7 +3,6 @@ package newbank.server.Commands;
 import newbank.server.Account;
 import newbank.server.AccountTypeInfo;
 
-
 import java.util.regex.Matcher;
 
 public class ViewAccountTypeCommand extends NewBankCommand {
@@ -19,23 +18,30 @@ public class ViewAccountTypeCommand extends NewBankCommand {
   }
 
   @Override
-  public NewBankCommandResponse run(NewBankCommandParameter param) {
+  public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
 
-    Account.AccountType accountType = getAccountType(param);
+    Account.AccountType accountType = getAccountType(request);
 
-    if (param.getCommandArgument().isEmpty()) {
-      return NewBankCommandResponse.succeeded(AccountTypeInfo.getAllAccountTypeDescriptions().toString());
+    if (request.getCommandArgument().isEmpty()) {
+      response.succeeded(AccountTypeInfo.getAllAccountTypeDescriptions());
+      return;
     }
-    if (accountType == Account.AccountType.NONE)
-      return NewBankCommandResponse.invalidRequest("Invalid account type.");
+
+    if (accountType == Account.AccountType.NONE) {
+      response.invalidRequest("Invalid account type.");
+      return;
+    }
 
     AccountTypeInfo info = AccountTypeInfo.getAccountTypeInfo(accountType);
-    if (info == null) return NewBankCommandResponse.failed("Could not retrieve account info.");
+    if (info == null) {
+      response.failed("Could not retrieve account info.");
+      return;
+    }
 
-    return NewBankCommandResponse.succeeded(info.toString());
+    response.succeeded(info.toString());
   }
 
-  public static Account.AccountType getAccountType(NewBankCommandParameter param) {
+  public static Account.AccountType getAccountType(NewBankCommandRequest param) {
 
     Matcher m = param.matchCommandArgument("(?<accType>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
 

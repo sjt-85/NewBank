@@ -1,18 +1,18 @@
 package newbank.server;
 
 import newbank.server.Commands.INewBankCommand;
-import newbank.server.Commands.NewBankCommandParameter;
+import newbank.server.Commands.NewBankCommandRequest;
 import newbank.server.Commands.NewBankCommandResponse;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static newbank.server.Commands.NewBankCommandResponse.createInvalidRequest;
+import static newbank.server.Commands.NewBankCommandResponse.createSucceeded;
 
 public class NewBankClientHandler extends Thread {
 
@@ -47,7 +47,7 @@ public class NewBankClientHandler extends Thread {
     private BufferedReader in;
     private PrintWriter out;
 
-    public CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
+    protected CommandInvoker(BufferedReader in, PrintWriter out, INewBankCommand[] commands) {
       this.in = in;
       this.out = out;
       this.commandsInOriginalOrder =
@@ -55,6 +55,10 @@ public class NewBankClientHandler extends Thread {
       this.commands =
           Arrays.stream(commands)
               .collect(Collectors.toMap(INewBankCommand::getCommandName, command -> command));
+    }
+
+    public CommandInvoker(InputStream in, OutputStream out, INewBankCommand[] commands) {
+      this(new BufferedReader(new InputStreamReader(in)), new PrintWriter(out, true), commands);
     }
 
     public void run() throws IOException {
@@ -76,31 +80,86 @@ public class NewBankClientHandler extends Thread {
       // keep getting requests from the client and processing them
       while (true) {
 
-        String request = in.readLine();
-        if (request == null) break; // fall here when called by test.
+        String line = in.readLine();
+        if (line == null) break; // fall here when called by test.
 
-        var parameter = NewBankCommandParameter.create(id, request);
-        if (parameter == null) continue;
+        var request = NewBankCommandRequest.create(id, line);
+        if (request == null) continue;
 
-        out.println(formatResponse(dispatch(parameter)));
+        out.println(dispatch(request).format());
 
-        if (parameter.getCommandName().equals("LOGOUT")) return;
+        if (request.getCommandName().equals("LOGOUT")) return;
       }
     }
 
-    private NewBankCommandResponse dispatch(NewBankCommandParameter parameter) {
+    private static class DispatchResult {
 
-      switch (parameter.getCommandName()) {
+      public DispatchResult(INewBankCommand command, NewBankCommandResponse response) {
+        this.command = command;
+        this.response = response;
+      }
+
+      private INewBankCommand command;
+      private NewBankCommandResponse response;
+
+      public String format() {
+
+        if (response.getType() == null) return "";
+
+        switch (response.getType()) {
+          case HELP:
+          case INVALIDREQUEST:
+            return response.getDescription().isBlank()
+                ? getHelpInfo()
+                : response.getDescription()
+                    + System.lineSeparator()
+                    + System.lineSeparator()
+                    + getHelpInfo();
+          default:
+            return response.getDescription();
+        }
+      }
+
+      private String getHelpInfo() {
+        return (this.command != null)
+            ? this.command.getCommandName() + " " + this.command.getDescription()
+            : "Unrecognised command";
+      }
+    }
+
+    private DispatchResult dispatch(NewBankCommandRequest request) {
+
+      switch (request.getCommandName()) {
         case "LOGOUT":
-          return NewBankCommandResponse.succeeded(
-              "Log out successful. Goodbye " + parameter.getId().getKey());
+          return new DispatchResult(
+              null, createSucceeded("Log out successful. Goodbye " + request.getId().getKey()));
         case "COMMANDS":
         case "HELP":
-          return NewBankCommandResponse.succeeded(formatCommands());
+          return new DispatchResult(null, createSucceeded(formatCommands()));
         default:
-          if (commands.containsKey(parameter.getCommandName()))
-            return commands.get(parameter.getCommandName()).run(parameter);
-          else return NewBankCommandResponse.invalidRequest("FAIL");
+          return runCommand(request);
+      }
+    }
+
+    private DispatchResult runCommand(NewBankCommandRequest request) {
+      if (commands.containsKey(request.getCommandName())) {
+
+        INewBankCommand command = commands.get(request.getCommandName());
+
+        // check if user is requesting help
+        if (request.getCommandArgument().matches("\\s*-([hH?]|help|HELP)\\s*$"))
+          return new DispatchResult(command, NewBankCommandResponse.createHelp());
+
+        NewBankCommandResponse response = new NewBankCommandResponse(in, out);
+
+        command.run(request, response);
+
+        return new DispatchResult(command, response);
+
+      } else if (request.getCommandName().isBlank()) {
+        return new DispatchResult(null, NewBankCommandResponse.EMPTY);
+      } else {
+        return new DispatchResult(null, createInvalidRequest("FAIL"));
       }
     }
 
@@ -117,16 +176,16 @@ public class NewBankClientHandler extends Thread {
     private String formatCommands() {
       return commandsInOriginalOrder.stream()
               .map(commandName -> commands.get(commandName))
-              .map(command -> command.getCommandName() + " " + command.getDescription())
+              .map(command -> "> " + command.getCommandName())
               .reduce((s1, s2) -> s1 + System.lineSeparator() + s2)
               .orElse("")
-          + System.lineSeparator() + "HELP / COMMANDS -> Show command list."
-          + System.lineSeparator() + "LOGOUT -> Ends the current banking session and logs you out of NewBank.";
-    }
-
-    private static String formatResponse(NewBankCommandResponse response) {
-      // todo: place holder for formatting a response
-      return response.getDescription();
+          + System.lineSeparator()
+          + "> HELP / COMMANDS -> Show command list."
+          + System.lineSeparator()
+          + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
+          + System.lineSeparator()
+          + System.lineSeparator()
+          + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\".";
     }
 
     private void printMenu() {
@@ -142,7 +201,7 @@ public class NewBankClientHandler extends Thread {
       while (userName == null) {
         userName = checkUserName();
       }
-      
+
       CustomerID customer = authenticate(userName);
       // Loop continues until user gets correct password or has 3 login attempts
       for (int loginAttempts = 1; customer == null && loginAttempts < 3; loginAttempts++) {
@@ -159,13 +218,12 @@ public class NewBankClientHandler extends Thread {
       String userName = in.readLine();
       if (NewBank.getBank().isValidUserName(userName)) {
         return userName;
-      }
-      else {
+      } else {
         out.println("Invalid Username - please try again");
       }
       return null;
     }
-    
+
     private CustomerID authenticate(String userName) throws IOException {
       // ask for password
       out.println("Enter Password");
@@ -174,6 +232,5 @@ public class NewBankClientHandler extends Thread {
       // authenticate user and get customer ID token from bank for use in subsequent requests
       return NewBank.getBank().checkLogInDetails(userName, password);
     }
-    
   }
 }
