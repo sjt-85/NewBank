@@ -26,6 +26,7 @@ public class NewBankServer extends Thread {
       };
 
   private ServerSocket server;
+  private static final AccountNumberGenerator accountNumberGenerator = new AccountNumberGenerator();
 
   public NewBankServer(int port) throws IOException {
     server = new ServerSocket(port);
@@ -59,5 +60,9 @@ public class NewBankServer extends Thread {
     }
     // starts a new NewBankServer thread on a specified port number
     new NewBankServer(14002).start();
+  }
+
+  public static synchronized int getNextAccountNumber() {
+    return accountNumberGenerator.getNextAccountNumber();
   }
 }

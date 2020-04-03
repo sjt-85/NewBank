@@ -1,16 +1,16 @@
 package newbank.test;
 
-import newbank.server.Commands.NewAccountCommand;
-import newbank.server.Commands.NewBankCommandParameter;
-import newbank.server.Commands.NewBankCommandResponse;
-import newbank.server.Commands.ShowMyAccountsCommand;
-import newbank.server.Commands.ViewAccountTypeCommand;
+import newbank.server.Commands.*;
 import newbank.server.NewBank;
+import newbank.server.NewBankServer;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-import static newbank.test.NBUnit.AssertEqual;
-import static newbank.test.NBUnit.runServerCommand;
+import static newbank.test.NBUnit.*;
 
 // How to implement test:
 // 1. Define a class
@@ -19,6 +19,67 @@ import static newbank.test.NBUnit.runServerCommand;
 //    has no parameters
 //    return value type is void
 public class ServerTestScenarios {
+
+  class PromptStub extends NewBankCommand {
+    @Override
+    public String getCommandName() {
+      return "PROMPTSTUB";
+    }
+
+    @Override
+    public String getDescription() {
+      return "";
+    }
+
+    @Override
+    public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
+      // this is a sample sequence of a user interaction inside a command
+
+      // you can ask a question to a user by providing a message
+      String stringResponse = response.query("What are you doing?");
+      // and get a string response from the user.
+      AssertEqual("I'm coding.", stringResponse);
+
+      // you can also ask a close-ended question to a user
+      boolean boolResponse = response.confirm("Do you finish the feature?");
+      // and get a boolean response.
+      AssertEqual(false, boolResponse);
+
+      response.succeeded("Good luck!");
+    }
+  }
+
+  @Test
+  private void commandCanShowPrompt() {
+    String userName = "Bhagy";
+    String password = "1";
+
+    var out = new ByteArrayOutputStream();
+
+    runServerCommand(
+        buildInputStream(userName, password, "PROMPTSTUB", "I'm coding.", "N"),
+        out,
+        new INewBankCommand[] {new PromptStub()});
+
+    AssertEqual(
+        initialResponseCore
+            + "> PROMPTSTUB"
+            + System.lineSeparator()
+            + "> HELP / COMMANDS -> Show command list."
+            + System.lineSeparator()
+            + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\"."
+            + System.lineSeparator()
+            + "What are you doing? :"
+            + System.lineSeparator()
+            + "Do you finish the feature? [Y]es/[N]o :"
+            + System.lineSeparator()
+            + "Good luck!"
+            + System.lineSeparator(),
+        out.toString());
+  }
 
   private static String buildAccountTypeString(
       String type,
@@ -45,17 +106,18 @@ public class ServerTestScenarios {
         + otherFeatures;
   }
 
-  @NBUnit.Test
+  @Test
   private void viewAccountTypeReturnDescriptionOfAccountType() {
 
     var command = new ViewAccountTypeCommand();
 
-    var cashISA =
-        command.run(
-            NewBankCommandParameter.create(
-                NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""));
+    var cashISA = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(
+            NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""),
+        cashISA);
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         buildAccountTypeString(
             "Cash ISA",
             2.25,
@@ -67,114 +129,122 @@ public class ServerTestScenarios {
             "GBP"),
         cashISA.getDescription());
 
-    var currentAccount =
-        command.run(
-            NewBankCommandParameter.create(
-                NewBank.getBank().checkLogInDetails("Bhagy", "1"),
-                "VIEWACCOUNTTYPE \"Current Account\""));
+    var currentAccount = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(
+            NewBank.getBank().checkLogInDetails("Bhagy", "1"),
+            "VIEWACCOUNTTYPE \"Current Account\""),
+        currentAccount);
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         buildAccountTypeString(
             "Current Account", 0.25, 0, null, 250, 0, "No additional features", "GBP"),
         currentAccount.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
     var command = new ShowMyAccountsCommand();
 
-    var bhagy =
-        command.run(
-            Objects.requireNonNull(
-                NewBankCommandParameter.create(
-                    NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")));
+    var bhagy = new NewBankCommandResponse();
+    command.run(
+        Objects.requireNonNull(
+            NewBankCommandRequest.create(
+                NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")),
+        bhagy);
 
     NBUnit.AssertEqual(
-        "Current Account: Main 1: 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
+        "Current Account: Main 1 (001): 1000.00 GBP" + System.lineSeparator(),
+        bhagy.getDescription());
 
-    var christina =
-        command.run(
-            Objects.requireNonNull(
-                NewBankCommandParameter.create(
-                    NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")));
+    var christina = new NewBankCommandResponse();
+    command.run(
+        Objects.requireNonNull(
+            NewBankCommandRequest.create(
+                NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")),
+        christina);
 
     NBUnit.AssertEqual(
-        "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(),
+        "Savings Account: Savings 1 (002): 1500.00 GBP" + System.lineSeparator(),
         christina.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
+
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Saving"));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Saving"), response);
 
-    AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
+    AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
         response.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithAccountNameAndAcceptedCurrencyReturnsSuccess() {
+
     var id = NewBank.getBank().checkLogInDetails("John", "3");
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(
-            NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"), response);
 
-    AssertEqual(NewBankCommandResponse.ResponseType.Succeeded, response.getType());
+    AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Travel\" CURRENCY:EUR",
         response.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithWrongCurrencyReturnsFailWithMessage() {
 
     var id = NewBank.getBank().checkLogInDetails("Christina", "2");
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" Other sar"));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Other sar"), response);
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD.",
         response.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void createNewAccountWithDuplicateNameThenIncorrectType() {
 
     var id = NewBank.getBank().checkLogInDetails("Christina", "2");
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response =
-        command.run(
-            NewBankCommandParameter.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""));
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""), response);
 
-    NBUnit.AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
+    AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
 
-    NewBankCommandResponse response2 =
-        command.run(
-            NewBankCommandParameter.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""));
+    NewBankCommandResponse response2 = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""), response2);
 
-    NBUnit.AssertEqual(
+    AssertEqual(
         "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA.",
         response2.getDescription());
   }
 
-  @NBUnit.Test
+  @Test
   private void userCanLogIn() {
 
     String userName = "Bhagy";
@@ -185,7 +255,7 @@ public class ServerTestScenarios {
     AssertEqual(initialResponse, outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userCanLogOff() {
 
     String userName = "Bhagy";
@@ -198,7 +268,7 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userCanLongInAndRunCOMMANDW() {
 
     String userName = "Bhagy";
@@ -209,7 +279,7 @@ public class ServerTestScenarios {
     AssertEqual(initialResponse + commandList, outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userTriesToMoveWithBadArgument() {
 
     String userName = "John";
@@ -253,18 +323,30 @@ public class ServerTestScenarios {
     String outputString5 =
         runServerCommand(userName, password, "MOVE /t \"Saving 1\" \"Checking 1\"");
     AssertEqual(
-        initialResponse + "Not enough arguments. Please try again." + System.lineSeparator(),
+        initialResponse
+            + "Not enough arguments. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "MOVE "
+            + commandDescriptions.get("MOVE")
+            + System.lineSeparator(),
         outputString5);
 
     // Test 6
     String outputString6 = runServerCommand(userName, password, "MOVE \"Saving 1\" \"Checking 1\"");
     AssertEqual(
-        initialResponse + "Not enough arguments. Please try again." + System.lineSeparator(),
+        initialResponse
+            + "Not enough arguments. Please try again."
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + "MOVE "
+            + commandDescriptions.get("MOVE")
+            + System.lineSeparator(),
         outputString6);
   }
 
   // separate from bad arguments in case overdraft functionality added
-  @NBUnit.Test
+  @Test
   private void userTriesToMoveWithoutEnoughFunds() {
 
     String userName = "John";
@@ -279,7 +361,7 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  @NBUnit.Test
+  @Test
   private void userSuccessfullyMoves() {
 
     String userName = "John";
@@ -298,30 +380,23 @@ public class ServerTestScenarios {
         outputString);
   }
 
-  // todo: refactor to improve maintainability
   final String commandList =
-      "SHOWMYACCOUNTS -> Lists all of your active accounts."
+      Arrays.stream(NewBankServer.DefaultCommandList)
+              .map(command -> command.getCommandName())
+              .reduce(
+                  "",
+                  (acc, cmd) ->
+                      acc + (acc.length() == 0 ? "" : System.lineSeparator()) + "> " + cmd)
           + System.lineSeparator()
-          + "NEWACCOUNT <account type> <optional: account name> <optional: currency> "
+          + "> HELP / COMMANDS -> Show command list."
           + System.lineSeparator()
-          + "-> Creates a new account of specified type e.g. NEWACCOUNT \"Savings Account\" \"my savings\" EUR. "
+          + "> LOGOUT -> Ends the current banking session and logs you out of NewBank."
           + System.lineSeparator()
-          + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency."
           + System.lineSeparator()
-          + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"."
-          + System.lineSeparator()
-          + "MOVE <Amount> <Account Name> <Account Name>"
-          + System.lineSeparator()
-          + "-> Move money from the first listed account into the second."
-          + System.lineSeparator()
-          + "   e.g. MOVE 100 \"Current Account\" \"Savings Account\""
-          + System.lineSeparator()
-          + "HELP / COMMANDS -> Show command list."
-          + System.lineSeparator()
-          + "LOGOUT -> Ends the current banking session and logs you out of NewBank."
+          + "Append -?, -h or -help for command description e.g. \"NEWACCOUNT -help\"."
           + System.lineSeparator();
 
-  final String initialResponse =
+  public static final String initialResponseCore =
       "Enter Username"
           + System.lineSeparator()
           + "Enter Password"
@@ -332,6 +407,12 @@ public class ServerTestScenarios {
           + System.lineSeparator()
           + System.lineSeparator()
           + "COMMANDS:"
-          + System.lineSeparator()
-          + commandList;
+          + System.lineSeparator();
+
+  final String initialResponse = initialResponseCore + commandList;
+
+  final Map<String, String> commandDescriptions =
+      Arrays.stream(NewBankServer.DefaultCommandList)
+          .collect(
+              Collectors.toMap(INewBankCommand::getCommandName, INewBankCommand::getDescription));
 }

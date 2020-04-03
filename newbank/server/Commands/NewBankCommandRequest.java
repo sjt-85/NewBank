@@ -9,15 +9,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NewBankCommandParameter {
+public class NewBankCommandRequest {
 
   /** factory method */
-  public static NewBankCommandParameter create(CustomerID id, String request) {
+  public static NewBankCommandRequest create(CustomerID id, String request) {
     String commandName = getCommandName(request);
     if (commandName == null) return null;
 
-    NewBankCommandParameter parameter =
-        new NewBankCommandParameter(
+    NewBankCommandRequest parameter =
+        new NewBankCommandRequest(
             id,
             commandName,
             (commandName.length() == request.length())
@@ -32,7 +32,7 @@ public class NewBankCommandParameter {
   private CustomerID id;
 
   // only parse method can instantiate
-  protected NewBankCommandParameter(CustomerID id, String commandName, String commandArgument) {
+  protected NewBankCommandRequest(CustomerID id, String commandName, String commandArgument) {
     this.commandName = commandName.toUpperCase();
     this.commandArgument = commandArgument.trim();
     this.id = id;

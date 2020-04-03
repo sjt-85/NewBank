@@ -15,62 +15,75 @@ public class MoveCommand extends NewBankCommand {
 
   @Override
   public String getDescription() {
-    return "<Amount> <Account Name> <Account Name>" + System.lineSeparator()
-        + "-> Move money from the first listed account into the second." + System.lineSeparator()
+    return "<Amount> <Account Name> <Account Name>"
+        + System.lineSeparator()
+        + "-> Move money from the first listed account into the second."
+        + System.lineSeparator()
         + "   e.g. MOVE 100 \"Current Account\" \"Savings Account\"";
   }
 
-
   @Override
-  public NewBankCommandResponse run(NewBankCommandParameter param) {
+  public void run(NewBankCommandRequest param, NewBankCommandResponse response) {
+
     Customer customer = param.getCustomer();
-    Matcher m = 
-      param.matchCommandArgument(
-        "(?<amount>-?[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
-    
-    if (!m.matches()) return NewBankCommandResponse.invalidRequest("Not enough arguments. Please try again.");
+
+    Matcher m =
+        param.matchCommandArgument(
+            "(?<amount>-?[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
+
+    if (!m.matches()) {
+      response.invalidRequest("Not enough arguments. Please try again.");
+      return;
+    }
 
     Account debitedAccount = customer.getAccountFromName(parseAccountName(m.group("fromAccount")));
     Account creditedAccount = customer.getAccountFromName(parseAccountName(m.group("toAccount")));
 
     if (debitedAccount == null) {
-      return NewBankCommandResponse.failed(
-          "Account to be debited does not exist. Please try again.");
+      response.failed("Account to be debited does not exist. Please try again.");
+      return;
     }
+
     if (creditedAccount == null) {
-      return NewBankCommandResponse.failed(
-          "Account to be credited does not exist. Please try again.");
+      response.failed("Account to be credited does not exist. Please try again.");
+      return;
     }
+
     if (m.group("fromAccount").equals(m.group("toAccount"))) {
-      return NewBankCommandResponse.failed(
-          "The debiting and crediting accounts are the same. Please try again.");
+      response.failed("The debiting and crediting accounts are the same. Please try again.");
+      return;
     }
 
     if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
-      return NewBankCommandResponse.failed(
-          "The currency of each account is not the same. Please try again.");
+      response.failed("The currency of each account is not the same. Please try again.");
+      return;
     }
 
     if (!validAmount(m.group("amount"))) {
-      return NewBankCommandResponse.failed("Amount is invalid. Please try again.");
+      response.failed("Amount is invalid. Please try again.");
+      return;
     }
 
     BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(m.group("amount")));
 
     if (debitedAccount.getBalance().compareTo(amount) < 0) {
-      return NewBankCommandResponse.failed(
-          "Not enough funds in account to be debited. Please try again.");
+      response.failed("Not enough funds in account to be debited. Please try again.");
+      return;
     }
 
     debitedAccount.moneyOut(amount);
     creditedAccount.moneyIn(amount);
 
-    return NewBankCommandResponse.succeeded(
-        "Move successful." + System.lineSeparator() + "The balance of "
+    response.succeeded(
+        "Move successful."
+            + System.lineSeparator()
+            + "The balance of "
             + creditedAccount.getAccountName()
             + " is now "
             + creditedAccount.getBalance().toPlainString()
-            + "." + System.lineSeparator() + "The balance of "
+            + "."
+            + System.lineSeparator()
+            + "The balance of "
             + debitedAccount.getAccountName()
             + " is now "
             + debitedAccount.getBalance().toPlainString()
