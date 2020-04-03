@@ -48,26 +48,44 @@ public class Account {
   private BigDecimal balance;
   private Currency currency;
 
-  // allowing to enter the balance in double to make it easier to use but save for calculations
-  public Account(AccountType accountType, String accountName, double openingBalance) {
-    this.accountType = accountType;
-    this.accountName = accountName;
-    this.balance = convertDoubleToBigDecimal(openingBalance);
-    this.currency = Currency.GBP;
-    this.accountNumber = getNextAccountNumber();
+  // 1. allowing to enter the balance in double to make it easier to use but save for calculations
+  // 2. This constructor is used only for TestData setup.
+  //    Specifying an account number explicitly makes it easier to test.
+  public Account(
+          AccountType accountType, String accountName, double openingBalance, int accountNumber) {
+    this(accountType, accountName, openingBalance, Currency.GBP, accountNumber);
   }
 
+  // an account number is automatically generated.
   public Account(
-      AccountType accountType, String accountName, double openingBalance, Currency currency) {
+          AccountType accountType, String accountName, double openingBalance, Currency currency) {
+    this(accountType, accountName, openingBalance, currency, getNextAccountNumber());
+  }
+
+  protected Account(
+          AccountType accountType,
+          String accountName,
+          double openingBalance,
+          Currency currency,
+          int accountNumber) {
+
     this.accountType = accountType;
     this.accountName = accountName;
     this.balance = convertDoubleToBigDecimal(openingBalance);
     this.currency = currency;
-    this.accountNumber = getNextAccountNumber();
+    this.accountNumber = accountNumber;
   }
 
   public String toString() {
-    return (accountType.toString() + ": " + accountName + " (" + String.format("%03d", accountNumber) + "): " + balance + " " + currency.name());
+    return (accountType.toString()
+            + ": "
+            + accountName
+            + " ("
+            + String.format("%03d", accountNumber)
+            + "): "
+            + balance
+            + " "
+            + currency.name());
   }
 
   public String getAccountName() {
@@ -94,12 +112,12 @@ public class Account {
     this.balance = this.balance.subtract(out);
   }
 
-  private BigDecimal convertDoubleToBigDecimal(double amount) {
+  private static BigDecimal convertDoubleToBigDecimal(double amount) {
     BigDecimal bd = BigDecimal.valueOf(amount);
     return bd.setScale(2);
   }
 
-  private int getNextAccountNumber() {
+  private static int getNextAccountNumber() {
     return NewBankServer.getNextAccountNumber();
   }
 }

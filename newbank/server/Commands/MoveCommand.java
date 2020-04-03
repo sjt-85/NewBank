@@ -23,12 +23,12 @@ public class MoveCommand extends NewBankCommand {
   }
 
   @Override
-  public void run(NewBankCommandRequest param, NewBankCommandResponse response) {
+  public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
 
-    Customer customer = param.getCustomer();
+    Customer customer = request.getCustomer();
 
     Matcher m =
-        param.matchCommandArgument(
+        request.matchCommandArgument(
             "(?<amount>-?[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
 
     if (!m.matches()) {

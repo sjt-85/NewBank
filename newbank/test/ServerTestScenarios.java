@@ -5,6 +5,7 @@ import newbank.server.Commands.NewAccountCommand;
 import newbank.server.Commands.NewBankCommand;
 import newbank.server.Commands.NewBankCommandRequest;
 import newbank.server.Commands.NewBankCommandResponse;
+import newbank.server.Commands.PayCommand;
 import newbank.server.Commands.ShowMyAccountsCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.NewBank;
@@ -152,31 +153,58 @@ public class ServerTestScenarios {
   }
 
   @Test
+  private void userCanPay() {
+    // test initial state
+    validateShowMyAccount("Bhagy", "1", "Current Account", 1, "Main 1", 1000);
+    validateShowMyAccount("Christina", "2", "Savings Account", 2, "Savings 1", 1500);
+
+    // execute
+    var command = new PayCommand();
+
+    var response = new NewBankCommandResponse();
+
+    command.run(
+            NewBankCommandRequest.create(
+                    NewBank.getBank().checkLogInDetails("Bhagy", "1"), "PAY 2 100"),
+            response);
+
+    // validate
+    AssertEqual("SUCCESS", response.getDescription());
+    validateShowMyAccount("Bhagy", "1", "Current Account", 1, "Main 1", 900);
+    validateShowMyAccount("Christina", "2", "Savings Account", 2, "Savings 1", 1600);
+  }
+
+
+  @Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
+
+    validateShowMyAccount("Bhagy", "1", "Current Account", 1, "Main 1", 1000);
+
+    validateShowMyAccount("Christina", "2", "Savings Account", 2, "Savings 1", 1500);
+  }
+
+  private void validateShowMyAccount(
+          String userName,
+          String password,
+          String accountType,
+          int accountNumber,
+          String accountName,
+          double balance) {
 
     var command = new ShowMyAccountsCommand();
 
-    var bhagy = new NewBankCommandResponse();
+    var response = new NewBankCommandResponse();
+
     command.run(
-        Objects.requireNonNull(
-            NewBankCommandRequest.create(
-                NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")),
-        bhagy);
+            Objects.requireNonNull(
+                    NewBankCommandRequest.create(
+                            NewBank.getBank().checkLogInDetails(userName, password), "SHOWMYACCOUNTS")),
+            response);
 
     NBUnit.AssertEqual(
-        "Current Account: Main 1 (001): 1000.00 GBP" + System.lineSeparator(),
-        bhagy.getDescription());
-
-    var christina = new NewBankCommandResponse();
-    command.run(
-        Objects.requireNonNull(
-            NewBankCommandRequest.create(
-                NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")),
-        christina);
-
-    NBUnit.AssertEqual(
-        "Savings Account: Savings 1 (002): 1500.00 GBP" + System.lineSeparator(),
-        christina.getDescription());
+            String.format("%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance)
+                    + System.lineSeparator(),
+            response.getDescription());
   }
 
   @Test

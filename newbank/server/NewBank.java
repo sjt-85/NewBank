@@ -17,20 +17,20 @@ public class NewBank {
   private void addTestData() {
     // Password = 1
     Customer bhagy = new Customer();
-    bhagy.addAccount(new Account(AccountType.CURRENT, "Main 1", 1000.0));
+    bhagy.addAccount(new Account(AccountType.CURRENT, "Main 1", 1000.0, 1));
     bhagy.assignPassword("c4ca4238a0b923820dcc509a6f75849b");
     getCustomers().put("Bhagy", bhagy);
 
     // Password = 2
     Customer christina = new Customer();
-    christina.addAccount(new Account(AccountType.SAVINGS, "Savings 1", 1500.0));
+    christina.addAccount(new Account(AccountType.SAVINGS, "Savings 1", 1500.0, 2));
     christina.assignPassword("c81e728d9d4c2f636f067f89cc14862c");
     getCustomers().put("Christina", christina);
 
     // Password = 3
     Customer john = new Customer();
-    john.addAccount(new Account(AccountType.CURRENT, "Checking 1", 250.0));
-    john.addAccount(new Account(AccountType.SAVINGS, "Saving 1", 500.0));
+    john.addAccount(new Account(AccountType.CURRENT, "Checking 1", 250.0, 3));
+    john.addAccount(new Account(AccountType.SAVINGS, "Saving 1", 500.0, 4));
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     getCustomers().put("John", john);
   }
