@@ -17,15 +17,16 @@ public class MoveCommand extends NewBankCommand {
   public String getDescription() {
     return "<Amount> <Account Name> <Account Name>" + System.lineSeparator()
         + "-> Move money from the first listed account into the second." + System.lineSeparator()
-        + "   To format add \"/\" between accounts and amount eg MOVE account 1/account 2/100.0.";
+        + "   e.g. MOVE 100 \"Current Account\" \"Savings Account\"";
   }
+
 
   @Override
   public NewBankCommandResponse run(NewBankCommandParameter param) {
     Customer customer = param.getCustomer();
     Matcher m = 
       param.matchCommandArgument(
-        "(?<amount>[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
+        "(?<amount>-?[0-9]+|[0-9]+\\.[0-9][0-9])(?:[\\s]+)(?<fromAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)(?:[\\s]+)(?<toAccount>\"[a-zA-Z0-9 ]+\"|[a-zA-Z0-9]+)$");
     
     if (!m.matches()) return NewBankCommandResponse.invalidRequest("Not enough arguments. Please try again.");
 

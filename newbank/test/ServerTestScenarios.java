@@ -217,7 +217,7 @@ public class ServerTestScenarios {
 
     // Test 1
     String outputString =
-        runServerCommand(userName, password, "MOVE Checking 1/Checking 2/200");
+        runServerCommand(userName, password, "MOVE 200 \"Checking 1\" \"Checking 2\"");
     AssertEqual(
         initialResponse
             + "Account to be credited does not exist. Please try again."
@@ -226,7 +226,7 @@ public class ServerTestScenarios {
 
     // Test 2
     String outputString2 =
-        runServerCommand(userName, password, "MOVE Checking 2/Checking 1/200");
+        runServerCommand(userName, password, "MOVE 200 \"Checking 2\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Account to be debited does not exist. Please try again."
@@ -235,7 +235,7 @@ public class ServerTestScenarios {
 
     // Test 3
     String outputString3 =
-        runServerCommand(userName, password, "MOVE \"Checking 1\"/\"Checking 1\"/100");
+        runServerCommand(userName, password, "MOVE 200 \"Checking 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "The debiting and crediting accounts are the same. Please try again."
@@ -244,20 +244,20 @@ public class ServerTestScenarios {
 
     // Test 4
     String outputString4 =
-        runServerCommand(userName, password, "MOVE Saving 1/Checking 1/-100");
+        runServerCommand(userName, password, "MOVE -200 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
         outputString4);
 
     // Test 5
     String outputString5 =
-        runServerCommand(userName, password, "MOVE \"Saving 1\"/\"Checking 1\"/t");
+        runServerCommand(userName, password, "MOVE /t \"Saving 1\" \"Checking 1\"");
     AssertEqual(
-        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
+        initialResponse + "Not enough arguments. Please try again." + System.lineSeparator(),
         outputString5);
 
     // Test 6
-    String outputString6 = runServerCommand(userName, password, "MOVE Saving 1/Checking 1");
+    String outputString6 = runServerCommand(userName, password, "MOVE \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse + "Not enough arguments. Please try again." + System.lineSeparator(),
         outputString6);
@@ -271,7 +271,7 @@ public class ServerTestScenarios {
     String password = "3";
 
     String outputString =
-        runServerCommand(userName, password, "MOVE Saving 1/Checking 1/500.01");
+        runServerCommand(userName, password, "MOVE 500.01 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Not enough funds in account to be debited. Please try again."
@@ -286,7 +286,7 @@ public class ServerTestScenarios {
     String password = "3";
 
     String outputString =
-        runServerCommand(userName, password, "MOVE Saving 1/Checking 1/321.62");
+        runServerCommand(userName, password, "MOVE 321.62 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Move successful."
@@ -310,11 +310,11 @@ public class ServerTestScenarios {
           + System.lineSeparator()
           + "VIEWACCOUNTTYPE <account type> -> Prints details of specified account type e.g. VIEWACCOUNTTYPE \"Cash ISA\"."
           + System.lineSeparator()
-          + "MOVE <Account Name>/<Account Name>/<Amount>"
+          + "MOVE <Amount> <Account Name> <Account Name>"
           + System.lineSeparator()
           + "-> Move money from the first listed account into the second."
           + System.lineSeparator()
-          + "   To format add \"/\" between accounts and amount eg MOVE account 1/account 2/100.0."
+          + "   e.g. MOVE 100 \"Current Account\" \"Savings Account\""
           + System.lineSeparator()
           + "HELP / COMMANDS -> Show command list."
           + System.lineSeparator()
