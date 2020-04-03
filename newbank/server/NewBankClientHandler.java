@@ -159,7 +159,7 @@ public class NewBankClientHandler extends Thread {
       } else if (request.getCommandName().isBlank()) {
         return new DispatchResult(null, NewBankCommandResponse.EMPTY);
       } else {
-        return new DispatchResult(null, createInvalidRequest("FAIL"));
+        return new DispatchResult(null, createInvalidRequest("FAIL: Invalid command."));
       }
     }
 
