@@ -161,8 +161,9 @@ public class ServerTestScenarios {
                 NewBank.getBank().checkLogInDetails("Bhagy", "1"), "SHOWMYACCOUNTS")),
         bhagy);
 
-    AssertEqual(
-        "Current Account: Main 1: 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
+    NBUnit.AssertEqual(
+        "Current Account: Main 1 (001): 1000.00 GBP" + System.lineSeparator(), bhagy.getDescription());
+
 
     var christina = new NewBankCommandResponse();
     command.run(
@@ -171,8 +172,9 @@ public class ServerTestScenarios {
                 NewBank.getBank().checkLogInDetails("Christina", "2"), "SHOWMYACCOUNTS")),
         christina);
 
-    AssertEqual(
-        "Savings Account: Savings 1: 1500.00 GBP" + System.lineSeparator(),
+    NBUnit.AssertEqual(
+        "Savings Account: Savings 1 (002): 1500.00 GBP" + System.lineSeparator(),
+
         christina.getDescription());
   }
 
