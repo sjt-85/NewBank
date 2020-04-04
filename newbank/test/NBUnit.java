@@ -116,7 +116,10 @@ public class NBUnit {
   private static void invokeTestMethod(Method method) {
     try {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-      if (!invokeSetup(testFixture)) return;
+      if (!invokeSetup(testFixture)) {
+        printError("fail: setup error for " + method.getName());
+        return;
+      }
       invokeFixtureMethod(testFixture, method);
       printSuccess("pass: " + method.getName());
     } catch (InvocationTargetException e) {
@@ -139,7 +142,6 @@ public class NBUnit {
       try {
         invokeFixtureMethod(testFixture, setup);
       } catch (IllegalAccessException | InvocationTargetException e) {
-        e.printStackTrace();
         return false;
       }
     }
