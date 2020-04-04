@@ -280,6 +280,30 @@ public class ServerTestScenarios {
   }
 
   @Test
+  private void createNewAccountGenerateUniqueAccountNumber() {
+
+    var originalKeys =
+        NewBank.getBank().getAccounts().keySet().stream().collect(Collectors.toSet());
+
+    var command = new NewAccountCommand();
+
+    NewBankCommandResponse response = new NewBankCommandResponse();
+    command.run(
+        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" UniqueAccountNumber"),
+        response);
+
+    AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
+
+    Assert(
+        !originalKeys.contains(
+            NewBank.getBank().getAccounts().values().stream()
+                .filter(account -> account.getAccountName().equals("UniqueAccountNumber"))
+                .findFirst()
+                .get()
+                .getAccountNumber()));
+  }
+
+  @Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
 
     var command = new NewAccountCommand();

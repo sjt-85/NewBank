@@ -4,6 +4,7 @@ import newbank.server.Account;
 import newbank.server.AccountTypeInfo;
 import newbank.server.Currency;
 import newbank.server.Customer;
+import newbank.server.NewBank;
 
 import java.util.regex.Matcher;
 
@@ -48,10 +49,11 @@ public class NewAccountCommand extends NewBankCommand {
     }
 
     // requested currency is allowed
-    request
-        .getCustomer()
-        .addAccount(
-            new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency()));
+    Account newAccount =
+        new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency());
+
+    request.getCustomer().addAccount(newAccount);
+    NewBank.getBank().getAccounts().put(newAccount.getAccountNumber(), newAccount);
 
     if (request.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
       response.succeeded(
