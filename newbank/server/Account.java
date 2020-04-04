@@ -1,8 +1,15 @@
 package newbank.server;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 public class Account {
+
+  private static final Locale accountNameLocale = Locale.ENGLISH;
+
+  public static boolean compareAccountName(String accountName1, String accountName2) {
+    return normalizeAccountName(accountName1).equals(normalizeAccountName(accountName2));
+  }
 
   public enum AccountType {
     NONE {
@@ -103,6 +110,11 @@ public class Account {
   public Currency getCurrency() {
     return this.currency;
   }
+
+  public int getAccountNumber() {
+    return accountNumber;
+  }
+
   // As not called by commandline used bigdecimal
   public void moneyIn(BigDecimal in) {
     this.balance = this.balance.add(in);
@@ -119,5 +131,9 @@ public class Account {
 
   private static int getNextAccountNumber() {
     return NewBankServer.getNextAccountNumber();
+  }
+
+  private static String normalizeAccountName(String accountName) {
+    return accountName.toLowerCase(accountNameLocale);
   }
 }

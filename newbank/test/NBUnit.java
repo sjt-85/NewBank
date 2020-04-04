@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NBUnit {
@@ -27,6 +29,10 @@ public class NBUnit {
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD})
   public @interface Test {}
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD})
+  public @interface Setup {}
 
   /** Assertions */
   public static void Assert(boolean b) {
@@ -55,29 +61,27 @@ public class NBUnit {
   }
 
   /** test helpers */
-  public static String runServerCommand(String userName, String password, String... commands) {
+  public static String runServerCommand(String userName, String password, String... inputs) {
 
-    return runServerCommand(NewBankServer.DefaultCommandList, userName, password, commands);
+    return runServerCommand(NewBankServer.DefaultCommandList, userName, password, inputs);
   }
 
   public static String runServerCommand(
-      INewBankCommand[] commandObjects, String userName, String password, String... commands) {
+      INewBankCommand[] commandObjects, String userName, String password, String... inputs) {
 
     return runServerCommand(
-        buildInputStream(userName, password, commands),
-        new ByteArrayOutputStream(),
-        commandObjects);
+        buildInputStream(userName, password, inputs), new ByteArrayOutputStream(), commandObjects);
   }
 
   public static ByteArrayInputStream buildInputStream(
-      String userName, String password, String... commands) {
+      String userName, String password, String... inputs) {
 
     return new ByteArrayInputStream(
         String.format(
                 "%s" + System.lineSeparator() + "%s" + System.lineSeparator() + "%s",
                 userName,
                 password,
-                Arrays.stream(commands)
+                Arrays.stream(inputs)
                     .reduce((acc, command) -> acc + System.lineSeparator() + command)
                     .orElse(""))
             .getBytes());
@@ -112,8 +116,8 @@ public class NBUnit {
   private static void invokeTestMethod(Method method) {
     try {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-      method.setAccessible(true); // a private method can be called by setting true.
-      method.invoke(testFixture);
+      if (!invokeSetup(testFixture)) return;
+      invokeFixtureMethod(testFixture, method);
       printSuccess("pass: " + method.getName());
     } catch (InvocationTargetException e) {
       printError("fail: " + method.getName());
@@ -121,6 +125,25 @@ public class NBUnit {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private static void invokeFixtureMethod(Object testFixture, Method method)
+      throws IllegalAccessException, InvocationTargetException {
+    method.setAccessible(true); // a private method can be called by setting true.
+    method.invoke(testFixture);
+  }
+
+  private static boolean invokeSetup(Object testFixture) {
+    for (var setup :
+        searchAnnotedMethods(testFixture.getClass(), Setup.class).collect(Collectors.toList())) {
+      try {
+        invokeFixtureMethod(testFixture, setup);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        e.printStackTrace();
+        return false;
+      }
+    }
+    return true;
   }
 
   private static void printInvocationException(InvocationTargetException e) {
@@ -137,7 +160,9 @@ public class NBUnit {
         Arrays.stream(error.getStackTrace())
             .filter(element -> !element.getMethodName().contains("Assert"))
             .findFirst()
-            .get();
+            .orElse(null);
+
+    if (assertionCaller == null) return;
 
     printError(
         String.format(
@@ -155,12 +180,13 @@ public class NBUnit {
 
     var allClasses = Stream.concat(Stream.concat(clientClasses, serverClasses), testClasses);
 
-    return allClasses.flatMap(NBUnit::searchTestMethods);
+    return allClasses.flatMap(aClass -> searchAnnotedMethods(aClass, Test.class));
   }
 
-  private static Stream<Method> searchTestMethods(Class<?> aClass) {
+  private static <T extends Annotation> Stream<Method> searchAnnotedMethods(
+      Class<?> aClass, Class<T> annotationClass) {
     return Arrays.stream(aClass.getDeclaredMethods())
-        .filter(method -> method.getAnnotation(Test.class) != null);
+        .filter(method -> method.getAnnotation(annotationClass) != null);
   }
 
   private static class PackageHelper {

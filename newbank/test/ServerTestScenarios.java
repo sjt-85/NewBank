@@ -8,16 +8,23 @@ import newbank.server.Commands.NewBankCommandResponse;
 import newbank.server.Commands.PayCommand;
 import newbank.server.Commands.ShowMyAccountsCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
+import newbank.server.CustomerID;
 import newbank.server.NewBank;
 import newbank.server.NewBankServer;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static newbank.test.NBUnit.Assert;
 import static newbank.test.NBUnit.AssertEqual;
+import static newbank.test.NBUnit.Setup;
 import static newbank.test.NBUnit.Test;
 import static newbank.test.NBUnit.buildInputStream;
 import static newbank.test.NBUnit.runServerCommand;
@@ -30,44 +37,52 @@ import static newbank.test.NBUnit.runServerCommand;
 //    return value type is void
 public class ServerTestScenarios {
 
-  class PromptStub extends NewBankCommand {
-    @Override
-    public String getCommandName() {
-      return "PROMPTSTUB";
-    }
+  private final CustomerID bhagy = NewBank.getBank().checkLogInDetails("Bhagy", "1");
+  private final CustomerID christina = NewBank.getBank().checkLogInDetails("Christina", "2");
+  private final CustomerID john = NewBank.getBank().checkLogInDetails("John", "3");
 
-    @Override
-    public String getDescription() {
-      return "";
-    }
-
-    @Override
-    public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
-      // this is a sample sequence of a user interaction inside a command
-
-      // you can ask a question to a user by providing a message
-      String stringResponse = response.query("What are you doing?");
-      // and get a string response from the user.
-      AssertEqual("I'm coding.", stringResponse);
-
-      // you can also ask a close-ended question to a user
-      boolean boolResponse = response.confirm("Do you finish the feature?");
-      // and get a boolean response.
-      AssertEqual(false, boolResponse);
-
-      response.succeeded("Good luck!");
-    }
+  @Setup
+  private void setup() {
+    // reset data for each test to avoid conflicts between test methods.
+    NewBank.getBank().LoadData();
   }
 
   @Test
   private void commandCanShowPrompt() {
-    String userName = "Bhagy";
-    String password = "1";
+
+    class PromptStub extends NewBankCommand {
+      @Override
+      public String getCommandName() {
+        return "PROMPTSTUB";
+      }
+
+      @Override
+      public String getDescription() {
+        return "";
+      }
+
+      @Override
+      public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
+        // this is a sample sequence of a user interaction inside a command
+
+        // you can ask a question to a user by providing a message
+        String stringResponse = response.query("What are you doing?");
+        // and get a string response from the user.
+        AssertEqual("I'm coding.", stringResponse);
+
+        // you can also ask a close-ended question to a user
+        boolean boolResponse = response.confirm("Do you finish the feature?");
+        // and get a boolean response.
+        AssertEqual(false, boolResponse);
+
+        response.succeeded("Good luck!");
+      }
+    }
 
     var out = new ByteArrayOutputStream();
 
     runServerCommand(
-        buildInputStream(userName, password, "PROMPTSTUB", "I'm coding.", "N"),
+        buildInputStream("Bhagy", "1", "PROMPTSTUB", "I'm coding.", "N"),
         out,
         new INewBankCommand[] {new PromptStub()});
 
@@ -122,10 +137,7 @@ public class ServerTestScenarios {
     var command = new ViewAccountTypeCommand();
 
     var cashISA = new NewBankCommandResponse();
-    command.run(
-        NewBankCommandRequest.create(
-            NewBank.getBank().checkLogInDetails("Bhagy", "1"), "VIEWACCOUNTTYPE \"Cash ISA\""),
-        cashISA);
+    command.run(NewBankCommandRequest.create(bhagy, "VIEWACCOUNTTYPE \"Cash ISA\""), cashISA);
 
     AssertEqual(
         buildAccountTypeString(
@@ -141,10 +153,7 @@ public class ServerTestScenarios {
 
     var currentAccount = new NewBankCommandResponse();
     command.run(
-        NewBankCommandRequest.create(
-            NewBank.getBank().checkLogInDetails("Bhagy", "1"),
-            "VIEWACCOUNTTYPE \"Current Account\""),
-        currentAccount);
+        NewBankCommandRequest.create(bhagy, "VIEWACCOUNTTYPE \"Current Account\""), currentAccount);
 
     AssertEqual(
         buildAccountTypeString(
@@ -153,70 +162,131 @@ public class ServerTestScenarios {
   }
 
   @Test
-  private void userCanPay() {
-    // test initial state
-    validateShowMyAccount("Bhagy", "1", "Current Account", 1, "Main 1", 1000);
-    validateShowMyAccount("Christina", "2", "Savings Account", 2, "Savings 1", 1500);
+  private void userWithSingleAccountCanPay() {
 
-    // execute
-    var command = new PayCommand();
+    // check initial state
+    validateShowMyAccount(bhagy, "Current Account", 1, "Main 1", 1000);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1500);
 
-    var response = new NewBankCommandResponse();
-
-    command.run(
-            NewBankCommandRequest.create(
-                    NewBank.getBank().checkLogInDetails("Bhagy", "1"), "PAY 2 100"),
-            response);
+    // run
+    NewBankCommandResponse response = runPay(bhagy, "PAY 2 100", "Y");
 
     // validate
-    AssertEqual("SUCCESS", response.getDescription());
-    validateShowMyAccount("Bhagy", "1", "Current Account", 1, "Main 1", 900);
-    validateShowMyAccount("Christina", "2", "Savings Account", 2, "Savings 1", 1600);
+    AssertEqual(
+        "PAY Successful"
+            + System.lineSeparator()
+            + "You have made a payment of £100.00 to the Account(Number:002 Type:[Savings Account] Name:\"Savings 1\")"
+            + System.lineSeparator()
+            + "Your new balance is: £900.00",
+        response.getDescription());
+
+    validateShowMyAccount(bhagy, "Current Account", 1, "Main 1", 900);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1600);
   }
 
+  @Test
+  private void userCanCancelToPay() {
+
+    // check initial state
+    validateShowMyAccount(bhagy, "Current Account", 1, "Main 1", 1000);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1500);
+
+    // run
+    NewBankCommandResponse response = runPay(bhagy, "PAY 2 100", "N");
+
+    // validate
+    AssertEqual("FAIL", response.getDescription());
+
+    validateShowMyAccount(bhagy, "Current Account", 1, "Main 1", 1000);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1500);
+  }
+
+  @Test
+  private void userWithMultipleAccountsCanPay() {
+
+    // check initial state
+    validateShowMyAccount(john, "Savings Account", 4, "Saving 1", 500);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1500);
+
+    String inputSequence = "Saving 1" + System.lineSeparator() + "Y" + System.lineSeparator();
+
+    // run
+    NewBankCommandResponse response = runPay(john, "PAY 2 100", inputSequence);
+
+    // validate
+    AssertEqual(
+        "PAY Successful"
+            + System.lineSeparator()
+            + "You have made a payment of £100.00 to the Account(Number:002 Type:[Savings Account] Name:\"Savings 1\")"
+            + System.lineSeparator()
+            + "Your new balance is: £400.00",
+        response.getDescription());
+
+    validateShowMyAccount(john, "Savings Account", 4, "Saving 1", 400);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1600);
+  }
+
+  private static NewBankCommandResponse runPay(
+      CustomerID customerID, String commandString, String inputSequence) {
+
+    var command = new PayCommand();
+
+    var response =
+        new NewBankCommandResponse(
+            new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(inputSequence.getBytes()))),
+            new PrintWriter(new ByteArrayOutputStream()));
+
+    command.run(NewBankCommandRequest.create(customerID, commandString), response);
+
+    return response;
+  }
 
   @Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
-    validateShowMyAccount("Bhagy", "1", "Current Account", 1, "Main 1", 1000);
+    validateShowMyAccount(bhagy, "Current Account", 1, "Main 1", 1000);
 
-    validateShowMyAccount("Christina", "2", "Savings Account", 2, "Savings 1", 1500);
+    validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1500);
   }
 
   private void validateShowMyAccount(
-          String userName,
-          String password,
-          String accountType,
-          int accountNumber,
-          String accountName,
-          double balance) {
+      CustomerID customerID,
+      String accountType,
+      int accountNumber,
+      String accountName,
+      double balance) {
 
     var command = new ShowMyAccountsCommand();
 
     var response = new NewBankCommandResponse();
 
     command.run(
-            Objects.requireNonNull(
-                    NewBankCommandRequest.create(
-                            NewBank.getBank().checkLogInDetails(userName, password), "SHOWMYACCOUNTS")),
-            response);
+        Objects.requireNonNull(NewBankCommandRequest.create(customerID, "SHOWMYACCOUNTS")),
+        response);
 
-    NBUnit.AssertEqual(
-            String.format("%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance)
-                    + System.lineSeparator(),
-            response.getDescription());
+    String accountDescription =
+        String.format("%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance);
+
+    var lines = response.getDescription().split(System.lineSeparator());
+
+    Assert(
+        Arrays.asList(lines).contains(accountDescription),
+        response.getDescription()
+            + System.lineSeparator()
+            + " doesn't contain "
+            + System.lineSeparator()
+            + accountDescription);
   }
 
   @Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
 
-    var id = NewBank.getBank().checkLogInDetails("John", "3");
-
     var command = new NewAccountCommand();
 
     NewBankCommandResponse response = new NewBankCommandResponse();
     command.run(
-        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Saving"), response);
+        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" Saving"), response);
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
@@ -228,13 +298,11 @@ public class ServerTestScenarios {
   @Test
   private void createNewAccountWithAccountNameAndAcceptedCurrencyReturnsSuccess() {
 
-    var id = NewBank.getBank().checkLogInDetails("John", "3");
-
     var command = new NewAccountCommand();
 
     NewBankCommandResponse response = new NewBankCommandResponse();
     command.run(
-        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Travel eur"), response);
+        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" Travel eur"), response);
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
@@ -246,13 +314,12 @@ public class ServerTestScenarios {
   @Test
   private void createNewAccountWithWrongCurrencyReturnsFailWithMessage() {
 
-    var id = NewBank.getBank().checkLogInDetails("Christina", "2");
-
     var command = new NewAccountCommand();
 
     NewBankCommandResponse response = new NewBankCommandResponse();
     command.run(
-        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" Other sar"), response);
+        NewBankCommandRequest.create(christina, "NEWACCOUNT \"Savings Account\" Other sar"),
+        response);
 
     AssertEqual(
         "FAIL: Currency not allowed. Accepted currencies: GBP, EUR, USD.",
@@ -262,19 +329,19 @@ public class ServerTestScenarios {
   @Test
   private void createNewAccountWithDuplicateNameThenIncorrectType() {
 
-    var id = NewBank.getBank().checkLogInDetails("Christina", "2");
-
     var command = new NewAccountCommand();
 
     NewBankCommandResponse response = new NewBankCommandResponse();
     command.run(
-        NewBankCommandRequest.create(id, "NEWACCOUNT \"Savings Account\" \"Savings 1\""), response);
+        NewBankCommandRequest.create(christina, "NEWACCOUNT \"Savings Account\" \"Savings 1\""),
+        response);
 
     AssertEqual("FAIL: Please choose a unique name.", response.getDescription());
 
     NewBankCommandResponse response2 = new NewBankCommandResponse();
     command.run(
-        NewBankCommandRequest.create(id, "NEWACCOUNT \"Saving Account\" \"Savings 1\""), response2);
+        NewBankCommandRequest.create(christina, "NEWACCOUNT \"Saving Account\" \"Savings 1\""),
+        response2);
 
     AssertEqual(
         "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA.",
@@ -308,10 +375,7 @@ public class ServerTestScenarios {
   @Test
   private void userCanLongInAndRunCOMMANDW() {
 
-    String userName = "Bhagy";
-    String password = "1";
-
-    String outputString = runServerCommand(userName, password, "COMMANDS");
+    String outputString = runServerCommand("Bhagy", "1", "COMMANDS");
 
     AssertEqual(initialResponse + commandList, outputString);
   }
@@ -386,11 +450,7 @@ public class ServerTestScenarios {
   @Test
   private void userTriesToMoveWithoutEnoughFunds() {
 
-    String userName = "John";
-    String password = "3";
-
-    String outputString =
-        runServerCommand(userName, password, "MOVE 500.01 \"Saving 1\" \"Checking 1\"");
+    String outputString = runServerCommand("John", "3", "MOVE 500.01 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Not enough funds in account to be debited. Please try again."
@@ -401,11 +461,7 @@ public class ServerTestScenarios {
   @Test
   private void userSuccessfullyMoves() {
 
-    String userName = "John";
-    String password = "3";
-
-    String outputString =
-        runServerCommand(userName, password, "MOVE 321.62 \"Saving 1\" \"Checking 1\"");
+    String outputString = runServerCommand("John", "3", "MOVE 321.62 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
             + "Move successful."
@@ -419,7 +475,7 @@ public class ServerTestScenarios {
 
   final String commandList =
       Arrays.stream(NewBankServer.DefaultCommandList)
-              .map(command -> command.getCommandName())
+              .map(INewBankCommand::getCommandName)
               .reduce(
                   "",
                   (acc, cmd) ->
