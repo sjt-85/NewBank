@@ -74,11 +74,11 @@ public class NewBank {
     return null;
   }
 
-  public HashMap<String, Customer> getCustomers() {
+  public synchronized HashMap<String, Customer> getCustomers() {
     return customers;
   }
 
-  public HashMap<Integer, Account> getAccounts() {
+  public synchronized HashMap<Integer, Account> getAccounts() {
     return accounts;
   }
 }
