@@ -1,15 +1,14 @@
 package newbank.test;
 
+import newbank.server.Commands.INewBankCommand;
 import newbank.server.NewBankClientHandler;
 import newbank.server.NewBankServer;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,6 +20,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NBUnit {
@@ -29,6 +29,10 @@ public class NBUnit {
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD})
   public @interface Test {}
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD})
+  public @interface Setup {}
 
   /** Assertions */
   public static void Assert(boolean b) {
@@ -46,8 +50,10 @@ public class NBUnit {
 
     Assert(
         Objects.equals(expected, actual),
-        String.format("expected:%s" + System.lineSeparator() 
-        + "actual:%s", toString.apply(expected), toString.apply(actual)));
+        String.format(
+            "expected:%s" + System.lineSeparator() + "actual:%s",
+            toString.apply(expected),
+            toString.apply(actual)));
   }
 
   public static void AssertIsNotNull(Object o) {
@@ -55,21 +61,36 @@ public class NBUnit {
   }
 
   /** test helpers */
-  public static String runServerCommand(String userName, String password, String command) {
+  public static String runServerCommand(String userName, String password, String... inputs) {
 
-    String inputString =
+    return runServerCommand(NewBankServer.DefaultCommandList, userName, password, inputs);
+  }
+
+  public static String runServerCommand(
+      INewBankCommand[] commandObjects, String userName, String password, String... inputs) {
+
+    return runServerCommand(
+        buildInputStream(userName, password, inputs), new ByteArrayOutputStream(), commandObjects);
+  }
+
+  public static ByteArrayInputStream buildInputStream(
+      String userName, String password, String... inputs) {
+
+    return new ByteArrayInputStream(
         String.format(
-            "%s" + System.lineSeparator() + "%s" + System.lineSeparator() 
-            + "%s%s", userName, password, command, command.length() == 0 ? "" :  System.lineSeparator());
+                "%s" + System.lineSeparator() + "%s" + System.lineSeparator() + "%s",
+                userName,
+                password,
+                Arrays.stream(inputs)
+                    .reduce((acc, command) -> acc + System.lineSeparator() + command)
+                    .orElse(""))
+            .getBytes());
+  }
 
-    var outputStream = new ByteArrayOutputStream();
+  public static String runServerCommand(
+      ByteArrayInputStream in, ByteArrayOutputStream out, INewBankCommand[] commands) {
 
-    var target =
-        new NewBankClientHandler.CommandInvoker(
-            new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(inputString.getBytes()))),
-            new PrintWriter(outputStream),
-            NewBankServer.DefaultCommandList);
+    var target = new NewBankClientHandler.CommandInvoker(in, out, commands);
 
     try {
       target.run();
@@ -80,7 +101,7 @@ public class NBUnit {
       target.close();
     }
 
-    return outputStream.toString();
+    return out.toString();
   }
 
   /** Test runner */
@@ -95,8 +116,11 @@ public class NBUnit {
   private static void invokeTestMethod(Method method) {
     try {
       Object testFixture = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-      method.setAccessible(true); // a private method can be called by setting true.
-      method.invoke(testFixture);
+      if (!invokeSetup(testFixture)) {
+        printError("fail: setup error for " + method.getName());
+        return;
+      }
+      invokeFixtureMethod(testFixture, method);
       printSuccess("pass: " + method.getName());
     } catch (InvocationTargetException e) {
       printError("fail: " + method.getName());
@@ -104,6 +128,24 @@ public class NBUnit {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private static void invokeFixtureMethod(Object testFixture, Method method)
+      throws IllegalAccessException, InvocationTargetException {
+    method.setAccessible(true); // a private method can be called by setting true.
+    method.invoke(testFixture);
+  }
+
+  private static boolean invokeSetup(Object testFixture) {
+    for (var setup :
+        searchAnnotedMethods(testFixture.getClass(), Setup.class).collect(Collectors.toList())) {
+      try {
+        invokeFixtureMethod(testFixture, setup);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static void printInvocationException(InvocationTargetException e) {
@@ -120,7 +162,9 @@ public class NBUnit {
         Arrays.stream(error.getStackTrace())
             .filter(element -> !element.getMethodName().contains("Assert"))
             .findFirst()
-            .get();
+            .orElse(null);
+
+    if (assertionCaller == null) return;
 
     printError(
         String.format(
@@ -138,12 +182,13 @@ public class NBUnit {
 
     var allClasses = Stream.concat(Stream.concat(clientClasses, serverClasses), testClasses);
 
-    return allClasses.flatMap(NBUnit::searchTestMethods);
+    return allClasses.flatMap(aClass -> searchAnnotedMethods(aClass, Test.class));
   }
 
-  private static Stream<Method> searchTestMethods(Class<?> aClass) {
+  private static <T extends Annotation> Stream<Method> searchAnnotedMethods(
+      Class<?> aClass, Class<T> annotationClass) {
     return Arrays.stream(aClass.getDeclaredMethods())
-        .filter(method -> method.getAnnotation(Test.class) != null);
+        .filter(method -> method.getAnnotation(annotationClass) != null);
   }
 
   private static class PackageHelper {
