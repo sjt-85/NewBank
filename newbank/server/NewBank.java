@@ -74,10 +74,10 @@ public class NewBank {
     return null;
   }
 
+  //todo: currently operations that use these are not thread-safe.
   public synchronized HashMap<String, Customer> getCustomers() {
     return customers;
   }
-
   public synchronized HashMap<Integer, Account> getAccounts() {
     return accounts;
   }
