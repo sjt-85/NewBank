@@ -3,26 +3,29 @@ package newbank.server;
 import newbank.server.Account.AccountType;
 
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static newbank.server.Account.*;
 
 public class Customer {
 
   private ArrayList<Account> accounts;
   private String password;
-  private Locale accountNameLocale = Locale.ENGLISH;
 
   public Customer() {
     accounts = new ArrayList<>();
   }
 
   public String accountsToString() {
-    String s = "";
+    StringBuilder s = new StringBuilder();
     String newLine = System.lineSeparator();
     for (Account a : accounts) {
-      s += a.toString();
-      s += newLine;
+      s.append(a.toString());
+      s.append(newLine);
     }
-    return s;
+    return s.toString();
   }
 
   public void addAccount(Account account) {
@@ -30,24 +33,16 @@ public class Customer {
   }
 
   public boolean hasAccount(String accountName) {
-    accountName = accountName.toLowerCase(accountNameLocale);
-    for (Account a : accounts) {
-      if (a.getAccountName().toLowerCase(accountNameLocale).equals(accountName)) {
-        return true;
-      }
-    }
-    return false;
+    return findAccount(account -> compareAccountName(account.getAccountName(), accountName))
+        != null;
   }
 
   public boolean hasAccount(AccountType accountType, String accountName) {
-    accountName = accountName.toLowerCase(accountNameLocale);
-    for (Account a : accounts) {
-      if ((a.getAccountName().toLowerCase(accountNameLocale).equals(accountName))
-          && (a.getAccountType().equals(accountType))) {
-        return true;
-      }
-    }
-    return false;
+    return findAccount(
+            account ->
+                (compareAccountName(account.getAccountName(), accountName))
+                    && (account.getAccountType().equals(accountType)))
+        != null;
   }
 
   public void assignPassword(String password) {
@@ -59,11 +54,18 @@ public class Customer {
   }
 
   public Account getAccountFromName(String name) {
-    for (Account a : accounts) {
-      if (a.getAccountName().equals(name)) {
-        return a;
-      }
-    }
-    return null;
+    return findAccount(account -> account.getAccountName().equals(name));
+  }
+
+  public List<Integer> enumAccountNumbers() {
+    return accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList());
+  }
+
+  public Account getAccountFromNumber(Integer accountNumber) {
+    return findAccount(account -> account.getAccountNumber() == accountNumber);
+  }
+
+  private Account findAccount(Predicate<Account> predicate) {
+    return accounts.stream().filter(predicate).findFirst().orElse(null);
   }
 }

@@ -10,6 +10,8 @@ public class NewBankCommandResponse {
   private BufferedReader in;
   private PrintWriter out;
 
+  public NewBankCommandResponse() {}
+
   public NewBankCommandResponse(BufferedReader in, PrintWriter out) {
     setStream(in, out);
   }
@@ -60,7 +62,8 @@ public class NewBankCommandResponse {
   public String query(String message) {
     try {
       out.println(message + " :");
-      return in.readLine();
+      String line = in.readLine();
+      return line == null ? "" : line; // When called by test, this can be null.
     } catch (IOException e) {
       e.printStackTrace();
       return "";
@@ -88,8 +91,6 @@ public class NewBankCommandResponse {
     this.in = in;
     this.out = out;
   }
-
-  public NewBankCommandResponse() {}
 
   public ResponseType getType() {
     return this.type;

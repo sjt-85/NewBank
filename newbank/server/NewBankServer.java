@@ -2,6 +2,7 @@ package newbank.server;
 
 import newbank.server.Commands.INewBankCommand;
 import newbank.server.Commands.NewAccountCommand;
+import newbank.server.Commands.PayCommand;
 import newbank.server.Commands.ShowMyAccountsCommand;
 import newbank.server.Commands.MoveCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
@@ -22,6 +23,7 @@ public class NewBankServer extends Thread {
         new ShowMyAccountsCommand(),
         new NewAccountCommand(),
         new ViewAccountTypeCommand(),
+        new PayCommand(),
         new MoveCommand()
       };
 
