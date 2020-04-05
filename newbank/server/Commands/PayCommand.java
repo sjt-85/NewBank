@@ -62,8 +62,8 @@ public class PayCommand extends NewBankCommand {
                 + "Amount: %s"
                 + System.lineSeparator()
                 + "Do you proceed?",
-            debitedAccount.toString(),
-            creditedAccount.toString(),
+            formatAccountForPayer(debitedAccount),
+            formatAccountForPayee(creditedAccount),
             args.amount.toString());
 
     if (!response.confirm(confirmationMessage)) {
@@ -87,6 +87,23 @@ public class PayCommand extends NewBankCommand {
             + String.format(
                 "Your new balance is: £%s", debitedAccount.getBalance().toPlainString()));
   }
+
+  private static String formatAccountForPayer(Account account) {
+    return String.format(
+        "%s: %S (%03d): %s %s",
+        account.getAccountType().toString(),
+        account.getAccountName(),
+        account.getAccountNumber(),
+        account.getBalance(),
+        account.getCurrency().name());
+  }
+
+  private static String formatAccountForPayee(Account account) {
+    return String.format(
+            "%s: %S (%03d)",
+            account.getAccountType().toString(), account.getAccountName(), account.getAccountNumber());
+  }
+
 
   static class PayArguments {
 
