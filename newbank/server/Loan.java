@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public class Loan {
   private int offerNumber;
-  private BigDecimal totalAmount;
+  private final BigDecimal totalAmount;
   private BigDecimal totalAmountRepaid;
   private int borrowingAccountNumber;
 
@@ -47,5 +47,9 @@ public class Loan {
 
   public Offer getOffer() {
     return MicroLoanMarketPlace.getInstance().getOffers().getOrDefault(offerNumber, null);
+  }
+
+  public BigDecimal getAmountLeftToPay() {
+    return totalAmount.subtract(totalAmountRepaid);
   }
 }
