@@ -49,7 +49,13 @@ public class Loan {
     return MicroLoanMarketPlace.getInstance().getOffers().getOrDefault(offerNumber, null);
   }
 
+
+  /** this method might not be used, however put here to show semantics  */
   public BigDecimal getAmountLeftToPay() {
     return totalAmount.subtract(totalAmountRepaid);
+  }
+  /** this method might not be used, however put here to show semantics  */
+  private void pay(BigDecimal amountToPay) {
+    this.totalAmountRepaid = this.totalAmountRepaid.subtract(amountToPay);
   }
 }
