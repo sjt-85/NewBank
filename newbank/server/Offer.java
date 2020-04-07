@@ -58,4 +58,8 @@ public class Offer {
   public int getBorrowingLengthInMonth() {
     return borrowingLengthInMonth;
   }
+
+  public void borrow(BigDecimal amountToBorrow) {
+    this.amount = this.amount.subtract(amountToBorrow);
+  }
 }
