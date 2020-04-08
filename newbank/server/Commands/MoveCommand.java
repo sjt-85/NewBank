@@ -1,6 +1,7 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.CurrencyConverter;
 import newbank.server.Customer;
 
 import java.math.BigDecimal;
@@ -66,8 +67,10 @@ public class MoveCommand extends NewBankCommand {
       return;
     }
 
+    BigDecimal convertedAmount = convertAmount(amount, debitedAccount, creditedAccount);
+
     debitedAccount.moneyOut(amount);
-    creditedAccount.moneyIn(amount);
+    creditedAccount.moneyIn(convertedAmount);
 
     response.succeeded(
         "Move successful."
@@ -102,11 +105,20 @@ public class MoveCommand extends NewBankCommand {
     return bd.setScale(2);
   }
 
-  private BigDecimal convertToSecondCurrency(BigDecimal amount){
-    return amount;
-  }
-
   private static String parseAccountName(String accountName) {
     return accountName.replace("\"", "");
+  }
+
+  private BigDecimal convertAmount(BigDecimal amount, Account debited, Account credited) {
+    CurrencyConverter cc = new CurrencyConverter();
+    switch (credited.getCurrency()) {
+      case GBP:
+        return cc.convertToGBP(debited.getCurrency(), amount).setScale(2);
+      case EUR:
+        return cc.convertToEur(debited.getCurrency(), amount).setScale(2);
+      case USD:
+        return cc.convertToUsd(debited.getCurrency(), amount).setScale(2);
+    }
+    return null;
   }
 }

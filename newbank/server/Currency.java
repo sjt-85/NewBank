@@ -6,6 +6,7 @@ public enum Currency {
     public String toString() {
       return "GBP";
     }
+
   },
   EUR {
     @Override
