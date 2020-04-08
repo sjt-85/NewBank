@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import static newbank.server.NewBank.createDecimal;
+
 /** Singleton object for MarketPlace. */
 public class MicroLoanMarketPlace {
 
@@ -22,6 +24,6 @@ public class MicroLoanMarketPlace {
   }
 
   public BigDecimal getMaxInterestRate() {
-    return new BigDecimal("0.2");
+    return createDecimal("0.2");
   }
 }
