@@ -15,10 +15,10 @@ public class CurrencyConverter {
         exchangeRate = SELFTOSELF;
         break;
       case EUR:
-        exchangeRate = GBPTOEUR;
+        exchangeRate = 1 / GBPTOEUR;
         break;
       case USD:
-        exchangeRate = GBPTOUSD;
+        exchangeRate = 1 / GBPTOUSD;
     }
     return BigDecimal.valueOf(exchangeRate).multiply(amount);
   }
@@ -27,13 +27,13 @@ public class CurrencyConverter {
     double exchangeRate = 0;
     switch (currency) {
       case GBP:
-        exchangeRate = 1 / GBPTOEUR;
+        exchangeRate = GBPTOEUR;
         break;
       case EUR:
         exchangeRate = SELFTOSELF;
         break;
       case USD:
-        exchangeRate = EURTOUSD;
+        exchangeRate = 1 / EURTOUSD;
     }
     return BigDecimal.valueOf(exchangeRate).multiply(amount);
   }
@@ -42,10 +42,10 @@ public class CurrencyConverter {
     double exchangeRate = 0;
     switch (currency) {
       case GBP:
-        exchangeRate = 1 / GBPTOUSD;
+        exchangeRate = GBPTOUSD;
         break;
       case EUR:
-        exchangeRate = 1 / EURTOUSD;
+        exchangeRate = EURTOUSD;
         break;
       case USD:
         exchangeRate = SELFTOSELF;

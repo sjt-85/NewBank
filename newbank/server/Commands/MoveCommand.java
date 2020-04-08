@@ -5,6 +5,7 @@ import newbank.server.CurrencyConverter;
 import newbank.server.Customer;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.regex.Matcher;
 
 public class MoveCommand extends NewBankCommand {
@@ -112,12 +113,13 @@ public class MoveCommand extends NewBankCommand {
   private BigDecimal convertAmount(BigDecimal amount, Account debited, Account credited) {
     CurrencyConverter cc = new CurrencyConverter();
     switch (credited.getCurrency()) {
+        // Without rounding mode program was crashing
       case GBP:
-        return cc.convertToGBP(debited.getCurrency(), amount).setScale(2);
+        return cc.convertToGBP(debited.getCurrency(), amount).setScale(2, RoundingMode.FLOOR);
       case EUR:
-        return cc.convertToEur(debited.getCurrency(), amount).setScale(2);
+        return cc.convertToEur(debited.getCurrency(), amount).setScale(2, RoundingMode.FLOOR);
       case USD:
-        return cc.convertToUsd(debited.getCurrency(), amount).setScale(2);
+        return cc.convertToUsd(debited.getCurrency(), amount).setScale(2, RoundingMode.FLOOR);
     }
     return null;
   }

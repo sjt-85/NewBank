@@ -490,9 +490,9 @@ public class ServerTestScenarios {
         initialResponse
             + "Move successful."
             + System.lineSeparator()
-            + "The balance of Checking 1 is now 571.62."
+            + "The balance of Checking 1 is now 571.62GBP."
             + System.lineSeparator()
-            + "The balance of Saving 1 is now 178.38."
+            + "The balance of Saving 1 is now 178.38GBP."
             + System.lineSeparator(),
         outputString);
   }
