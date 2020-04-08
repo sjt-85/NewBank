@@ -22,6 +22,6 @@ public class MicroLoanMarketPlace {
   }
 
   public BigDecimal getMaxInterestRate() {
-    return new BigDecimal("0.25");
+    return new BigDecimal("0.2");
   }
 }
