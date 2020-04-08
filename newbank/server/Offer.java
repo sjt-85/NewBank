@@ -5,14 +5,14 @@ import java.math.BigDecimal;
 public class Offer {
 
   private int offerNumber;
-  private double interestRate;
+  private BigDecimal interestRate;
   private BigDecimal amount;
   private int lendingAccountNumber;
   private int borrowingLengthInMonth;
 
   public Offer(
       int offerNumber,
-      double interestRate,
+      BigDecimal interestRate,
       BigDecimal amount,
       Account lendingAccount,
       int borrowingLengthInMonth) {
@@ -27,7 +27,7 @@ public class Offer {
 
   public Offer(
       int offerNumber,
-      double interestRate,
+      BigDecimal interestRate,
       BigDecimal amount,
       int lendingAccountNumber,
       int borrowingLengthInMonth) {
@@ -43,7 +43,7 @@ public class Offer {
     return offerNumber;
   }
 
-  public double getInterestRate() {
+  public BigDecimal getInterestRate() {
     return interestRate;
   }
 

@@ -2,6 +2,7 @@ package newbank.server;
 
 import newbank.server.Account.AccountType;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -74,10 +75,21 @@ public class NewBank {
     return null;
   }
 
-  //todo: currently operations that use these are not thread-safe.
+  // global helpers
+
+  // todo: move to an appropriate place if any
+  public static BigDecimal createDecimal(String val) {
+    return new BigDecimal(val).setScale(2);
+  }
+  public static BigDecimal createDecimal(double amount) {
+    return BigDecimal.valueOf(amount).setScale(2);
+  }
+
+  // todo: currently operations that use these are not thread-safe.
   public synchronized HashMap<String, Customer> getCustomers() {
     return customers;
   }
+
   public synchronized HashMap<Integer, Account> getAccounts() {
     return accounts;
   }

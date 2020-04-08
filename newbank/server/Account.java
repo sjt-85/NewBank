@@ -78,7 +78,7 @@ public class Account {
 
     this.accountType = accountType;
     this.accountName = accountName;
-    this.balance = convertDoubleToBigDecimal(openingBalance);
+    this.balance = NewBank.createDecimal(openingBalance);
     this.currency = currency;
     this.accountNumber = accountNumber;
   }
@@ -122,11 +122,6 @@ public class Account {
 
   public void moneyOut(BigDecimal out) {
     this.balance = this.balance.subtract(out);
-  }
-
-  private static BigDecimal convertDoubleToBigDecimal(double amount) {
-    BigDecimal bd = BigDecimal.valueOf(amount);
-    return bd.setScale(2);
   }
 
   private static int getNextAccountNumber() {

@@ -1,5 +1,6 @@
 package newbank.server;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class MicroLoanMarketPlace {
     return offers;
   }
 
-  public double getMaxInterestRate() {
-    return 0.2;
+  public BigDecimal getMaxInterestRate() {
+    return new BigDecimal("0.25");
   }
 }
