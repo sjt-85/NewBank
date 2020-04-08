@@ -27,7 +27,7 @@ public class MicroLoanMarketPlace {
     return createDecimal("0.2");
   }
 
-  public void addOffer(Offer offer){
-    offers.put(offer.getOfferNumber(),offer);
+  public void addOffer(Offer offer) {
+    offers.put(offer.getOfferNumber(), offer);
   }
 }
