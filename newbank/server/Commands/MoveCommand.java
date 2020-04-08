@@ -6,6 +6,8 @@ import newbank.server.Customer;
 import java.math.BigDecimal;
 import java.util.regex.Matcher;
 
+import static newbank.server.NewBank.createDecimal;
+
 public class MoveCommand extends NewBankCommand {
 
   @Override
@@ -64,7 +66,7 @@ public class MoveCommand extends NewBankCommand {
       return;
     }
 
-    BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(m.group("amount")));
+    BigDecimal amount = createDecimal(Double.parseDouble(m.group("amount")));
 
     if (debitedAccount.getBalance().compareTo(amount) < 0) {
       response.failed("Not enough funds in account to be debited. Please try again.");
@@ -98,11 +100,6 @@ public class MoveCommand extends NewBankCommand {
       return false;
     }
     return amount > 0;
-  }
-
-  private BigDecimal convertDoubleToBigDecimal(double amount) {
-    BigDecimal bd = BigDecimal.valueOf(amount);
-    return bd.setScale(2);
   }
 
   private static String parseAccountName(String accountName) {

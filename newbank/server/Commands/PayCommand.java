@@ -7,6 +7,8 @@ import newbank.server.NewBank;
 import java.math.BigDecimal;
 import java.util.regex.Matcher;
 
+import static newbank.server.NewBank.createDecimal;
+
 public class PayCommand extends NewBankCommand {
   @Override
   public String getCommandName() {
@@ -100,10 +102,9 @@ public class PayCommand extends NewBankCommand {
 
   private static String formatAccountForPayee(Account account) {
     return String.format(
-            "%s: %S (%03d)",
-            account.getAccountType().toString(), account.getAccountName(), account.getAccountNumber());
+        "%s: %S (%03d)",
+        account.getAccountType().toString(), account.getAccountName(), account.getAccountNumber());
   }
-
 
   static class PayArguments {
 
@@ -129,8 +130,7 @@ public class PayCommand extends NewBankCommand {
 
     private static BigDecimal parseAmount(String amount) {
       try {
-        BigDecimal bd = BigDecimal.valueOf(Double.parseDouble(amount));
-        return bd.setScale(2);
+        return createDecimal(Double.parseDouble(amount));
       } catch (NumberFormatException e) {
         return BigDecimal.ZERO;
       }
