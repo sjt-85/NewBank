@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static newbank.server.Account.*;
+import static newbank.server.Account.compareAccountName;
 
 public class Customer {
 
@@ -36,6 +36,8 @@ public class Customer {
     return findAccount(account -> compareAccountName(account.getAccountName(), accountName))
         != null;
   }
+
+  private static class CusrrencyConverter {}
 
   public boolean hasAccount(AccountType accountType, String accountName) {
     return findAccount(

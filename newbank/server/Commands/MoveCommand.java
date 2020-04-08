@@ -54,11 +54,6 @@ public class MoveCommand extends NewBankCommand {
       return;
     }
 
-    if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
-      response.failed("The currency of each account is not the same. Please try again.");
-      return;
-    }
-
     if (!validAmount(m.group("amount"))) {
       response.failed("Amount is invalid. Please try again.");
       return;
@@ -81,12 +76,14 @@ public class MoveCommand extends NewBankCommand {
             + creditedAccount.getAccountName()
             + " is now "
             + creditedAccount.getBalance().toPlainString()
+            + creditedAccount.getCurrency().toString()
             + "."
             + System.lineSeparator()
             + "The balance of "
             + debitedAccount.getAccountName()
             + " is now "
             + debitedAccount.getBalance().toPlainString()
+            + debitedAccount.getCurrency().toString()
             + ".");
   }
 
@@ -103,6 +100,10 @@ public class MoveCommand extends NewBankCommand {
   private BigDecimal convertDoubleToBigDecimal(double amount) {
     BigDecimal bd = BigDecimal.valueOf(amount);
     return bd.setScale(2);
+  }
+
+  private BigDecimal convertToSecondCurrency(BigDecimal amount){
+    return amount;
   }
 
   private static String parseAccountName(String accountName) {
