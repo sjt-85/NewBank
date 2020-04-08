@@ -26,4 +26,8 @@ public class MicroLoanMarketPlace {
   public BigDecimal getMaxInterestRate() {
     return createDecimal("0.2");
   }
+
+  public void addOffer(Offer offer){
+    offers.put(offer.getOfferNumber(),offer);
+  }
 }
