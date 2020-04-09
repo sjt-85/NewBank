@@ -115,11 +115,11 @@ public class MoveCommand extends NewBankCommand {
     switch (credited.getCurrency()) {
         // Without rounding mode program was crashing
       case GBP:
-        return cc.convertToGBP(debited.getCurrency(), amount).setScale(2, RoundingMode.FLOOR);
+        return cc.convertToGBP(debited.getCurrency(), amount).setScale(2, RoundingMode.HALF_EVEN);
       case EUR:
-        return cc.convertToEur(debited.getCurrency(), amount).setScale(2, RoundingMode.FLOOR);
+        return cc.convertToEur(debited.getCurrency(), amount).setScale(2, RoundingMode.HALF_EVEN);
       case USD:
-        return cc.convertToUsd(debited.getCurrency(), amount).setScale(2, RoundingMode.FLOOR);
+        return cc.convertToUsd(debited.getCurrency(), amount).setScale(2, RoundingMode.HALF_EVEN);
     }
     return null;
   }

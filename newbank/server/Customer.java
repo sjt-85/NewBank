@@ -37,8 +37,6 @@ public class Customer {
         != null;
   }
 
-  private static class CusrrencyConverter {}
-
   public boolean hasAccount(AccountType accountType, String accountName) {
     return findAccount(
             account ->
