@@ -35,7 +35,7 @@ public class OfferCommand extends NewBankCommand {
         + MAXRATE * 100
         + "%, length must be less than "
         + MAXLENGTH
-        + " months";
+        + " months.";
   }
 
   @Override
@@ -139,7 +139,7 @@ public class OfferCommand extends NewBankCommand {
   private BigDecimal parseRate(String percentage) {
     if (!percentage.contains("%")) return null;
     String percentInput[] = percentage.split("%");
-    if (!validDouble(percentInput[1])) return null;
+    if (!validDouble(percentInput[0])) return null;
     BigDecimal percent = BigDecimal.valueOf(Double.parseDouble(percentInput[0]));
     return percent.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_EVEN);
   }

@@ -368,7 +368,7 @@ public class ServerTestScenarios {
         response2);
 
     AssertEqual(
-        "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA.",
+        "FAIL: Account type must be specified. Accepted account types: Current Account, Savings Account, Cash ISA, Lending account.",
         response2.getDescription());
   }
 
