@@ -14,8 +14,9 @@ import java.util.stream.Collectors;
 public class OfferCommand extends NewBankCommand {
 
   private final double MAXOFFER = 2500;
-  private final double MAXRATE = 0.2;
   private final int MAXLENGTH = 24;
+  private final double MAXRATE =
+      MicroLoanMarketPlace.getInstance().getMaxInterestRate().doubleValue();
 
   @Override
   public String getCommandName() {
@@ -28,7 +29,13 @@ public class OfferCommand extends NewBankCommand {
         + System.lineSeparator()
         + "-> Offer a loan to borrowers eg OFFER 500 10% 6. "
         + System.lineSeparator()
-        + "   ";
+        + "   Amount offered must be less than "
+        + MAXOFFER
+        + "GBP, interest rate must be less than "
+        + MAXRATE * 100
+        + "%, length must be less than "
+        + MAXLENGTH
+        + " months";
   }
 
   @Override
@@ -40,25 +47,14 @@ public class OfferCommand extends NewBankCommand {
       return;
     }
 
-    if (!input[1].contains("%")) {
+    BigDecimal amount = parseAmount(input[0]);
+    BigDecimal rate = parseRate(input[1]);
+
+    if (amount == null || rate == null || !validInt(input[2])) {
       response.invalidRequest(
           "Please enter correct format for amounts. Please see help and try again.");
       return;
     }
-
-    String percentInput[] = input[1].split("%");
-
-    if (!validDouble(input[0]) || !validDouble(percentInput[0]) || !validInt(input[2])) {
-      response.invalidRequest(
-          "Please enter correct format for amounts. Please see help and try again.");
-      return;
-    }
-
-    BigDecimal amount =
-        BigDecimal.valueOf(Double.parseDouble(input[0])).setScale(2, RoundingMode.HALF_EVEN);
-
-    BigDecimal percent = BigDecimal.valueOf(Double.parseDouble(percentInput[0]));
-    BigDecimal rate = percent.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_EVEN);
 
     int length = Integer.parseInt(input[2]);
 
@@ -90,15 +86,19 @@ public class OfferCommand extends NewBankCommand {
       return;
     }
 
-    List<Account> gbpAccounts = lendingAccounts.stream().filter(account -> account.getCurrency().equals(Currency.GBP)).collect(Collectors.toList());
+    List<Account> gbpAccounts =
+        lendingAccounts.stream()
+            .filter(account -> account.getCurrency().equals(Currency.GBP))
+            .collect(Collectors.toList());
 
     if (gbpAccounts.size() == 0) {
-      response.failed("Sorry micro-loans only offered for GBP accounts. Please try again.");
+      response.failed(
+          "Sorry micro-loans currently only offered for GBP accounts. Please try again.");
       return;
     }
 
     List<Account> validAccounts =
-            gbpAccounts.stream()
+        gbpAccounts.stream()
             .filter(account -> account.getBalance().compareTo(amount) >= 0)
             .collect(Collectors.toList());
 
@@ -114,9 +114,10 @@ public class OfferCommand extends NewBankCommand {
             + System.lineSeparator()
             + "Offer Amount: "
             + input[0]
+            + "GBP"
             + System.lineSeparator()
             + "Interest rate: "
-            + percentInput[0]
+            + input[1].split("%")[0]
             + "%"
             + System.lineSeparator()
             + "Borrowing length: "
@@ -132,6 +133,20 @@ public class OfferCommand extends NewBankCommand {
     lendingAccount.moneyOut(amount);
     Offer offer = new Offer(0, rate, amount, lendingAccount, length);
     MicroLoanMarketPlace.getInstance().addOffer(offer);
+    response.succeeded("Offer successfully added to the marketplace");
+  }
+
+  private BigDecimal parseRate(String percentage) {
+    if (!percentage.contains("%")) return null;
+    String percentInput[] = percentage.split("%");
+    if (!validDouble(percentInput[1])) return null;
+    BigDecimal percent = BigDecimal.valueOf(Double.parseDouble(percentInput[0]));
+    return percent.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_EVEN);
+  }
+
+  private BigDecimal parseAmount(String amount) {
+    if (!validDouble(amount)) return null;
+    return BigDecimal.valueOf(Double.parseDouble(amount)).setScale(2, RoundingMode.HALF_EVEN);
   }
 
   private Account chooseLendingAccount(
