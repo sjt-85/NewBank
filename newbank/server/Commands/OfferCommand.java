@@ -15,8 +15,7 @@ public class OfferCommand extends NewBankCommand {
 
   private final double MAXOFFER = 2500;
   private final int MAXLENGTH = 24;
-  private final double MAXRATE =
-      MicroLoanMarketPlace.getInstance().getMaxInterestRate().doubleValue();
+  private final double MAXRATE = 0.2;
 
   @Override
   public String getCommandName() {
