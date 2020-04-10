@@ -300,8 +300,6 @@ public class ServerTestScenarios {
     var originalKeys =
         NewBank.getBank().getAccounts().keySet().stream().collect(Collectors.toSet());
 
-    var command = new NewAccountCommand();
-
     NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" UniqueAccountNumber", "Y");
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
@@ -318,8 +316,6 @@ public class ServerTestScenarios {
   @Test
   private void createNewAccountWithOnlyAccountNameReturnsSuccessIfConfirmed() {
 
-    var command = new NewAccountCommand();
-
     NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" Saving", "Y");
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
@@ -331,8 +327,6 @@ public class ServerTestScenarios {
 
   @Test
   private void createNewAccountWithOnlyAccountNameReturnsFailIfNotConfirmed() {
-
-    var command = new NewAccountCommand();
 
     NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" Saving", "N");
 
