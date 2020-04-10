@@ -79,7 +79,7 @@ public class Offer implements Comparable<Offer> {
             + "%s: %d"
             + System.lineSeparator(),
         "Offer Number", this.offerNumber,
-        "Interest Rate", new DecimalFormat("0.00").format(this.interestRate),
+        "Interest Rate (%)", this.interestRate.multiply(BigDecimal.valueOf(100)).toString(),
         "Amount (GBP)", new DecimalFormat("0.00").format(this.amount),
         "Term (months)", this.borrowingLengthInMonth);
   }
