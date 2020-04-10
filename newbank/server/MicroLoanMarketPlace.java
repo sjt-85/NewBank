@@ -1,10 +1,7 @@
 package newbank.server;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-
-import static newbank.server.NewBank.createDecimal;
 
 /** Singleton object for MarketPlace. */
 public class MicroLoanMarketPlace {
@@ -23,7 +20,7 @@ public class MicroLoanMarketPlace {
     return offers;
   }
 
-  public BigDecimal getMaxInterestRate() {
-    return createDecimal("0.2");
+  public void addOffer(Offer offer) {
+    offers.put(offer.getOfferNumber(), offer);
   }
 }

@@ -40,6 +40,15 @@ public final class AccountTypeInfo {
                 createDecimal("0"),
                 0,
                 new ArrayList<String>(Arrays.asList("No additional features"))),
+            AccountType.LENDING,
+            new AccountTypeInfo(
+                AccountType.LENDING,
+                createDecimal("0.0"),
+                createDecimal("0.0"),
+                createDecimal("0"),
+                0,
+                new ArrayList<String>(
+                    Arrays.asList("Money can be borrowed by other New Bank customers"))),
             AccountType.CASHISA,
             new AccountTypeInfo(
                 AccountType.CASHISA,
