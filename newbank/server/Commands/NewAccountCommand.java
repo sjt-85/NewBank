@@ -54,7 +54,7 @@ public class NewAccountCommand extends NewBankCommand {
           System.lineSeparator() +
           "Do you want to continue?";
       if (!response.confirm(confirmationMessage)) {
-        response.invalidRequest("FAIL: No new account created.");
+        response.failed("FAIL: No new account created.");
         return;
       }
     }

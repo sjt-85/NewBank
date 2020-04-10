@@ -243,6 +243,20 @@ public class ServerTestScenarios {
     return response;
   }
 
+  private static NewBankCommandResponse runNewAccount(
+          CustomerID customerID, String commandString, String inputSequence) {
+    var command = new NewAccountCommand();
+
+    var response =
+        new NewBankCommandResponse(
+            new BufferedReader(
+               new InputStreamReader(new ByteArrayInputStream(inputSequence.getBytes()))),
+            new PrintWriter(new ByteArrayOutputStream()));
+
+    command.run(NewBankCommandRequest.create(customerID, commandString), response);
+    return response;
+  }
+
   @Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
@@ -288,10 +302,7 @@ public class ServerTestScenarios {
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response = new NewBankCommandResponse();
-    command.run(
-        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" UniqueAccountNumber"),
-        response);
+    NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" UniqueAccountNumber", "Y");
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
@@ -305,19 +316,31 @@ public class ServerTestScenarios {
   }
 
   @Test
-  private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
+  private void createNewAccountWithOnlyAccountNameReturnsSuccessIfConfirmed() {
 
     var command = new NewAccountCommand();
 
-    NewBankCommandResponse response = new NewBankCommandResponse();
-    command.run(
-        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" Saving"), response);
+    NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" Saving", "Y");
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
     AssertEqual(
-        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
-        response.getDescription());
+            "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
+            response.getDescription());
+  }
+
+  @Test
+  private void createNewAccountWithOnlyAccountNameReturnsFailIfNotConfirmed() {
+
+    var command = new NewAccountCommand();
+
+    NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" Saving", "N");
+
+    AssertEqual(NewBankCommandResponse.ResponseType.FAILED, response.getType());
+
+    AssertEqual(
+            "FAIL: No new account created.",
+            response.getDescription());
   }
 
   @Test
