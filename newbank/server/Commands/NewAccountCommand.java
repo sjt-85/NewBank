@@ -48,7 +48,18 @@ public class NewAccountCommand extends NewBankCommand {
       return;
     }
 
-    // requested currency is allowed
+    // requested currency is allowed, check for default and confirm
+    if (args.isDefaultCurrency()) {
+      String confirmationMessage = "The default currency GBP will be used for the new account." +
+          System.lineSeparator() +
+          "Do you want to continue?";
+      if (!response.confirm(confirmationMessage)) {
+        response.invalidRequest("FAIL: No new account created.");
+        return;
+      }
+    }
+
+    // if default currency was confirmed or currency was given, create account
     Account newAccount =
         new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency());
 
