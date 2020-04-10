@@ -1,8 +1,13 @@
 package newbank.server.Commands;
 
+import newbank.server.Account;
+import newbank.server.Customer;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OfferCommand extends NewBankCommand {
 
@@ -36,6 +41,7 @@ public class OfferCommand extends NewBankCommand {
     if (!input[1].contains("%")) {
       response.invalidRequest(
           "Please enter correct format for amounts. Please see help and try again.");
+      return;
     }
 
     String percentInput[] = input[1].split("%");
@@ -73,6 +79,54 @@ public class OfferCommand extends NewBankCommand {
       response.failed("Length offered greater than " + MAXLENGTH + " months. Please try again.");
       return;
     }
+
+    Customer customer = request.getCustomer();
+
+    List<Account> lendingAccounts = customer.collectAccountsByType(Account.AccountType.LENDING);
+    if (lendingAccounts.size() == 0) {
+      response.failed("Lending account required to make offer. Please try again.");
+      return;
+    }
+
+    List<Account> validAccounts =
+        lendingAccounts.stream()
+            .filter(account -> account.getBalance().compareTo(amount) >= 0)
+            .collect(Collectors.toList());
+
+    if (validAccounts.size() == 0) {
+      response.failed("Not enough funds in lending accounts. Please try again.");
+      return;
+    }
+
+    Account lendingAccount = chooseLendingAccount(validAccounts, response, customer);
+
+    
+  }
+
+  private Account chooseLendingAccount(List<Account> lendingAccounts, NewBankCommandResponse response, Customer customer){
+    return lendingAccounts.size()==1
+            ? lendingAccounts.get(0)
+            : queryAccounts(lendingAccounts, response, customer);
+
+  }
+
+  private Account queryAccounts(
+      List<Account> lendingAccounts, NewBankCommandResponse response, Customer customer) {
+    Account account;
+    do {
+      account =
+          customer.getAccountFromName(
+              response.query(
+                  String.format(
+                      "Please input the account name:%s",
+                      lendingAccounts.stream()
+                          .map(accountName -> "\"" + accountName + "\"")
+                          .reduce((name1, name2) -> name1 + "," + name2)
+                          .orElse(""))));
+
+    } while (account == null);
+
+    return account;
   }
 
   private boolean validDouble(String amountInput) {

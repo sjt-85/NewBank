@@ -61,6 +61,12 @@ public class Customer {
     return accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList());
   }
 
+  public List<Account> collectAccountsByType(AccountType type) {
+    return accounts.stream()
+        .filter(account -> account.getAccountType().equals(type))
+        .collect(Collectors.toList());
+  }
+
   public Account getAccountFromNumber(Integer accountNumber) {
     return findAccount(account -> account.getAccountNumber() == accountNumber);
   }
