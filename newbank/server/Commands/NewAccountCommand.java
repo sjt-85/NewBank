@@ -49,7 +49,7 @@ public class NewAccountCommand extends NewBankCommand {
     }
 
     // requested currency is allowed, check for default and confirm
-    if (args.isDefaultCurrency()) {
+    if (args.usedDefaultCurrency()) {
       String confirmationMessage = "The default currency GBP will be used for the new account." +
           System.lineSeparator() +
           "Do you want to continue?";
@@ -94,7 +94,7 @@ public class NewAccountCommand extends NewBankCommand {
       // get currency from regex result
       argument.currency = parseCurrency(m.group("currency"));
       // determine if default was used
-      argument.defaultCurrency = determineIfDefaultCurrency(m.group("currency"));
+      argument.usedDefaultCurrency = determineIfDefaultCurrency(m.group("currency"));
 
       // get account type from regex result
       argument.accountType = parseAccountType(m.group("accType"));
@@ -111,14 +111,14 @@ public class NewAccountCommand extends NewBankCommand {
     private String accountName; // get account name from regex result
     private Account.AccountType accountType;
     private Currency currency;
-    private boolean defaultCurrency = false;
+    private boolean usedDefaultCurrency = false;
 
     public Currency getCurrency() {
       return currency;
     }
 
-    public boolean isDefaultCurrency() {
-      return defaultCurrency;
+    public boolean usedDefaultCurrency() {
+      return usedDefaultCurrency;
     }
 
     public String getAccountName() {
