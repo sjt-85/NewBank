@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -242,6 +243,20 @@ public class ServerTestScenarios {
     return response;
   }
 
+  private static NewBankCommandResponse runNewAccount(
+          CustomerID customerID, String commandString, String inputSequence) {
+    var command = new NewAccountCommand();
+
+    var response =
+        new NewBankCommandResponse(
+            new BufferedReader(
+               new InputStreamReader(new ByteArrayInputStream(inputSequence.getBytes()))),
+            new PrintWriter(new ByteArrayOutputStream()));
+
+    command.run(NewBankCommandRequest.create(customerID, commandString), response);
+    return response;
+  }
+
   @Test
   private void showMyAccountsReturnsListOfAllCustomersAccountsAlongWithCurrentBalance() {
 
@@ -266,7 +281,7 @@ public class ServerTestScenarios {
         response);
 
     String accountDescription =
-        String.format("%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance);
+        String.format(Locale.ROOT, "%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance);
 
     var lines = response.getDescription().split(System.lineSeparator());
 
@@ -285,12 +300,7 @@ public class ServerTestScenarios {
     var originalKeys =
         NewBank.getBank().getAccounts().keySet().stream().collect(Collectors.toSet());
 
-    var command = new NewAccountCommand();
-
-    NewBankCommandResponse response = new NewBankCommandResponse();
-    command.run(
-        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" UniqueAccountNumber"),
-        response);
+    NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" UniqueAccountNumber", "Y");
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
@@ -304,19 +314,27 @@ public class ServerTestScenarios {
   }
 
   @Test
-  private void createNewAccountWithOnlyAccountNameReturnsSuccess() {
+  private void createNewAccountWithOnlyAccountNameReturnsSuccessIfConfirmed() {
 
-    var command = new NewAccountCommand();
-
-    NewBankCommandResponse response = new NewBankCommandResponse();
-    command.run(
-        NewBankCommandRequest.create(john, "NEWACCOUNT \"Savings Account\" Saving"), response);
+    NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" Saving", "Y");
 
     AssertEqual(NewBankCommandResponse.ResponseType.SUCCEEDED, response.getType());
 
     AssertEqual(
-        "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
-        response.getDescription());
+            "SUCCESS: Opened account TYPE:\"Savings Account\" NAME:\"Saving\" CURRENCY:GBP",
+            response.getDescription());
+  }
+
+  @Test
+  private void createNewAccountWithOnlyAccountNameReturnsFailIfNotConfirmed() {
+
+    NewBankCommandResponse response = runNewAccount(john, "NEWACCOUNT \"Savings Account\" Saving", "N");
+
+    AssertEqual(NewBankCommandResponse.ResponseType.FAILED, response.getType());
+
+    AssertEqual(
+            "FAIL: No new account created.",
+            response.getDescription());
   }
 
   @Test
