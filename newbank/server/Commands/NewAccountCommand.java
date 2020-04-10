@@ -82,6 +82,8 @@ public class NewAccountCommand extends NewBankCommand {
 
       // get currency from regex result
       argument.currency = parseCurrency(m.group("currency"));
+      // determine if default was used
+      argument.defaultCurrency = determineIfDefaultCurrency(m.group("currency"));
 
       // get account type from regex result
       argument.accountType = parseAccountType(m.group("accType"));
@@ -98,9 +100,14 @@ public class NewAccountCommand extends NewBankCommand {
     private String accountName; // get account name from regex result
     private Account.AccountType accountType;
     private Currency currency;
+    private boolean defaultCurrency = false;
 
     public Currency getCurrency() {
       return currency;
+    }
+
+    public boolean isDefaultCurrency() {
+      return defaultCurrency;
     }
 
     public String getAccountName() {
@@ -115,6 +122,10 @@ public class NewAccountCommand extends NewBankCommand {
       return currencyStr == null || currencyStr.isBlank()
           ? Currency.GBP
           : Currency.createCurrency(currencyStr);
+    }
+
+    private static boolean determineIfDefaultCurrency(String currencyStr) {
+      return currencyStr == null || currencyStr.isBlank();
     }
 
     private static String parseAccountName(
