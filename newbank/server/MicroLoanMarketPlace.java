@@ -23,4 +23,8 @@ public class MicroLoanMarketPlace {
   public void addOffer(Offer offer) {
     offers.put(offer.getOfferNumber(), offer);
   }
+
+  public void removeOffer(int offerNumber){
+    offers.remove(offerNumber);
+  }
 }
