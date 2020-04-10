@@ -126,14 +126,14 @@ public class OfferCommand extends NewBankCommand {
             + "Do you wish to proceed?";
 
     if (!response.confirm(confirmationMessage)) {
-      response.failed("Offer cancelled");
+      response.failed("Offer cancelled.");
       return;
     }
 
     lendingAccount.moneyOut(amount);
     Offer offer = new Offer(0, rate, amount, lendingAccount, length);
     MicroLoanMarketPlace.getInstance().addOffer(offer);
-    response.succeeded("Offer successfully added to the marketplace");
+    response.succeeded("Offer successfully added to the marketplace.");
   }
 
   private BigDecimal parseRate(String percentage) {
