@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -266,7 +267,7 @@ public class ServerTestScenarios {
         response);
 
     String accountDescription =
-        String.format("%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance);
+        String.format(Locale.ROOT, "%s: %s (%03d): %.2f GBP", accountType, accountName, accountNumber, balance);
 
     var lines = response.getDescription().split(System.lineSeparator());
 
