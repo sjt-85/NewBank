@@ -1,10 +1,12 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.Currency;
 import newbank.server.Customer;
+import newbank.server.MicroLoanMarketPlace;
+import newbank.server.Offer;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +28,7 @@ public class OfferCommand extends NewBankCommand {
         + System.lineSeparator()
         + "-> Offer a loan to borrowers eg OFFER 500 10% 6. "
         + System.lineSeparator()
-        + "   Standard currency is GBP, please specify an account name and currency to create an account with a different currency.";
+        + "   ";
   }
 
   @Override
@@ -58,7 +60,7 @@ public class OfferCommand extends NewBankCommand {
     BigDecimal percent = BigDecimal.valueOf(Double.parseDouble(percentInput[0]));
     BigDecimal rate = percent.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_EVEN);
 
-    BigInteger length = BigInteger.valueOf(Integer.parseInt(input[2]));
+    int length = Integer.parseInt(input[2]);
 
     if (amount.compareTo(BigDecimal.valueOf(MAXOFFER)) > 0) {
       response.failed("Amount offered greater than " + MAXOFFER + "GBP. Please try again.");
@@ -75,7 +77,7 @@ public class OfferCommand extends NewBankCommand {
       return;
     }
 
-    if (length.compareTo(BigInteger.valueOf(MAXLENGTH)) > 0) {
+    if (length > MAXLENGTH) {
       response.failed("Length offered greater than " + MAXLENGTH + " months. Please try again.");
       return;
     }
@@ -88,8 +90,15 @@ public class OfferCommand extends NewBankCommand {
       return;
     }
 
+    List<Account> gbpAccounts = lendingAccounts.stream().filter(account -> account.getCurrency().equals(Currency.GBP)).collect(Collectors.toList());
+
+    if (gbpAccounts.size() == 0) {
+      response.failed("Sorry micro-loans only offered for GBP accounts. Please try again.");
+      return;
+    }
+
     List<Account> validAccounts =
-        lendingAccounts.stream()
+            gbpAccounts.stream()
             .filter(account -> account.getBalance().compareTo(amount) >= 0)
             .collect(Collectors.toList());
 
@@ -100,14 +109,36 @@ public class OfferCommand extends NewBankCommand {
 
     Account lendingAccount = chooseLendingAccount(validAccounts, response, customer);
 
-    
+    String confirmationMessage =
+        "Please confirm your offer:"
+            + System.lineSeparator()
+            + "Offer Amount: "
+            + input[0]
+            + System.lineSeparator()
+            + "Interest rate: "
+            + percentInput[0]
+            + "%"
+            + System.lineSeparator()
+            + "Borrowing length: "
+            + input[2]
+            + System.lineSeparator()
+            + "Do you wish to proceed?";
+
+    if (!response.confirm(confirmationMessage)) {
+      response.failed("Offer cancelled");
+      return;
+    }
+
+    lendingAccount.moneyOut(amount);
+    Offer offer = new Offer(0, rate, amount, lendingAccount, length);
+    MicroLoanMarketPlace.getInstance().addOffer(offer);
   }
 
-  private Account chooseLendingAccount(List<Account> lendingAccounts, NewBankCommandResponse response, Customer customer){
-    return lendingAccounts.size()==1
-            ? lendingAccounts.get(0)
-            : queryAccounts(lendingAccounts, response, customer);
-
+  private Account chooseLendingAccount(
+      List<Account> lendingAccounts, NewBankCommandResponse response, Customer customer) {
+    return lendingAccounts.size() == 1
+        ? lendingAccounts.get(0)
+        : queryAccounts(lendingAccounts, response, customer);
   }
 
   private Account queryAccounts(
