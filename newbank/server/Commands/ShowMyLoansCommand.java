@@ -14,6 +14,6 @@ public class ShowMyLoansCommand extends NewBankCommand {
 
   @Override
   public void run(NewBankCommandRequest request, NewBankCommandResponse response) {
-    response.succeeded(request.getCustomer().loansToString());
+    response.viewed(request.getCustomer().loansToString());
   }
 }
