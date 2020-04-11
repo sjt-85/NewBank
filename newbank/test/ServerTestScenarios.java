@@ -174,7 +174,7 @@ public class ServerTestScenarios {
 
     // validate
     AssertEqual(
-        "PAY Successful"
+        "SUCCESS: PAY Successful"
             + System.lineSeparator()
             + "You have made a payment of £100.00 to the Account(Number:002 Type:[Savings Account] Name:\"Savings 1\")"
             + System.lineSeparator()
@@ -196,7 +196,7 @@ public class ServerTestScenarios {
     NewBankCommandResponse response = runPay(bhagy, "PAY 2 100", "N");
 
     // validate
-    AssertEqual("FAIL", response.getDescription());
+    AssertEqual("FAIL: Transaction not confirmed.", response.getDescription());
 
     validateShowMyAccount(bhagy, "Current Account", 1, "Main 1", 1000);
     validateShowMyAccount(christina, "Savings Account", 2, "Savings 1", 1500);
@@ -216,7 +216,7 @@ public class ServerTestScenarios {
 
     // validate
     AssertEqual(
-        "PAY Successful"
+        "SUCCESS: PAY Successful"
             + System.lineSeparator()
             + "You have made a payment of £100.00 to the Account(Number:002 Type:[Savings Account] Name:\"Savings 1\")"
             + System.lineSeparator()
@@ -433,7 +433,7 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "MOVE 200 \"Checking 1\" \"Checking 2\"");
     AssertEqual(
         initialResponse
-            + "Account to be credited does not exist. Please try again."
+            + "FAIL: Account to be credited does not exist. Please try again."
             + System.lineSeparator(),
         outputString);
 
@@ -442,7 +442,7 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "MOVE 200 \"Checking 2\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "Account to be debited does not exist. Please try again."
+            + "FAIL: Account to be debited does not exist. Please try again."
             + System.lineSeparator(),
         outputString2);
 
@@ -451,7 +451,7 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "MOVE 200 \"Checking 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "The debiting and crediting accounts are the same. Please try again."
+            + "FAIL: The debiting and crediting accounts are the same. Please try again."
             + System.lineSeparator(),
         outputString3);
 
@@ -459,7 +459,7 @@ public class ServerTestScenarios {
     String outputString4 =
         runServerCommand(userName, password, "MOVE -200 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
-        initialResponse + "Amount is invalid. Please try again." + System.lineSeparator(),
+        initialResponse + "FAIL: Amount is invalid. Please try again." + System.lineSeparator(),
         outputString4);
 
     // Test 5
@@ -467,7 +467,7 @@ public class ServerTestScenarios {
         runServerCommand(userName, password, "MOVE /t \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "Not enough arguments. Please try again."
+            + "FAIL: Not enough arguments. Please try again."
             + System.lineSeparator()
             + System.lineSeparator()
             + "MOVE "
@@ -479,7 +479,7 @@ public class ServerTestScenarios {
     String outputString6 = runServerCommand(userName, password, "MOVE \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "Not enough arguments. Please try again."
+            + "FAIL: Not enough arguments. Please try again."
             + System.lineSeparator()
             + System.lineSeparator()
             + "MOVE "
@@ -495,7 +495,7 @@ public class ServerTestScenarios {
     String outputString = runServerCommand("John", "3", "MOVE 500.01 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "Not enough funds in account to be debited. Please try again."
+            + "FAIL: Not enough funds in account to be debited. Please try again."
             + System.lineSeparator(),
         outputString);
   }
