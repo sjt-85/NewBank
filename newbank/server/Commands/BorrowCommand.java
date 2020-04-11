@@ -126,7 +126,7 @@ public class BorrowCommand extends NewBankCommand {
   }
 
   private static Account queryAccount(
-      Customer customer, NewBankCommandResponse response, List accountList) {
+      Customer customer, NewBankCommandResponse response, List<Account> accountList) {
 
     Account account;
     do {
