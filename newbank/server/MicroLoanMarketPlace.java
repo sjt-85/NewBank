@@ -7,6 +7,7 @@ import java.util.Map;
 public class MicroLoanMarketPlace {
 
   private static final MicroLoanMarketPlace instance = new MicroLoanMarketPlace();
+  private static final OfferNumberGenerator offerNumberGenerator = new OfferNumberGenerator();
 
   public static MicroLoanMarketPlace getInstance() {
     return instance;
@@ -22,5 +23,9 @@ public class MicroLoanMarketPlace {
 
   public void addOffer(Offer offer) {
     offers.put(offer.getOfferNumber(), offer);
+  }
+  
+  public static synchronized int getNextOfferNumber() {
+    return offerNumberGenerator.getNextOfferNumber();
   }
 }

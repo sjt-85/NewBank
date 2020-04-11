@@ -41,3 +41,10 @@ Returns details of all account types.
 VIEWACCOUNTTYPE <Type>
 e.g. VIEWACCOUNTTYPE "Cash ISA"
 Returns details of account type or FAIL.
+
+VIEWOFFERS
+Returns the top results from of all available offers.
+        
+VIEWOFFERS <Minimum Loan Amount>
+e.g. VIEWOFFERS 250
+Returns the top results from of all available offers with loan amounts greater than or equal to the selected amount.
