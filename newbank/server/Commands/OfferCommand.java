@@ -130,7 +130,7 @@ public class OfferCommand extends NewBankCommand {
     }
 
     lendingAccount.moneyOut(amount);
-    Offer offer = new Offer(0, rate, amount, lendingAccount, length);
+    Offer offer = new Offer(rate, amount, lendingAccount, length);
     MicroLoanMarketPlace.getInstance().addOffer(offer);
     response.succeeded("Offer successfully added to the marketplace.");
   }
@@ -140,7 +140,7 @@ public class OfferCommand extends NewBankCommand {
     String percentInput[] = percentage.split("%");
     if (!validDouble(percentInput[0])) return null;
     BigDecimal percent = BigDecimal.valueOf(Double.parseDouble(percentInput[0]));
-    return percent.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_EVEN);
+    return percent.divide(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_EVEN);
   }
 
   private BigDecimal parseAmount(String amount) {

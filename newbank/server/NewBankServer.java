@@ -7,6 +7,7 @@ import newbank.server.Commands.OfferCommand;
 import newbank.server.Commands.PayCommand;
 import newbank.server.Commands.ShowMyAccountsCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
+import newbank.server.Commands.ViewOffersCommand;
 import newbank.test.NBUnit;
 
 import java.io.IOException;
@@ -26,7 +27,8 @@ public class NewBankServer extends Thread {
         new ViewAccountTypeCommand(),
         new PayCommand(),
         new MoveCommand(),
-        new OfferCommand()
+        new OfferCommand(),
+        new ViewOffersCommand()
       };
 
   private ServerSocket server;
