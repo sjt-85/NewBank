@@ -1,11 +1,13 @@
 package newbank.server;
 
+import newbank.server.Commands.BorrowCommand;
 import newbank.server.Commands.INewBankCommand;
 import newbank.server.Commands.MoveCommand;
 import newbank.server.Commands.NewAccountCommand;
 import newbank.server.Commands.OfferCommand;
 import newbank.server.Commands.PayCommand;
 import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ShowMyLoansCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.Commands.ViewOffersCommand;
 import newbank.test.NBUnit;
@@ -23,12 +25,14 @@ public class NewBankServer extends Thread {
   public static final INewBankCommand[] DefaultCommandList =
       new INewBankCommand[] {
         new ShowMyAccountsCommand(),
+        new ShowMyLoansCommand(),
         new NewAccountCommand(),
         new ViewAccountTypeCommand(),
         new PayCommand(),
         new MoveCommand(),
         new OfferCommand(),
-        new ViewOffersCommand()
+        new ViewOffersCommand(),
+        new BorrowCommand()
       };
 
   private ServerSocket server;
