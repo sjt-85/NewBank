@@ -1,5 +1,6 @@
 package newbank.server;
 
+import newbank.server.Commands.BorrowCommand;
 import newbank.server.Commands.INewBankCommand;
 import newbank.server.Commands.MoveCommand;
 import newbank.server.Commands.NewAccountCommand;
@@ -28,7 +29,8 @@ public class NewBankServer extends Thread {
         new PayCommand(),
         new MoveCommand(),
         new OfferCommand(),
-        new ViewOffersCommand()
+        new ViewOffersCommand(),
+        new BorrowCommand()
       };
 
   private ServerSocket server;

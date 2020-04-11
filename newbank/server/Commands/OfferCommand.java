@@ -140,7 +140,7 @@ public class OfferCommand extends NewBankCommand {
     String percentInput[] = percentage.split("%");
     if (!validDouble(percentInput[0])) return null;
     BigDecimal percent = BigDecimal.valueOf(Double.parseDouble(percentInput[0]));
-    return percent.divide(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_EVEN);
+    return percent.divide(BigDecimal.valueOf(100),4, RoundingMode.HALF_EVEN);
   }
 
   private BigDecimal parseAmount(String amount) {
@@ -185,7 +185,7 @@ public class OfferCommand extends NewBankCommand {
   }
 
   private boolean validInt(String amountInput) {
-    double amount;
+    int amount;
     try {
       amount = Integer.parseInt(amountInput);
     } catch (NumberFormatException e) {
