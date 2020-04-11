@@ -1,6 +1,7 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.Currency;
 import newbank.server.Customer;
 import newbank.server.Loan;
 import newbank.server.MicroLoanMarketPlace;
@@ -73,7 +74,8 @@ public class BorrowCommand extends NewBankCommand {
       return;
     }
     RepaymentCalculator rc = new RepaymentCalculator();
-    BigDecimal repaymentAmount = rc.calculateRepayments(offer.getAmount(), offer.getInterestRate(), borrowingLength);
+    BigDecimal repaymentAmount =
+        rc.calculateRepayments(offer.getAmount(), offer.getInterestRate(), borrowingLength);
 
     String confirmationMessage =
         "Please confirm your loan:"
@@ -90,8 +92,7 @@ public class BorrowCommand extends NewBankCommand {
             + borrowingLength
             + System.lineSeparator()
             + "Your monthly repayment will be: "
-            + repaymentAmount
-                .toPlainString()
+            + repaymentAmount.toPlainString()
             + System.lineSeparator()
             + "Do you wish to proceed?";
 
@@ -117,6 +118,7 @@ public class BorrowCommand extends NewBankCommand {
         customer.enumAccountNumbers().stream()
             .map(customer::getAccountFromNumber)
             .filter(account -> !account.getAccountType().equals(Account.AccountType.LENDING))
+            .filter(account -> account.getCurrency().equals(Currency.GBP))
             .collect(Collectors.toList());
     return accounts.size() == 0
         ? null
@@ -132,7 +134,7 @@ public class BorrowCommand extends NewBankCommand {
           customer.getAccountFromName(
               response.query(
                   String.format(
-                      "Please input the account name:%s",
+                      "Please input the account name you wish to credit:%s",
                       accountList.stream()
                           .map(accountName -> "\"" + accountName + "\"")
                           .reduce((name1, name2) -> name1 + "," + name2)
@@ -152,5 +154,4 @@ public class BorrowCommand extends NewBankCommand {
     }
     return amount > 0;
   }
-
 }
