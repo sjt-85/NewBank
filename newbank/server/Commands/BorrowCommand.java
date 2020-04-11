@@ -5,9 +5,9 @@ import newbank.server.Customer;
 import newbank.server.Loan;
 import newbank.server.MicroLoanMarketPlace;
 import newbank.server.Offer;
+import newbank.server.RepaymentCalculator;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +72,8 @@ public class BorrowCommand extends NewBankCommand {
       response.failed("No account available to credit. Please try again.");
       return;
     }
+    RepaymentCalculator rc = new RepaymentCalculator();
+    BigDecimal repaymentAmount = rc.calculateRepayments(offer.getAmount(), offer.getInterestRate(), borrowingLength);
 
     String confirmationMessage =
         "Please confirm your loan:"
@@ -88,7 +90,7 @@ public class BorrowCommand extends NewBankCommand {
             + borrowingLength
             + System.lineSeparator()
             + "Your monthly repayment will be: "
-            + calculateRepayments(offer.getAmount(), offer.getInterestRate(), borrowingLength)
+            + repaymentAmount
                 .toPlainString()
             + System.lineSeparator()
             + "Do you wish to proceed?";
@@ -150,14 +152,5 @@ public class BorrowCommand extends NewBankCommand {
     }
     return amount > 0;
   }
-  // TODO method should be a class, so other clients can use it
-  private BigDecimal calculateRepayments(BigDecimal amount, BigDecimal rate, int length) {
-    BigDecimal periodRate = rate.divide(BigDecimal.valueOf(length), 4, RoundingMode.HALF_EVEN);
-    BigDecimal addOneToPRate = periodRate.add(BigDecimal.valueOf(1));
-    BigDecimal toPowerN = addOneToPRate.pow(length);
-    BigDecimal denominator = toPowerN.subtract(BigDecimal.valueOf(1));
-    BigDecimal fraction = periodRate.divide(denominator, 4, RoundingMode.HALF_EVEN);
-    BigDecimal fractionPlusPR = periodRate.add(fraction);
-    return fractionPlusPR.multiply(amount).setScale(2, RoundingMode.HALF_EVEN);
-  }
+
 }

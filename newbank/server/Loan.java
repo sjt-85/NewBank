@@ -8,6 +8,7 @@ public class Loan {
   private BigDecimal totalAmountRepaid;
   private int borrowingAccountNumber;
   private final int borrowingLength;
+  private RepaymentCalculator rc;
 
   public Loan(
       Offer offer, BigDecimal totalAmount, BigDecimal totalAmountRepaid, Account borrowingAccount) {
@@ -17,6 +18,7 @@ public class Loan {
         totalAmountRepaid,
         borrowingAccount.getAccountNumber(),
         offer.getBorrowingLengthInMonth());
+    rc = new RepaymentCalculator();
   }
 
   public Loan(
@@ -31,6 +33,7 @@ public class Loan {
         totalAmountRepaid,
         borrowingAccount.getAccountNumber(),
         borrowingLength);
+    rc = new RepaymentCalculator();
   }
 
   public Loan(
@@ -45,6 +48,7 @@ public class Loan {
     this.totalAmountRepaid = totalAmountRepaid;
     this.borrowingAccountNumber = borrowingAccountNumber;
     this.borrowingLength = borrowingLength;
+    rc = new RepaymentCalculator();
   }
 
   public BigDecimal getTotalAmount() {
@@ -53,6 +57,10 @@ public class Loan {
 
   public BigDecimal getTotalAmountRepaid() {
     return totalAmountRepaid;
+  }
+
+  public BigDecimal getRate() {
+    return this.getOffer().getInterestRate();
   }
 
   public void setTotalAmountRepaid(BigDecimal totalAmountRepaid) {
@@ -93,7 +101,10 @@ public class Loan {
         + System.lineSeparator()
         + "Term of loan: "
         + borrowingLength
-        + "months."
-        + System.lineSeparator();
+        + " months"
+        + System.lineSeparator()
+        + "Monthly repayment: "
+        + rc.calculateRepayments(totalAmount, this.getRate(), borrowingLength)
+        + "GBP";
   }
 }
