@@ -81,7 +81,7 @@ public class BorrowCommand extends NewBankCommand {
             + "GBP"
             + System.lineSeparator()
             + "Interest rate: "
-            + offer.getInterestRate().toPlainString()
+            + offer.getInterestRate().multiply(BigDecimal.valueOf(100)).toPlainString()
             + "%"
             + System.lineSeparator()
             + "Borrowing length: "
@@ -102,6 +102,7 @@ public class BorrowCommand extends NewBankCommand {
         new Loan(offer, offer.getAmount(), BigDecimal.valueOf(0), creditedAccount, borrowingLength);
 
     creditedAccount.moneyIn(offer.getAmount());
+    MicroLoanMarketPlace.getInstance().removeOffer(offerNumber);
 
     response.succeeded(
         "You have successfully borrowed " + offer.getAmount().toPlainString() + "GBP.");

@@ -64,7 +64,9 @@ public class Loan {
   }
 
   public Offer getOffer() {
-    return MicroLoanMarketPlace.getInstance().getOffers().getOrDefault(offerNumber, null);
+    return MicroLoanMarketPlace.getInstance().getOffers().containsKey(offerNumber)
+        ? MicroLoanMarketPlace.getInstance().getOffers().getOrDefault(offerNumber, null)
+        : MicroLoanMarketPlace.getInstance().getTakenOffers().getOrDefault(offerNumber, null);
   }
 
   /** this method might not be used, however put here to show semantics */

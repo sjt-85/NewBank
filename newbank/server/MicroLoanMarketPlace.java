@@ -16,9 +16,14 @@ public class MicroLoanMarketPlace {
   protected MicroLoanMarketPlace() {}
 
   private Map<Integer, Offer> offers = new HashMap<>();
+  private Map<Integer, Offer> takenOffers = new HashMap<>();
 
   public Map<Integer, Offer> getOffers() {
     return offers;
+  }
+
+  public Map<Integer, Offer> getTakenOffers() {
+    return takenOffers;
   }
 
   public void addOffer(Offer offer) {
@@ -30,6 +35,7 @@ public class MicroLoanMarketPlace {
   }
 
   public void removeOffer(int offerNumber) {
+    takenOffers.put(offerNumber, offers.get(offerNumber));
     offers.remove(offerNumber);
   }
 }
