@@ -130,7 +130,7 @@ public class OfferCommand extends NewBankCommand {
     }
 
     lendingAccount.moneyOut(amount);
-    Offer offer = new Offer(rate, amount, lendingAccount, length);
+    Offer offer = new Offer(rate, amount, lendingAccount, length, customer);
     MicroLoanMarketPlace.getInstance().addOffer(offer);
     response.succeeded("Offer successfully added to the marketplace.");
   }

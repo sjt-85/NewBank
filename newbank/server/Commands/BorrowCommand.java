@@ -67,12 +67,23 @@ public class BorrowCommand extends NewBankCommand {
     }
 
     Customer customer = request.getCustomer();
+
     Account creditedAccount = findCreditingAccount(customer, response);
 
     if (creditedAccount == null) {
       response.failed("No account available to credit. Please try again.");
       return;
     }
+
+    // As account numbers are unique this will confirm customer is unique.
+    // Cannot be called before crediting account found, otherwise will show when customer has no
+    // accounts
+    if (customer.enumAccountNumbers().equals(offer.getCustomer().enumAccountNumbers())) {
+      response.failed(
+          "Sorry, customers not able to accept an offer you have made. Please select new offer");
+      return;
+    }
+
     RepaymentCalculator rc = new RepaymentCalculator();
     BigDecimal repaymentAmount =
         rc.calculateRepayments(offer.getAmount(), offer.getInterestRate(), borrowingLength);
