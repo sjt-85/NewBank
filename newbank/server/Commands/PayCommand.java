@@ -25,33 +25,33 @@ public class PayCommand extends NewBankCommand {
 
     var args = PayArguments.parse(request);
     if (args == null) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("No arguments entered. Please enter account number and amount.");
       return;
     }
 
     var customer = request.getCustomer();
 
     if (args.amount.doubleValue() <= 0) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("Payment of a negative amount is not possible.");
       return;
     }
 
     Account debitedAccount = findDebitedAccount(customer, response);
 
     if (debitedAccount == null || debitedAccount.getBalance().compareTo(args.amount) < 0) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("The debited account was not found or its balance it too low.");
       return;
     }
 
     Account creditedAccount = NewBank.getBank().getAccounts().get(args.accountNumber);
 
     if (creditedAccount == null || creditedAccount == debitedAccount) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("The credited account is invalid.");
       return;
     }
 
     if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("The currencies of the chosen accounts do not match.");
       return;
     }
 
@@ -69,7 +69,7 @@ public class PayCommand extends NewBankCommand {
             args.amount.toString());
 
     if (!response.confirm(confirmationMessage)) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("Transaction not confirmed.");
       return;
     }
 
@@ -77,7 +77,7 @@ public class PayCommand extends NewBankCommand {
     creditedAccount.moneyIn(args.amount);
 
     response.succeeded(
-        "PAY Successful"
+        "SUCCESS: PAY Successful"
             + System.lineSeparator()
             + String.format(
                 "You have made a payment of £%s to the Account(Number:%03d Type:[%s] Name:\"%s\")",

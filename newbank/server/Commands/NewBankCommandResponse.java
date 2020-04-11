@@ -48,11 +48,11 @@ public class NewBankCommandResponse {
   }
 
   public NewBankCommandResponse failed(String description) {
-    return setState(ResponseType.FAILED, description);
+    return setState(ResponseType.FAILED, "FAIL: " + description);
   }
 
   public NewBankCommandResponse invalidRequest(String description) {
-    return setState(ResponseType.INVALIDREQUEST, description);
+    return setState(ResponseType.INVALIDREQUEST, "FAIL: " + description);
   }
 
   public NewBankCommandResponse help(String description) {

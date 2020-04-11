@@ -78,7 +78,7 @@ public class ViewOffersCommand extends NewBankCommand {
     if (matchingOffers.size() > 0) {
       response.succeeded(printOffers(sortedOffers));
     } else {
-      response.failed("FAIL: No matching offers found.");
+      response.failed("No matching offers found.");
     }
   }
   

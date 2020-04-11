@@ -30,7 +30,7 @@ public class NewAccountCommand extends NewBankCommand {
 
     if (args == null) {
       response.invalidRequest(
-          "FAIL: Account type must be specified. Accepted account types: "
+          "Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypesCommaDelimited()
               + ".");
       return;
@@ -38,13 +38,13 @@ public class NewAccountCommand extends NewBankCommand {
 
     // Previously this was tested in NewBankArgument
     if (request.getCustomer().hasAccount(args.getAccountName())) {
-      response.invalidRequest("FAIL: Please choose a unique name.");
+      response.invalidRequest("Please choose a unique name.");
       return;
     }
 
     if (args.getCurrency() == null) {
       response.failed(
-          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
+          "Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
       return;
     }
 
@@ -54,7 +54,7 @@ public class NewAccountCommand extends NewBankCommand {
           System.lineSeparator() +
           "Do you want to continue?";
       if (!response.confirm(confirmationMessage)) {
-        response.failed("FAIL: No new account created.");
+        response.failed("No new account created.");
         return;
       }
     }
@@ -75,7 +75,7 @@ public class NewAccountCommand extends NewBankCommand {
               + "\""
               + " CURRENCY:"
               + args.getCurrency().name());
-    else response.failed("FAIL: Account could not be opened. Please try again.");
+    else response.failed("Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {
