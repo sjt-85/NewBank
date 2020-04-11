@@ -68,7 +68,7 @@ public class NewAccountCommand extends NewBankCommand {
 
     if (request.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
       response.succeeded(
-          "SUCCESS: Opened account TYPE:\""
+          "Opened account TYPE:\""
               + args.getAccountType().toString()
               + "\" NAME:\""
               + args.getAccountName()

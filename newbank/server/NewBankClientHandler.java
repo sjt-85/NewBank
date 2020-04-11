@@ -16,8 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static newbank.server.Commands.NewBankCommandResponse.createInvalidRequest;
-import static newbank.server.Commands.NewBankCommandResponse.createSucceeded;
+import static newbank.server.Commands.NewBankCommandResponse.*;
 
 public class NewBankClientHandler extends Thread {
 
@@ -137,10 +136,10 @@ public class NewBankClientHandler extends Thread {
       switch (request.getCommandName()) {
         case "LOGOUT":
           return new DispatchResult(
-              null, createSucceeded("Log out successful. Goodbye " + request.getId().getKey()));
+              null, createViewed("Log out successful. Goodbye " + request.getId().getKey()));
         case "COMMANDS":
         case "HELP":
-          return new DispatchResult(null, createSucceeded(formatCommands()));
+          return new DispatchResult(null, createViewed(formatCommands()));
         default:
           return runCommand(request);
       }
@@ -164,7 +163,7 @@ public class NewBankClientHandler extends Thread {
       } else if (request.getCommandName().isBlank()) {
         return new DispatchResult(null, NewBankCommandResponse.EMPTY);
       } else {
-        return new DispatchResult(null, createInvalidRequest("FAIL: Invalid command."));
+        return new DispatchResult(null, createInvalidRequest("Invalid command."));
       }
     }
 

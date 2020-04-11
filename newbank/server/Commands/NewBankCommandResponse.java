@@ -21,7 +21,8 @@ public class NewBankCommandResponse {
     SUCCEEDED,
     FAILED,
     INVALIDREQUEST,
-    HELP
+    HELP,
+    VIEWED
   }
 
   public static final NewBankCommandResponse EMPTY =
@@ -29,6 +30,10 @@ public class NewBankCommandResponse {
 
   public static NewBankCommandResponse createSucceeded(String description) {
     return new NewBankCommandResponse().succeeded(description);
+  }
+
+  public static NewBankCommandResponse createViewed(String description) {
+    return new NewBankCommandResponse().viewed(description);
   }
 
   public static NewBankCommandResponse createFailed(String description) {
@@ -44,7 +49,11 @@ public class NewBankCommandResponse {
   }
 
   public NewBankCommandResponse succeeded(String description) {
-    return setState(ResponseType.SUCCEEDED, description);
+    return setState(ResponseType.SUCCEEDED, "SUCCESS: " + description);
+  }
+
+  public NewBankCommandResponse viewed(String description) {
+    return setState(ResponseType.VIEWED, description);
   }
 
   public NewBankCommandResponse failed(String description) {

@@ -77,7 +77,7 @@ public class PayCommand extends NewBankCommand {
     creditedAccount.moneyIn(args.amount);
 
     response.succeeded(
-        "SUCCESS: PAY Successful"
+        "PAY Successful"
             + System.lineSeparator()
             + String.format(
                 "You have made a payment of £%s to the Account(Number:%03d Type:[%s] Name:\"%s\")",

@@ -76,7 +76,7 @@ public class ViewOffersCommand extends NewBankCommand {
     List<Offer> sortedOffers = sortOffers(matchingOffers);
     
     if (matchingOffers.size() > 0) {
-      response.succeeded(printOffers(sortedOffers));
+      response.viewed(printOffers(sortedOffers));
     } else {
       response.failed("No matching offers found.");
     }

@@ -102,7 +102,7 @@ public class ServerTestScenarios {
             + System.lineSeparator()
             + "Do you finish the feature? [Y]es/[N]o :"
             + System.lineSeparator()
-            + "Good luck!"
+            + "SUCCESS: Good luck!"
             + System.lineSeparator(),
         out.toString());
   }
@@ -506,7 +506,7 @@ public class ServerTestScenarios {
     String outputString = runServerCommand("John", "3", "MOVE 321.62 \"Saving 1\" \"Checking 1\"");
     AssertEqual(
         initialResponse
-            + "Move successful."
+            + "SUCCESS: Move successful."
             + System.lineSeparator()
             + "The balance of Checking 1 is now 571.62GBP."
             + System.lineSeparator()
