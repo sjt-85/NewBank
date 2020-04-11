@@ -7,6 +7,7 @@ import newbank.server.Commands.NewAccountCommand;
 import newbank.server.Commands.OfferCommand;
 import newbank.server.Commands.PayCommand;
 import newbank.server.Commands.ShowMyAccountsCommand;
+import newbank.server.Commands.ShowMyLoansCommand;
 import newbank.server.Commands.ViewAccountTypeCommand;
 import newbank.server.Commands.ViewOffersCommand;
 import newbank.test.NBUnit;
@@ -24,6 +25,7 @@ public class NewBankServer extends Thread {
   public static final INewBankCommand[] DefaultCommandList =
       new INewBankCommand[] {
         new ShowMyAccountsCommand(),
+        new ShowMyLoansCommand(),
         new NewAccountCommand(),
         new ViewAccountTypeCommand(),
         new PayCommand(),

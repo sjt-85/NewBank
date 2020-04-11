@@ -101,6 +101,8 @@ public class BorrowCommand extends NewBankCommand {
     Loan loan =
         new Loan(offer, offer.getAmount(), BigDecimal.valueOf(0), creditedAccount, borrowingLength);
 
+    customer.addLoan(loan);
+
     creditedAccount.moneyIn(offer.getAmount());
     MicroLoanMarketPlace.getInstance().removeOffer(offerNumber);
 

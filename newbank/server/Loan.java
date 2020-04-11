@@ -77,4 +77,23 @@ public class Loan {
   private void pay(BigDecimal amountToPay) {
     this.totalAmountRepaid = this.totalAmountRepaid.subtract(amountToPay);
   }
+
+  @Override
+  public String toString() {
+    return "Loan "
+        + offerNumber
+        + System.lineSeparator()
+        + "Total Amount: "
+        + totalAmount
+        + "GBP"
+        + System.lineSeparator()
+        + "Total Amount Repaid: "
+        + totalAmountRepaid.toPlainString()
+        + "GBP"
+        + System.lineSeparator()
+        + "Term of loan: "
+        + borrowingLength
+        + "months."
+        + System.lineSeparator();
+  }
 }
