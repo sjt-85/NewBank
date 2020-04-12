@@ -38,7 +38,7 @@ public class ViewAccountTypeCommand extends NewBankCommand {
       return;
     }
 
-    response.succeeded(info.toString());
+    response.viewed(info.toString());
   }
 
   public static Account.AccountType getAccountType(NewBankCommandRequest param) {

@@ -35,6 +35,12 @@ public class Account {
       public String toString() {
         return "Cash ISA";
       }
+    },
+    LENDING {
+      @Override
+      public String toString() {
+        return "Lending account";
+      }
     };
 
     public static AccountType getAccountTypeFromString(String s) {
@@ -59,40 +65,40 @@ public class Account {
   // 2. This constructor is used only for TestData setup.
   //    Specifying an account number explicitly makes it easier to test.
   public Account(
-          AccountType accountType, String accountName, double openingBalance, int accountNumber) {
+      AccountType accountType, String accountName, double openingBalance, int accountNumber) {
     this(accountType, accountName, openingBalance, Currency.GBP, accountNumber);
   }
 
   // an account number is automatically generated.
   public Account(
-          AccountType accountType, String accountName, double openingBalance, Currency currency) {
+      AccountType accountType, String accountName, double openingBalance, Currency currency) {
     this(accountType, accountName, openingBalance, currency, getNextAccountNumber());
   }
 
   protected Account(
-          AccountType accountType,
-          String accountName,
-          double openingBalance,
-          Currency currency,
-          int accountNumber) {
+      AccountType accountType,
+      String accountName,
+      double openingBalance,
+      Currency currency,
+      int accountNumber) {
 
     this.accountType = accountType;
     this.accountName = accountName;
-    this.balance = convertDoubleToBigDecimal(openingBalance);
+    this.balance = NewBank.createDecimal(openingBalance);
     this.currency = currency;
     this.accountNumber = accountNumber;
   }
 
   public String toString() {
     return (accountType.toString()
-            + ": "
-            + accountName
-            + " ("
-            + String.format("%03d", accountNumber)
-            + "): "
-            + balance
-            + " "
-            + currency.name());
+        + ": "
+        + accountName
+        + " ("
+        + String.format("%03d", accountNumber)
+        + "): "
+        + balance
+        + " "
+        + currency.name());
   }
 
   public String getAccountName() {
@@ -122,11 +128,6 @@ public class Account {
 
   public void moneyOut(BigDecimal out) {
     this.balance = this.balance.subtract(out);
-  }
-
-  private static BigDecimal convertDoubleToBigDecimal(double amount) {
-    BigDecimal bd = BigDecimal.valueOf(amount);
-    return bd.setScale(2);
   }
 
   private static int getNextAccountNumber() {

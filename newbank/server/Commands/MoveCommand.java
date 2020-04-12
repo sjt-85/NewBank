@@ -1,10 +1,14 @@
 package newbank.server.Commands;
 
 import newbank.server.Account;
+import newbank.server.CurrencyConverter;
 import newbank.server.Customer;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.regex.Matcher;
+
+import static newbank.server.NewBank.createDecimal;
 
 public class MoveCommand extends NewBankCommand {
 
@@ -54,25 +58,22 @@ public class MoveCommand extends NewBankCommand {
       return;
     }
 
-    if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
-      response.failed("The currency of each account is not the same. Please try again.");
-      return;
-    }
-
     if (!validAmount(m.group("amount"))) {
       response.failed("Amount is invalid. Please try again.");
       return;
     }
 
-    BigDecimal amount = convertDoubleToBigDecimal(Double.parseDouble(m.group("amount")));
+    BigDecimal amount = createDecimal(Double.parseDouble(m.group("amount")));
 
     if (debitedAccount.getBalance().compareTo(amount) < 0) {
       response.failed("Not enough funds in account to be debited. Please try again.");
       return;
     }
 
+    BigDecimal convertedAmount = convertAmount(amount, debitedAccount, creditedAccount);
+
     debitedAccount.moneyOut(amount);
-    creditedAccount.moneyIn(amount);
+    creditedAccount.moneyIn(convertedAmount);
 
     response.succeeded(
         "Move successful."
@@ -81,12 +82,14 @@ public class MoveCommand extends NewBankCommand {
             + creditedAccount.getAccountName()
             + " is now "
             + creditedAccount.getBalance().toPlainString()
+            + creditedAccount.getCurrency().toString()
             + "."
             + System.lineSeparator()
             + "The balance of "
             + debitedAccount.getAccountName()
             + " is now "
             + debitedAccount.getBalance().toPlainString()
+            + debitedAccount.getCurrency().toString()
             + ".");
   }
 
@@ -100,12 +103,21 @@ public class MoveCommand extends NewBankCommand {
     return amount > 0;
   }
 
-  private BigDecimal convertDoubleToBigDecimal(double amount) {
-    BigDecimal bd = BigDecimal.valueOf(amount);
-    return bd.setScale(2);
-  }
-
   private static String parseAccountName(String accountName) {
     return accountName.replace("\"", "");
+  }
+
+  private BigDecimal convertAmount(BigDecimal amount, Account debited, Account credited) {
+    CurrencyConverter cc = new CurrencyConverter();
+    switch (credited.getCurrency()) {
+        // Without rounding mode program was crashing
+      case GBP:
+        return cc.convertToGBP(debited.getCurrency(), amount).setScale(2, RoundingMode.HALF_EVEN);
+      case EUR:
+        return cc.convertToEur(debited.getCurrency(), amount).setScale(2, RoundingMode.HALF_EVEN);
+      case USD:
+        return cc.convertToUsd(debited.getCurrency(), amount).setScale(2, RoundingMode.HALF_EVEN);
+    }
+    return null;
   }
 }

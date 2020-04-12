@@ -7,15 +7,17 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static newbank.server.Account.*;
+import static newbank.server.Account.compareAccountName;
 
 public class Customer {
 
   private ArrayList<Account> accounts;
+  private ArrayList<Loan> loans;
   private String password;
 
   public Customer() {
     accounts = new ArrayList<>();
+    loans = new ArrayList<>();
   }
 
   public String accountsToString() {
@@ -28,8 +30,22 @@ public class Customer {
     return s.toString();
   }
 
+  public String loansToString() {
+    StringBuilder s = new StringBuilder();
+    String newLine = System.lineSeparator();
+    for (Loan l : loans) {
+      s.append(l.toString());
+      s.append(newLine);
+    }
+    return s.toString();
+  }
+
   public void addAccount(Account account) {
     accounts.add(account);
+  }
+
+  public void addLoan(Loan loan) {
+    loans.add(loan);
   }
 
   public boolean hasAccount(String accountName) {
@@ -59,6 +75,12 @@ public class Customer {
 
   public List<Integer> enumAccountNumbers() {
     return accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList());
+  }
+
+  public List<Account> collectAccountsByType(AccountType type) {
+    return accounts.stream()
+        .filter(account -> account.getAccountType().equals(type))
+        .collect(Collectors.toList());
   }
 
   public Account getAccountFromNumber(Integer accountNumber) {

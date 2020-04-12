@@ -1,9 +1,25 @@
 package newbank.server;
 
 public enum Currency {
-  GBP,
-  EUR,
-  USD;
+  GBP {
+    @Override
+    public String toString() {
+      return "GBP";
+    }
+
+  },
+  EUR {
+    @Override
+    public String toString() {
+      return "EUR";
+    }
+  },
+  USD {
+    @Override
+    public String toString() {
+      return "USD";
+    }
+  };
 
   /**
    * Creates a {@linkplain Currency} if the given string matches an accepted currency or null if the

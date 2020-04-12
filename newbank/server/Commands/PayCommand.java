@@ -7,6 +7,8 @@ import newbank.server.NewBank;
 import java.math.BigDecimal;
 import java.util.regex.Matcher;
 
+import static newbank.server.NewBank.createDecimal;
+
 public class PayCommand extends NewBankCommand {
   @Override
   public String getCommandName() {
@@ -23,33 +25,33 @@ public class PayCommand extends NewBankCommand {
 
     var args = PayArguments.parse(request);
     if (args == null) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("No arguments entered. Please enter account number and amount.");
       return;
     }
 
     var customer = request.getCustomer();
 
     if (args.amount.doubleValue() <= 0) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("Payment of a negative amount is not possible.");
       return;
     }
 
     Account debitedAccount = findDebitedAccount(customer, response);
 
     if (debitedAccount == null || debitedAccount.getBalance().compareTo(args.amount) < 0) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("The debited account was not found or its balance it too low.");
       return;
     }
 
     Account creditedAccount = NewBank.getBank().getAccounts().get(args.accountNumber);
 
     if (creditedAccount == null || creditedAccount == debitedAccount) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("The credited account is invalid.");
       return;
     }
 
     if (!debitedAccount.getCurrency().equals(creditedAccount.getCurrency())) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("The currencies of the chosen accounts do not match.");
       return;
     }
 
@@ -67,7 +69,7 @@ public class PayCommand extends NewBankCommand {
             args.amount.toString());
 
     if (!response.confirm(confirmationMessage)) {
-      response.invalidRequest("FAIL");
+      response.invalidRequest("Transaction not confirmed.");
       return;
     }
 
@@ -100,10 +102,9 @@ public class PayCommand extends NewBankCommand {
 
   private static String formatAccountForPayee(Account account) {
     return String.format(
-            "%s: %S (%03d)",
-            account.getAccountType().toString(), account.getAccountName(), account.getAccountNumber());
+        "%s: %S (%03d)",
+        account.getAccountType().toString(), account.getAccountName(), account.getAccountNumber());
   }
-
 
   static class PayArguments {
 
@@ -129,8 +130,7 @@ public class PayCommand extends NewBankCommand {
 
     private static BigDecimal parseAmount(String amount) {
       try {
-        BigDecimal bd = BigDecimal.valueOf(Double.parseDouble(amount));
-        return bd.setScale(2);
+        return createDecimal(Double.parseDouble(amount));
       } catch (NumberFormatException e) {
         return BigDecimal.ZERO;
       }

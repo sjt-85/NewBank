@@ -2,6 +2,7 @@ package newbank.server;
 
 import newbank.server.Account.AccountType;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -24,7 +25,8 @@ public class NewBank {
           new Account(AccountType.CURRENT, "Main 1", 1000.0, 1),
           new Account(AccountType.SAVINGS, "Savings 1", 1500.0, 2),
           new Account(AccountType.CURRENT, "Checking 1", 250.0, 3),
-          new Account(AccountType.SAVINGS, "Saving 1", 500.0, 4)
+          new Account(AccountType.SAVINGS, "Saving 1", 500.0, 4),
+          new Account(AccountType.LENDING, "Lending 1", 100000.0, 5),
         };
 
     Arrays.stream(accountTable)
@@ -46,6 +48,7 @@ public class NewBank {
     Customer john = new Customer();
     john.addAccount(this.accounts.get(3));
     john.addAccount(this.accounts.get(4));
+    john.addAccount(this.accounts.get(5));
     john.assignPassword("eccbc87e4b5ce2fe28308fd9f2a7baf3");
     getCustomers().put("John", john);
   }
@@ -74,10 +77,21 @@ public class NewBank {
     return null;
   }
 
-  //todo: currently operations that use these are not thread-safe.
+  // global helpers
+
+  // todo: move to an appropriate place if any
+  public static BigDecimal createDecimal(String val) {
+    return new BigDecimal(val).setScale(2);
+  }
+  public static BigDecimal createDecimal(double amount) {
+    return BigDecimal.valueOf(amount).setScale(2);
+  }
+
+  // todo: currently operations that use these are not thread-safe.
   public synchronized HashMap<String, Customer> getCustomers() {
     return customers;
   }
+
   public synchronized HashMap<Integer, Account> getAccounts() {
     return accounts;
   }

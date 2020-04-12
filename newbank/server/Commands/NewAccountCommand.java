@@ -30,7 +30,7 @@ public class NewAccountCommand extends NewBankCommand {
 
     if (args == null) {
       response.invalidRequest(
-          "FAIL: Account type must be specified. Accepted account types: "
+          "Account type must be specified. Accepted account types: "
               + AccountTypeInfo.listAllAccountTypesCommaDelimited()
               + ".");
       return;
@@ -38,17 +38,28 @@ public class NewAccountCommand extends NewBankCommand {
 
     // Previously this was tested in NewBankArgument
     if (request.getCustomer().hasAccount(args.getAccountName())) {
-      response.invalidRequest("FAIL: Please choose a unique name.");
+      response.invalidRequest("Please choose a unique name.");
       return;
     }
 
     if (args.getCurrency() == null) {
       response.failed(
-          "FAIL: Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
+          "Currency not allowed. Accepted currencies: " + Currency.listAllCurrencies() + ".");
       return;
     }
 
-    // requested currency is allowed
+    // requested currency is allowed, check for default and confirm
+    if (args.usedDefaultCurrency()) {
+      String confirmationMessage = "The default currency GBP will be used for the new account." +
+          System.lineSeparator() +
+          "Do you want to continue?";
+      if (!response.confirm(confirmationMessage)) {
+        response.failed("No new account created.");
+        return;
+      }
+    }
+
+    // if default currency was confirmed or currency was given, create account
     Account newAccount =
         new Account(args.getAccountType(), args.getAccountName(), 0, args.getCurrency());
 
@@ -57,14 +68,14 @@ public class NewAccountCommand extends NewBankCommand {
 
     if (request.getCustomer().hasAccount(args.getAccountType(), args.getAccountName()))
       response.succeeded(
-          "SUCCESS: Opened account TYPE:\""
+          "Opened account TYPE:\""
               + args.getAccountType().toString()
               + "\" NAME:\""
               + args.getAccountName()
               + "\""
               + " CURRENCY:"
               + args.getCurrency().name());
-    else response.failed("FAIL: Account could not be opened. Please try again.");
+    else response.failed("Account could not be opened. Please try again.");
   }
 
   private static class NewAccountCommandArgument {
@@ -82,6 +93,8 @@ public class NewAccountCommand extends NewBankCommand {
 
       // get currency from regex result
       argument.currency = parseCurrency(m.group("currency"));
+      // determine if default was used
+      argument.usedDefaultCurrency = determineIfDefaultCurrency(m.group("currency"));
 
       // get account type from regex result
       argument.accountType = parseAccountType(m.group("accType"));
@@ -98,9 +111,14 @@ public class NewAccountCommand extends NewBankCommand {
     private String accountName; // get account name from regex result
     private Account.AccountType accountType;
     private Currency currency;
+    private boolean usedDefaultCurrency = false;
 
     public Currency getCurrency() {
       return currency;
+    }
+
+    public boolean usedDefaultCurrency() {
+      return usedDefaultCurrency;
     }
 
     public String getAccountName() {
@@ -115,6 +133,10 @@ public class NewAccountCommand extends NewBankCommand {
       return currencyStr == null || currencyStr.isBlank()
           ? Currency.GBP
           : Currency.createCurrency(currencyStr);
+    }
+
+    private static boolean determineIfDefaultCurrency(String currencyStr) {
+      return currencyStr == null || currencyStr.isBlank();
     }
 
     private static String parseAccountName(
